@@ -1,0 +1,107 @@
+<!--pages/feature3/navigatePage/navigatePage.wxml-->
+<view class="container">
+  <!-- 地图 -->
+  <map
+    id="map"
+    longitude="{{longitude}}"
+    latitude="{{latitude}}"
+    scale="16"
+    markers="{{markers}}"
+    polyline="{{polyline}}"
+    show-location
+    class="map"
+  ></map>
+
+  <!-- 搜索区域 -->
+  <view class="search-section">
+    <view class="search-item">
+      <view class="search-label">起点</view>
+      <view class="input-wrapper">
+        <input
+          class="search-input"
+          placeholder="输入'我的位置'或点击📍选择"
+          type="text"
+          value="{{startText}}"
+          bindinput="handleStartInputChange"
+          bindblur="onStartInputBlur"
+        />
+        <view class="select-btn select-btn-start" bindtap="selectStartLocation">📍</view>
+      </view>
+      <view class="quick-action" wx:if="{{!startLocation}}">
+        <text class="quick-btn" bindtap="useMyLocationAsStart">📍 使用我的位置</text>
+      </view>
+    </view>
+    <view class="search-item">
+      <view class="search-label">终点</view>
+      <view class="input-wrapper">
+        <input
+          class="search-input"
+          placeholder="输入终点地点"
+          type="text"
+          value="{{endText}}"
+          bindinput="handleEndInputChange"
+        />
+        <view class="select-btn select-btn-end" bindtap="selectEndLocation">📍</view>
+      </view>
+    </view>
+    <view class="button-group">
+      <button
+        class="direct-nav-button {{apiDisabled ? 'recommended' : ''}}"
+        bindtap="directNavigation"
+        disabled="{{!endLocation}}"
+      >
+        🗺️ 直接导航{{apiDisabled ? '（推荐）' : ''}}
+      </button>
+      <button
+        class="search-button {{apiDisabled ? 'disabled-hint' : ''}}"
+        bindtap="searchLocations"
+        disabled="{{isLoading || apiDisabled}}"
+        wx:if="{{!apiDisabled}}"
+      >
+        {{isLoading ? '规划中...' : '开始导航'}}
+      </button>
+    </view>
+    <view class="api-status-hint" wx:if="{{apiDisabled}}">
+      <view class="hint-content">
+        <text class="hint-icon">⚠️</text>
+        <view class="hint-text-wrapper">
+          <text class="hint-title">API服务已禁用</text>
+          <text class="hint-text">建议使用"🗺️ 直接导航"功能（无需API）</text>
+        </view>
+      </view>
+      <view class="hint-steps" wx:if="{{!endLocation}}">
+        <text class="step-text">📌 使用步骤：</text>
+        <text class="step-item">1. 点击📍按钮选择终点</text>
+        <text class="step-item">2. 点击"🗺️ 直接导航"按钮</text>
+        <text class="step-item">3. 使用微信导航</text>
+      </view>
+    </view>
+    <view class="location-actions">
+      <button class="back-to-location-btn" bindtap="backToMyLocation">
+        <text class="btn-icon">📍</text>
+        <text class="btn-text">回到我的位置</text>
+      </button>
+    </view>
+  </view>
+
+  <!-- 路线信息卡片 -->
+  <view class="route-info-card" wx:if="{{routeInfo}}">
+    <view class="route-info-header">
+      <text class="route-title">📍 路线信息</text>
+      <text class="route-clear" bindtap="clearRoute">清空</text>
+    </view>
+    <view class="route-info-content">
+      <view class="route-item">
+        <text class="route-icon">📏</text>
+        <text class="route-text">距离：{{routeInfo.distance}}</text>
+      </view>
+      <view class="route-item">
+        <text class="route-icon">⏱️</text>
+        <text class="route-text">预计时间：{{routeInfo.duration}}</text>
+      </view>
+    </view>
+    <button class="nav-button" bindtap="openWeChatNavigation">
+      🗺️ 使用微信导航
+    </button>
+  </view>
+</view>

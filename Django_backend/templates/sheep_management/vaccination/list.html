@@ -1,0 +1,50 @@
+{% extends 'sheep_management/base.html' %}
+
+{% block content %}
+<div class="card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h2>疫苗接种记录列表</h2>
+        <a href="{% url 'vaccination_create' %}" class="btn">添加记录</a>
+    </div>
+    
+    <div class="search-box">
+        <form method="get">
+            <input type="number" name="sheep_id" placeholder="筛选羊只ID..." value="{{ sheep_id }}">
+            <button type="submit" class="btn">筛选</button>
+            {% if sheep_id %}<a href="{% url 'vaccination_list' %}" class="btn" style="background: #95a5a6;">清除</a>{% endif %}
+        </form>
+    </div>
+    
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>羊只ID</th>
+                <th>疫苗类型</th>
+                <th>接种日期</th>
+                <th>过期日期</th>
+                <th>剂量(ml)</th>
+                <th>接种人</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for record in vaccination_records %}
+            <tr>
+                <td>{{ record.id }}</td>
+                <td>{{ record.sheep.id }}</td>
+                <td>{{ record.get_vaccination_id_display }}</td>
+                <td>{{ record.vaccination_date }}</td>
+                <td>{{ record.expiry_date }}</td>
+                <td>{{ record.dosage }}</td>
+                <td>{{ record.administered_by }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="7" style="text-align: center; padding: 40px;">暂无数据</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
+

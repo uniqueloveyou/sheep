@@ -1,0 +1,70 @@
+==========================================
+养殖户头像图片下载说明
+==========================================
+
+【当前状态】
+✅ 目录已创建：tan_sheep_wx/images/farmer/people/
+⚠️  需要添加图片文件：p1.png 到 p10.png
+
+【图片命名】
+- p1.png, p2.png, p3.png, ..., p10.png
+- 后端会根据养殖户ID自动选择：p{ID % 10 + 1}.png
+
+【快速获取图片的方法】
+
+方法1：使用在线占位图服务（最简单）
+------------------------------------
+1. 访问：https://ui-avatars.com/
+2. 在页面中设置：
+   - Size: 200
+   - Background: 随机颜色或固定颜色
+   - Color: fff (白色文字)
+   - Bold: true
+   - Name: Farmer1, Farmer2, ... Farmer10
+3. 点击生成，下载10张图片
+4. 重命名为 p1.png 到 p10.png
+5. 放入 tan_sheep_wx/images/farmer/people/ 目录
+
+方法2：使用命令行下载（Windows PowerShell）
+------------------------------------
+在 PowerShell 中执行：
+
+cd tan_sheep_wx/images/farmer/people
+for ($i=1; $i -le 10; $i++) {
+    $url = "https://ui-avatars.com/api/?name=Farmer$i&size=200&background=random&color=fff&bold=true"
+    Invoke-WebRequest -Uri $url -OutFile "p$i.png"
+    Write-Host "已下载 p$i.png"
+}
+
+方法3：手动下载
+------------------------------------
+访问以下链接，逐个下载并重命名：
+
+https://ui-avatars.com/api/?name=Farmer1&size=200&background=4CAF50&color=fff&bold=true
+https://ui-avatars.com/api/?name=Farmer2&size=200&background=2196F3&color=fff&bold=true
+https://ui-avatars.com/api/?name=Farmer3&size=200&background=FF9800&color=fff&bold=true
+https://ui-avatars.com/api/?name=Farmer4&size=200&background=9C27B0&color=fff&bold=true
+https://ui-avatars.com/api/?name=Farmer5&size=200&background=F44336&color=fff&bold=true
+https://ui-avatars.com/api/?name=Farmer6&size=200&background=00BCD4&color=fff&bold=true
+https://ui-avatars.com/api/?name=Farmer7&size=200&background=8BC34A&color=fff&bold=true
+https://ui-avatars.com/api/?name=Farmer8&size=200&background=FF5722&color=fff&bold=true
+https://ui-avatars.com/api/?name=Farmer9&size=200&background=3F51B5&color=fff&bold=true
+https://ui-avatars.com/api/?name=Farmer10&size=200&background=E91E63&color=fff&bold=true
+
+【注意事项】
+1. 图片格式：PNG 或 JPG
+2. 建议尺寸：200x200 像素（正方形）
+3. 文件大小：每个不超过 200KB
+4. 如果图片不存在，前端会自动使用默认图标（f8.png）
+5. 修改图片后，需要在微信开发者工具中刷新
+
+【验证】
+下载完成后，检查目录中是否有：
+- p1.png
+- p2.png
+- p3.png
+- ...
+- p10.png
+
+共10个文件。
+

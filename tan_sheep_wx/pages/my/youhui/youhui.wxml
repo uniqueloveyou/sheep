@@ -1,0 +1,44 @@
+<!-- pages/my/youhui/youhui.wxml -->
+<view class="container">
+    <view class="tab-bar">
+        <view class="tab-item {{activeTab === 'unused' ? 'active' : ''}}" bindtap="changeTab" data-tab="unused">未使用</view>
+        <view class="tab-item {{activeTab === 'used' ? 'active' : ''}}" bindtap="changeTab" data-tab="used">已使用</view>
+        <view class="tab-item {{activeTab === 'expired' ? 'active' : ''}}" bindtap="changeTab" data-tab="expired">已过期</view>
+    </view>
+
+    <view class="coupon-list">
+        <view class="coupon-item" wx:for="{{currentCoupons}}" wx:key="id" wx:for-item="coupon">
+            <view class="coupon-left">
+                <view class="coupon-amount {{coupon.status === 'used' ? 'used' : coupon.status === 'expired' ? 'expired' : ''}}">
+                    <text class="amount-text" wx:if="{{coupon.coupon_type === 'discount' || coupon.coupon_type === 'cash'}}">¥{{coupon.discount_amount}}</text>
+                    <text class="amount-text" wx:elif="{{coupon.coupon_type === 'percentage'}}">{{Math.round(coupon.discount_rate * 100)}}折</text>
+                </view>
+                <view class="coupon-info">
+                    <text class="coupon-name">{{coupon.name}}</text>
+                    <text class="coupon-desc">{{coupon.displayText}}</text>
+                    <text class="coupon-code">优惠码：{{coupon.code}}</text>
+                    <text class="coupon-time">有效期至：{{coupon.valid_until}}</text>
+                    <text class="coupon-status" wx:if="{{coupon.status === 'used'}}">使用时间：{{coupon.used_at}}</text>
+                </view>
+            </view>
+            <view class="coupon-right">
+                <view class="status-badge {{coupon.status}}">
+                    <text wx:if="{{coupon.status === 'unused'}}">未使用</text>
+                    <text wx:elif="{{coupon.status === 'used'}}">已使用</text>
+                    <text wx:else>已过期</text>
+                </view>
+                <button class="use-btn" bindtap="useCoupon" data-id="{{coupon.id}}" wx:if="{{coupon.status === 'unused'}}">立即使用</button>
+            </view>
+        </view>
+    </view>
+
+    <view class="empty-state" wx:if="{{currentCoupons.length === 0 && !loading}}">
+        <text wx:if="{{activeTab === 'unused'}}">暂无未使用的优惠券</text>
+        <text wx:elif="{{activeTab === 'used'}}">暂无已使用的优惠券</text>
+        <text wx:else>暂无已过期的优惠券</text>
+    </view>
+
+    <view class="loading" wx:if="{{loading}}">
+        <text>加载中...</text>
+    </view>
+</view>

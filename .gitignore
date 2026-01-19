@@ -1,0 +1,48 @@
+# Windows
+[Dd]esktop.ini
+Thumbs.db
+$RECYCLE.BIN/
+
+# macOS
+.DS_Store
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+
+# Node.js
+node_modules/
+
+# 微信小程序
+miniprogram_npm/
+project.private.config.json
+
+# 压缩包文件
+*.zip
+
+# 第三方库/插件目录（已解压的）
+BaiduLBS_Android_V7.6.1/
+mrcrowl.easy-less-1.7.2/
+wxapp-jsapi-master/
+
+# IDE 配置文件
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# 日志文件
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# 临时文件
+*.tmp
+*.temp
+.cache/
+
+# 编译产物
+dist/
+build/

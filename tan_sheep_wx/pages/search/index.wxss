@@ -1,0 +1,288 @@
+/* pages/search/index.wxss */
+.search-page {
+  min-height: 100vh;
+  background: #f5f5f5;
+}
+
+/* 搜索框区域 */
+.search-header {
+  display: flex;
+  align-items: center;
+  padding: 20rpx 32rpx;
+  background: #fff;
+  border-bottom: 1rpx solid #eee;
+}
+
+.search-box {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  background: #f5f5f5;
+  border-radius: 50rpx;
+  padding: 0 32rpx;
+  height: 72rpx;
+}
+
+.search-icon {
+  margin-right: 16rpx;
+}
+
+.search-input {
+  flex: 1;
+  font-size: 28rpx;
+  color: #333;
+}
+
+.clear-btn {
+  margin-left: 16rpx;
+  padding: 8rpx;
+}
+
+.cancel-btn {
+  margin-left: 24rpx;
+  font-size: 28rpx;
+  color: #333;
+}
+
+/* 搜索内容区域 */
+.search-content {
+  padding: 32rpx;
+}
+
+/* 历史搜索和热门搜索 */
+.history-section,
+.hot-section {
+  margin-bottom: 48rpx;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24rpx;
+}
+
+.section-title {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #333;
+}
+
+.clear-history {
+  padding: 8rpx;
+}
+
+.tag-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16rpx;
+}
+
+.tag-item {
+  padding: 12rpx 24rpx;
+  background: #fff;
+  border-radius: 40rpx;
+  font-size: 26rpx;
+  color: #666;
+  border: 1rpx solid #eee;
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+}
+
+.tag-item.hot-tag {
+  border-color: #ff6b6b;
+  color: #ff6b6b;
+}
+
+/* 搜索结果区域 */
+.search-results {
+  padding: 0;
+}
+
+.result-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24rpx 32rpx;
+  background: #fff;
+  border-bottom: 1rpx solid #eee;
+}
+
+.result-count {
+  font-size: 28rpx;
+  color: #666;
+}
+
+.filter-btn {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  padding: 8rpx 16rpx;
+  font-size: 26rpx;
+  color: #238E23;
+}
+
+/* 搜索结果列表 */
+.result-list {
+  padding: 0 32rpx;
+}
+
+.result-item {
+  display: flex;
+  align-items: center;
+  padding: 32rpx 0;
+  background: #fff;
+  border-bottom: 1rpx solid #f0f0f0;
+}
+
+.result-item:last-child {
+  border-bottom: none;
+}
+
+.item-image {
+  width: 160rpx;
+  height: 160rpx;
+  border-radius: 16rpx;
+  margin-right: 24rpx;
+  background: #f5f5f5;
+}
+
+.item-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12rpx;
+}
+
+.item-title {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #333;
+  line-height: 1.4;
+}
+
+.item-info {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  flex-wrap: wrap;
+}
+
+.info-tag {
+  font-size: 24rpx;
+  color: #666;
+  background: #f5f5f5;
+  padding: 4rpx 12rpx;
+  border-radius: 8rpx;
+}
+
+.item-price {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #ff6b6b;
+  margin-left: auto;
+}
+
+.item-desc {
+  font-size: 24rpx;
+  color: #999;
+  line-height: 1.5;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+/* 空状态 */
+.empty-state {
+  padding: 120rpx 32rpx;
+  text-align: center;
+}
+
+.empty-tips {
+  margin-top: 32rpx;
+  font-size: 28rpx;
+  color: #999;
+}
+
+/* 筛选弹窗 */
+.filter-popup {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.filter-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 32rpx;
+  border-bottom: 1rpx solid #eee;
+}
+
+.filter-title {
+  font-size: 36rpx;
+  font-weight: 600;
+  color: #333;
+}
+
+.filter-actions {
+  display: flex;
+  gap: 32rpx;
+}
+
+.reset-btn,
+.confirm-btn {
+  font-size: 28rpx;
+  padding: 8rpx 16rpx;
+}
+
+.reset-btn {
+  color: #666;
+}
+
+.confirm-btn {
+  color: #238E23;
+  font-weight: 600;
+}
+
+.filter-content {
+  flex: 1;
+  padding: 32rpx;
+  overflow-y: auto;
+}
+
+.filter-group {
+  margin-bottom: 48rpx;
+}
+
+.filter-label {
+  display: block;
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 24rpx;
+}
+
+.filter-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16rpx;
+}
+
+.filter-option {
+  padding: 16rpx 32rpx;
+  background: #f5f5f5;
+  border-radius: 40rpx;
+  font-size: 26rpx;
+  color: #666;
+  border: 2rpx solid transparent;
+}
+
+.filter-option.active {
+  background: rgba(35, 142, 35, 0.1);
+  color: #238E23;
+  border-color: #238E23;
+}

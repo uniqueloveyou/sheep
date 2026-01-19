@@ -1,0 +1,19 @@
+<view class="score">
+    <view>当前关注农户</view>
+    <view>{{growth}}</view>
+  </view>
+  
+  <view class="no-data" wx:if="{{cashlogs.length === 0}}">暂无关注~</view>
+  
+  <view class="cashlogs" wx:if="{{cashlogs.length > 0}}" wx:for="{{cashlogs}}" wx:key="{{index}}">
+    <view class="profile">
+      <view class="typeStr">
+        {{ item.name }} <!-- 显示农户姓名 -->
+        {{ item.phone }} <!-- 显示农户电话 -->
+        {{ item.address }} <!-- 显示农户地址 -->
+      </view>
+      <view class="dateAdd">关注时间: {{ item.dateAdd }}</view> <!-- 假设你有关注时间字段 -->
+    </view>
+  </view>
+  
+  

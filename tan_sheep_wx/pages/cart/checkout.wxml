@@ -1,0 +1,44 @@
+<view class="sheep-category">
+    <swiper class="sheep-swiper" autoplay interval="5000" circular>
+        <swiper-item wx:for="{{imageList}}" wx:key="index" class="sheep-swiper-item">
+            <image class="sheep-image" src="{{item.src}}" mode="aspectFill"></image>
+        </swiper-item>
+    </swiper>
+    <swiper-dots class="swiper-dots" />
+    <view class="sheep-item" wx:for="{{sheepList}}" wx:key="id">
+        <view class="sheep-info">
+            <view class="sheep-description">
+                <text class="sheep-title">{{sheepDetail.title}}</text>
+                <text class="sheep-gender">性别: {{sheepDetail.gender}}</text>
+                <text class="sheep-measurements">身高: {{sheepDetail.height}} cm, 体长: {{sheepDetail.length}} cm, 体重: {{sheepDetail.weight}} kg</text>
+                <text class="sheep-price">价格: {{sheepDetail.price}} 元</text>
+                <text class="sheep-id">羊ID: {{sheepDetail.sheepId}}</text>
+                <text class="sheep-breeder">养殖户姓名: {{sheepDetail.breederName}}</text>
+                <text class="sheep-phone">养殖户电话: {{sheepDetail.breederPhone}}</text>
+            </view>
+            <view class="sheep-action">
+                <button class="action-button add-to-cart" bindtap="addToCart" data-id="{{sheepDetail.id}}">加入购物车</button>
+                <button class="action-button buy-now" bindtap="buyNow" data-id="{{sheepDetail.id}}">立即购买</button>
+            </view>
+        </view>
+    </view>
+</view>
+
+<view class="checkout-container">
+    <!-- 地址选择 -->
+    <view class="address-container" wx:if="{{userInfo.address}}">
+        <text>收货地址: {{userInfo.address}}</text>
+    </view>
+    <view wx:else>
+        <button bindtap="selectAddress">选择收货地址</button>
+    </view>
+
+    <!-- 虚拟币支付切换
+    <view class="currency-toggle">
+        <label>使用虚拟币支付</label>
+        <switch checked="{{useVirtualCurrency}}" bindchange="onVirtualCurrencyToggle"></switch>
+    </view> -->
+
+    <!-- 确认订单 -->
+    <button bindtap="confirmOrder">确认订单</button>
+</view>

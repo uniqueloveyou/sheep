@@ -1,0 +1,125 @@
+{% extends 'sheep_management/base.html' %}
+
+{% block content %}
+<div class="card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h2>羊只详情 #{{ sheep.id }}</h2>
+        <div>
+            <a href="{% url 'sheep_edit' sheep.pk %}" class="btn">编辑</a>
+            <a href="{% url 'sheep_list' %}" class="btn" style="background: #95a5a6;">返回列表</a>
+        </div>
+    </div>
+    
+    <table>
+        <tr>
+            <th>ID</th>
+            <td>{{ sheep.id }}</td>
+        </tr>
+        <tr>
+            <th>性别</th>
+            <td>{{ sheep.gender }}</td>
+        </tr>
+        <tr>
+            <th>体重</th>
+            <td>{{ sheep.weight }} kg</td>
+        </tr>
+        <tr>
+            <th>身高</th>
+            <td>{{ sheep.height }} cm</td>
+        </tr>
+        <tr>
+            <th>体长</th>
+            <td>{{ sheep.length }} cm</td>
+        </tr>
+    </table>
+</div>
+
+<div class="card">
+    <h3>生长记录 ({{ growth_records.count }})</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>日期</th>
+                <th>体重(kg)</th>
+                <th>身高(cm)</th>
+                <th>体长(cm)</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for record in growth_records %}
+            <tr>
+                <td>{{ record.record_date }}</td>
+                <td>{{ record.weight }}</td>
+                <td>{{ record.height }}</td>
+                <td>{{ record.length }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="4" style="text-align: center;">暂无记录</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<div class="card">
+    <h3>喂养记录 ({{ feeding_records.count }})</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>饲料类型</th>
+                <th>开始日期</th>
+                <th>结束日期</th>
+                <th>数量</th>
+                <th>单位</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for record in feeding_records %}
+            <tr>
+                <td>{{ record.feed_type }}</td>
+                <td>{{ record.start_date }}</td>
+                <td>{{ record.end_date|default:"进行中" }}</td>
+                <td>{{ record.amount }}</td>
+                <td>{{ record.unit }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="5" style="text-align: center;">暂无记录</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<div class="card">
+    <h3>疫苗接种记录 ({{ vaccination_records.count }})</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>疫苗类型</th>
+                <th>接种日期</th>
+                <th>过期日期</th>
+                <th>剂量(ml)</th>
+                <th>接种人</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for record in vaccination_records %}
+            <tr>
+                <td>{{ record.get_vaccination_id_display }}</td>
+                <td>{{ record.vaccination_date }}</td>
+                <td>{{ record.expiry_date }}</td>
+                <td>{{ record.dosage }}</td>
+                <td>{{ record.administered_by }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="5" style="text-align: center;">暂无记录</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
+

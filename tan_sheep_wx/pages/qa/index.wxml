@@ -1,0 +1,79 @@
+<!--pages/qa/index.wxml-->
+<view class="qa-container">
+  <!-- 顶部标题栏 -->
+  <view class="qa-header">
+    <view class="header-title">
+      <text class="title-text">智能问答</text>
+      <text class="title-subtitle">滩羊智品助手</text>
+    </view>
+    <view class="header-actions">
+      <view class="action-btn" bindtap="clearMessages">
+        <text class="icon">🗑️</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 消息列表 -->
+  <scroll-view 
+    class="messages-container" 
+    scroll-y="{{true}}" 
+    scroll-top="{{scrollTop}}"
+    scroll-with-animation="{{true}}">
+    <view class="messages-list">
+      <view 
+        class="message-item {{item.type}}" 
+        wx:for="{{messages}}" 
+        wx:key="index">
+        <view class="message-avatar">
+          <image 
+            wx:if="{{item.type === 'bot'}}"
+            class="avatar-img" 
+            src="/images/icons/function/f1.png" 
+            mode="aspectFill" />
+          <view wx:else class="avatar-img user-avatar">
+            <text>👤</text>
+          </view>
+        </view>
+        <view class="message-content">
+          <view class="message-bubble {{item.type}}">
+            <text class="message-text">{{item.content}}</text>
+            <view class="message-time">{{item.time}}</view>
+          </view>
+        </view>
+      </view>
+    </view>
+  </scroll-view>
+
+  <!-- 快速问题 -->
+  <view class="quick-questions" wx:if="{{messages.length <= 1}}">
+    <view class="quick-title">常见问题：</view>
+    <view class="quick-list">
+      <view 
+        class="quick-item" 
+        wx:for="{{quickQuestions}}" 
+        wx:key="index"
+        data-question="{{item}}"
+        bindtap="onQuickQuestionTap">
+        <text>{{item}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 输入区域 -->
+  <view class="input-container">
+    <view class="input-wrapper">
+      <input 
+        class="input-field" 
+        type="text" 
+        placeholder="请输入您的问题..." 
+        value="{{inputValue}}"
+        bindinput="onInputChange"
+        confirm-type="send"
+        bindconfirm="sendMessage" />
+      <view class="send-btn {{inputValue ? 'active' : ''}}" bindtap="sendMessage">
+        <text class="send-icon">发送</text>
+      </view>
+    </view>
+  </view>
+</view>
+

@@ -1,0 +1,50 @@
+{% extends 'sheep_management/base.html' %}
+
+{% block content %}
+<div class="card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h2>喂养记录列表</h2>
+        <a href="{% url 'feeding_record_create' %}" class="btn">添加记录</a>
+    </div>
+    
+    <div class="search-box">
+        <form method="get">
+            <input type="number" name="sheep_id" placeholder="筛选羊只ID..." value="{{ sheep_id }}">
+            <button type="submit" class="btn">筛选</button>
+            {% if sheep_id %}<a href="{% url 'feeding_record_list' %}" class="btn" style="background: #95a5a6;">清除</a>{% endif %}
+        </form>
+    </div>
+    
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>羊只ID</th>
+                <th>饲料类型</th>
+                <th>开始日期</th>
+                <th>结束日期</th>
+                <th>数量</th>
+                <th>单位</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for record in feeding_records %}
+            <tr>
+                <td>{{ record.id }}</td>
+                <td>{{ record.sheep.id }}</td>
+                <td>{{ record.feed_type }}</td>
+                <td>{{ record.start_date }}</td>
+                <td>{{ record.end_date|default:"进行中" }}</td>
+                <td>{{ record.amount }}</td>
+                <td>{{ record.unit }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="7" style="text-align: center; padding: 40px;">暂无数据</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
+

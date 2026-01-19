@@ -1,0 +1,168 @@
+{
+    "pages": [
+        "pages/index/index",
+        "pages/login/index",
+        "pages/cart/index",
+        "pages/cart/checkout",
+        "pages/my/index",
+        "pages/my/youhui/youhui",
+        "pages/my/info-menu/info-menu",
+        "pages/my/info/info",
+        "pages/my/adopt/adopt",
+        "pages/search/index",
+        "pages/category/index",
+        "pages/goodsdetail/goodsdetail",
+        "pages/adopt/index",
+        "pages/search/search-content",
+        "pages/asset/index",
+        "pages/score/index",
+        "pages/score/growth",
+        "pages/deposit/pay",
+        "pages/recharge/index"
+    ],
+    "subPackages": [
+        {
+            "root": "pages/feature1",
+            "name": "feature1",
+            "pages": [
+                "feature1",
+                "customize/customize"
+            ]
+        },
+        {
+            "root": "pages/feature2",
+            "name": "feature2",
+            "pages": [
+                "feature2",
+                "newpage1/newpage1",
+                "newpage2/newpage2",
+                "newpage3/newpage3",
+                "newpage4/newpage4",
+                "newpage5/newpage5",
+                "newpage6/newpage6"
+            ]
+        },
+        {
+            "root": "pages/feature3",
+            "name": "feature3",
+            "pages": [
+                "feature3",
+                "navigatePage/navigatePage"
+            ]
+        },
+        {
+            "root": "pages/feature4",
+            "name": "feature4",
+            "pages": [
+                "feature4"
+            ]
+        },
+        {
+            "root": "pages/feature5",
+            "name": "feature5",
+            "pages": [
+                "feature5",
+                "grouth/grouth"
+            ]
+        },
+        {
+            "root": "pages/feature6",
+            "name": "feature6",
+            "pages": [
+                "feature6",
+                "monitor1/monitor1",
+                "monitor2/monitor2",
+                "monitor3/monitor3",
+                "monitor4/monitor4"
+            ]
+        },
+        {
+            "root": "pages/feature7",
+            "name": "feature7",
+            "pages": [
+                "feature7"
+            ]
+        },
+        {
+            "root": "pages/feature8",
+            "name": "feature8",
+            "pages": [
+                "feature8",
+                "my1/my1",
+                "my2/my2",
+                "my3/my3"
+            ]
+        },
+        {
+            "root": "pages/qa",
+            "name": "qa",
+            "pages": [
+                "index"
+            ]
+        }
+    ],
+    "preloadRule": {
+        "pages/index/index": {
+            "network": "all",
+            "packages": ["feature1", "feature2", "feature3", "feature4", "feature5", "feature6"]
+        }
+    },
+    "window": {
+        "backgroundTextStyle": "light",
+        "navigationBarTextStyle": "white",
+        "navigationBarTitleText": "滩羊智品",
+        "navigationBarBackgroundColor": "#238E23"
+    },
+    "tabBar": {
+        "color": "#999",
+        "selectedColor": "#FF5700",
+        "backgroundColor": "#fafafa",
+        "list": [{
+            "pagePath": "pages/index/index",
+            "text": "首页",
+            "iconPath": "/icons/_home.png",
+            "selectedIconPath": "/icons/home.png"
+        }, {
+            "pagePath": "pages/cart/index",
+            "text": "购物车",
+            "iconPath": "/icons/_cart.png",
+            "selectedIconPath": "/icons/cart.png"
+        }, {
+            "pagePath": "pages/my/index",
+            "text": "我的",
+            "iconPath": "/icons/_my.png",
+            "selectedIconPath": "/icons/my.png"
+        }]
+    },
+    "requiredBackgroundModes": ["audio", "location"],
+    "requiredPrivateInfos": [
+        "getLocation",
+        "chooseLocation"
+    ],
+    "permission": {
+        "scope.userLocation": {
+            "desc": "你的应用需要获取你的位置信息"
+        }
+    },
+    "usingComponents": {
+        "van-button": "/miniprogram_npm/@vant/weapp/button/index",
+        "van-icon": "/miniprogram_npm/@vant/weapp/icon/index",
+        "van-cell": "/miniprogram_npm/@vant/weapp/cell/index",
+        "van-cell-group": "/miniprogram_npm/@vant/weapp/cell-group/index",
+        "van-grid": "/miniprogram_npm/@vant/weapp/grid/index",
+        "van-grid-item": "/miniprogram_npm/@vant/weapp/grid-item/index",
+        "van-dialog": "/miniprogram_npm/@vant/weapp/dialog/index",
+        "van-field": "/miniprogram_npm/@vant/weapp/field/index",
+        "van-switch": "/miniprogram_npm/@vant/weapp/switch/index",
+        "van-tabs": "/miniprogram_npm/@vant/weapp/tabs/index",
+        "van-tab": "/miniprogram_npm/@vant/weapp/tab/index",
+        "van-empty": "/miniprogram_npm/@vant/weapp/empty/index",
+        "van-info": "/miniprogram_npm/@vant/weapp/info/index",
+        "van-sticky": "/miniprogram_npm/@vant/weapp/sticky/index",
+        "ec-canvas": "/utils/echarts/ec-canvas/ec-canvas"
+    },
+    "style": "v2",
+    "componentFramework": "glass-easel",
+    "sitemapLocation": "sitemap.json",
+    "lazyCodeLoading": "requiredComponents"
+}

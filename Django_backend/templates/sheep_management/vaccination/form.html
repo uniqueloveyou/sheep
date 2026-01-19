@@ -1,0 +1,57 @@
+{% extends 'sheep_management/base.html' %}
+
+{% block content %}
+<div class="card">
+    <h2>{{ title }}</h2>
+    <form method="post" style="margin-top: 20px;">
+        {% csrf_token %}
+        <div class="form-group">
+            <label>羊只 *</label>
+            <select name="sheep_id" required>
+                <option value="">请选择羊只</option>
+                {% for sheep in sheep_list %}
+                <option value="{{ sheep.id }}">#{{ sheep.id }} - {{ sheep.gender }} - {{ sheep.weight }}kg</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-group">
+            <label>疫苗类型 *</label>
+            <select name="vaccination_id" required>
+                <option value="">请选择疫苗类型</option>
+                <option value="1">口蹄疫苗</option>
+                <option value="2">传染性胸膜肺炎灭活疫苗</option>
+                <option value="3">四联苗</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>疫苗类型名称</label>
+            <input type="text" name="vaccine_type" placeholder="可选，如：口蹄疫苗">
+        </div>
+        <div class="form-group">
+            <label>接种日期 *</label>
+            <input type="date" name="vaccination_date" required>
+        </div>
+        <div class="form-group">
+            <label>过期日期 *</label>
+            <input type="date" name="expiry_date" required>
+        </div>
+        <div class="form-group">
+            <label>剂量(ml) *</label>
+            <input type="number" name="dosage" step="0.1" required>
+        </div>
+        <div class="form-group">
+            <label>接种人 *</label>
+            <input type="text" name="administered_by" required>
+        </div>
+        <div class="form-group">
+            <label>备注</label>
+            <textarea name="notes" rows="3"></textarea>
+        </div>
+        <div style="display: flex; gap: 10px;">
+            <button type="submit" class="btn">保存</button>
+            <a href="{% url 'vaccination_list' %}" class="btn" style="background: #95a5a6;">取消</a>
+        </div>
+    </form>
+</div>
+{% endblock %}
+

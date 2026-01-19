@@ -1,0 +1,165 @@
+/* 人物信息页面的 wxss 文件 */
+.container {
+    padding: 20rpx;
+    background-color: #f5f5f5;
+    min-height: 100vh;
+}
+
+/* 头部信息卡片 */
+.header-card {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 24rpx;
+    padding: 60rpx 40rpx;
+    margin-bottom: 30rpx;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    box-shadow: 0 8rpx 24rpx rgba(102, 126, 234, 0.3);
+}
+
+.avatar-wrapper {
+    margin-bottom: 30rpx;
+}
+
+.avatar {
+    width: 160rpx;
+    height: 160rpx;
+    border-radius: 50%;
+    border: 6rpx solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.2);
+}
+
+.name-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.name {
+    font-size: 44rpx;
+    font-weight: bold;
+    color: #fff;
+    margin-bottom: 10rpx;
+}
+
+.gender {
+    font-size: 28rpx;
+    color: rgba(255, 255, 255, 0.9);
+    background-color: rgba(255, 255, 255, 0.2);
+    padding: 8rpx 24rpx;
+    border-radius: 20rpx;
+}
+
+/* 信息卡片通用样式 */
+.info-card {
+    background-color: #fff;
+    border-radius: 24rpx;
+    padding: 40rpx;
+    margin-bottom: 30rpx;
+    box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.08);
+}
+
+.card-title {
+    font-size: 32rpx;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 30rpx;
+    padding-bottom: 20rpx;
+    border-bottom: 2rpx solid #f0f0f0;
+}
+
+/* 基本信息列表 */
+.info-list {
+    display: flex;
+    flex-direction: column;
+}
+
+.info-item {
+    display: flex;
+    align-items: center;
+    padding: 20rpx 0;
+}
+
+.info-icon {
+    font-size: 40rpx;
+    margin-right: 24rpx;
+    width: 60rpx;
+    text-align: center;
+}
+
+.info-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.info-label {
+    font-size: 26rpx;
+    color: #999;
+    margin-bottom: 8rpx;
+}
+
+.info-value {
+    font-size: 32rpx;
+    color: #333;
+    font-weight: 500;
+}
+
+/* 统计网格 */
+.stats-grid {
+    display: flex;
+    justify-content: space-around;
+    padding: 20rpx 0;
+}
+
+.stat-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 1;
+}
+
+.stat-value {
+    font-size: 56rpx;
+    font-weight: bold;
+    color: #667eea;
+    margin-bottom: 12rpx;
+}
+
+.stat-value.female {
+    color: #f093fb;
+}
+
+.stat-value.male {
+    color: #4facfe;
+}
+
+.stat-label {
+    font-size: 28rpx;
+    color: #666;
+}
+
+/* 羊只编号 */
+.sheep-ids {
+    background-color: #f8f9fa;
+    border-radius: 16rpx;
+    padding: 30rpx;
+    margin-top: 20rpx;
+}
+
+.sheep-ids-text {
+    font-size: 28rpx;
+    color: #555;
+    line-height: 1.8;
+    word-break: break-all;
+}
+
+/* 加载状态 */
+.loading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 400rpx;
+    font-size: 28rpx;
+    color: #999;
+}

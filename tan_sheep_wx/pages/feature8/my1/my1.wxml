@@ -1,0 +1,129 @@
+<view class="container" wx:if="{{currentBreeder}}">
+    <!-- 头像和基本信息 -->
+    <view class="header-card">
+        <image class="breeder-avatar" src="{{currentBreeder.iconUrl || currentBreeder.icon_url}}" mode="aspectFill"></image>
+        <view class="header-info">
+            <view class="name-row">
+                <text class="breeder-name">{{currentBreeder.name}}</text>
+                <text class="breeder-rating" wx:if="{{currentBreeder.rating}}">⭐ {{currentBreeder.rating}}</text>
+            </view>
+            <text class="breeder-gender">{{currentBreeder.gender}}</text>
+            <view class="breeder-meta">
+                <text class="followers" wx:if="{{currentBreeder.followers_count}}">{{currentBreeder.followers_count}}人关注</text>
+            </view>
+        </view>
+        <button class="follow-btn {{isFollowed ? 'followed' : ''}}" bindtap="toggleFollow">
+            {{ isFollowed ? '已关注' : '关注' }}
+        </button>
+    </view>
+    
+    <!-- 数据统计卡片 -->
+    <view class="stats-cards" wx:if="{{currentBreeder.statistics}}">
+        <view class="stat-card">
+            <view class="stat-value">{{currentBreeder.statistics.total_sheep}}</view>
+            <view class="stat-label">羊只总数</view>
+        </view>
+        <view class="stat-card">
+            <view class="stat-value">{{currentBreeder.statistics.healthy_count}}</view>
+            <view class="stat-label">健康羊只</view>
+        </view>
+        <view class="stat-card">
+            <view class="stat-value">{{currentBreeder.statistics.health_rate}}%</view>
+            <view class="stat-label">健康率</view>
+        </view>
+        <view class="stat-card">
+            <view class="stat-value">{{currentBreeder.statistics.avg_weight}}kg</view>
+            <view class="stat-label">平均体重</view>
+        </view>
+    </view>
+    
+    <!-- 简介 -->
+    <view class="card" wx:if="{{currentBreeder.description}}">
+        <view class="card-title">简介</view>
+        <text class="card-content">{{currentBreeder.description}}</text>
+    </view>
+    
+    <!-- 养殖信息 -->
+    <view class="card">
+        <view class="card-title">养殖信息</view>
+        <view class="info-section">
+            <text class="label">记录总数：</text>
+            <text class="data">{{currentBreeder.sheep_count}}只</text>
+        </view>
+        <view class="info-section" wx:if="{{currentBreeder.actual_sheep_count !== undefined}}">
+            <text class="label">实际关联：</text>
+            <text class="data {{currentBreeder.actual_sheep_count === currentBreeder.sheep_count ? 'success' : 'warning'}}">
+                {{currentBreeder.actual_sheep_count}}只
+            </text>
+            <text class="warning-icon" wx:if="{{currentBreeder.actual_sheep_count !== currentBreeder.sheep_count}}">⚠️</text>
+        </view>
+        <view class="info-section">
+            <text class="label">母羊数量：</text>
+            <text class="data">{{currentBreeder.actual_female_count !== undefined ? currentBreeder.actual_female_count : currentBreeder.female_count}}只</text>
+        </view>
+        <view class="info-section">
+            <text class="label">公羊数量：</text>
+            <text class="data">{{currentBreeder.actual_male_count !== undefined ? currentBreeder.actual_male_count : currentBreeder.male_count}}只</text>
+        </view>
+        <view class="info-section" wx:if="{{currentBreeder.statistics && currentBreeder.statistics.vaccine_coverage}}">
+            <text class="label">疫苗覆盖率：</text>
+            <text class="data">{{currentBreeder.statistics.vaccine_coverage}}%</text>
+        </view>
+        <view class="info-section" wx:if="{{currentBreeder.sheep_id}}">
+            <text class="label">羊只编号：</text>
+            <text class="data">{{currentBreeder.sheep_id}}</text>
+        </view>
+    </view>
+    
+    <!-- 羊只列表 -->
+    <view class="card" wx:if="{{currentBreeder.sheep_list && currentBreeder.sheep_list.length > 0}}">
+        <view class="card-title">
+            <text>羊只列表</text>
+            <text class="card-subtitle">({{currentBreeder.sheep_list.length}}只)</text>
+        </view>
+        <scroll-view class="sheep-list" scroll-y>
+            <view class="sheep-item" wx:for="{{currentBreeder.sheep_list}}" wx:key="id" bindtap="viewSheepDetail" data-id="{{item.id}}">
+                <image class="sheep-image" src="{{item.image_url || '/images/icons/function/f1.png'}}" mode="aspectFill"></image>
+                <view class="sheep-info">
+                    <view class="sheep-header">
+                        <text class="sheep-id">羊只 #{{item.id}}</text>
+                        <view class="sheep-status">
+                            <text class="status-badge {{item.is_healthy ? 'healthy' : 'unhealthy'}}">
+                                {{item.is_healthy ? '健康' : '待检查'}}
+                            </text>
+                        </view>
+                    </view>
+                    <view class="sheep-details">
+                        <text class="detail-item">性别：{{item.gender}}</text>
+                        <text class="detail-item">体重：{{item.weight}}kg</text>
+                        <text class="detail-item">身高：{{item.height}}cm</text>
+                        <text class="detail-item">体长：{{item.length}}cm</text>
+                    </view>
+                    <view class="sheep-vaccine" wx:if="{{item.vaccine_count > 0}}">
+                        <text class="vaccine-text">💉 已接种{{item.vaccine_count}}次疫苗</text>
+                    </view>
+                </view>
+                <text class="arrow">›</text>
+            </view>
+        </scroll-view>
+    </view>
+    
+    <!-- 联系方式 -->
+    <view class="card">
+        <view class="card-title">联系方式</view>
+        <view class="info-section" bindtap="makePhoneCall">
+            <text class="label">联系电话：</text>
+            <text class="data phone">{{currentBreeder.phone}}</text>
+            <text class="phone-icon">📞</text>
+        </view>
+        <view class="info-section" bindtap="navigateToMap" wx:if="{{currentBreeder.address}}">
+            <text class="label">地址：</text>
+            <text class="data address">{{currentBreeder.address}}</text>
+            <text class="map-icon">📍</text>
+        </view>
+    </view>
+</view>
+
+<view class="loading" wx:else>
+    <text>加载中...</text>
+</view>

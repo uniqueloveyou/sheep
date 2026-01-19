@@ -1,0 +1,64 @@
+{% extends 'sheep_management/base.html' %}
+
+{% block content %}
+<div class="card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h2>养殖户列表</h2>
+        <a href="{% url 'breeder_create' %}" class="btn">添加养殖户</a>
+    </div>
+    
+    <div class="search-box">
+        <form method="get">
+            <input type="text" name="search" placeholder="搜索姓名、电话或编号..." value="{{ search }}">
+            <button type="submit" class="btn">搜索</button>
+        </form>
+    </div>
+    
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>姓名</th>
+                <th>性别</th>
+                <th>电话</th>
+                <th>记录总数</th>
+                <th>实际关联</th>
+                <th>羊只编号</th>
+                <th>母羊/公羊</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for breeder in breeder_list %}
+            <tr>
+                <td>{{ breeder.id }}</td>
+                <td>{{ breeder.name }}</td>
+                <td>{{ breeder.gender }}</td>
+                <td>{{ breeder.phone }}</td>
+                <td>{{ breeder.sheep_count }}只</td>
+                <td>
+                    <strong style="color: {% if breeder.actual_sheep_count == breeder.sheep_count %}#27ae60{% else %}#e74c3c{% endif %};">
+                        {{ breeder.actual_sheep_count }}只
+                    </strong>
+                    {% if breeder.actual_sheep_count != breeder.sheep_count %}
+                        <span style="color: #e74c3c; font-size: 11px;">⚠</span>
+                    {% endif %}
+                </td>
+                <td>{{ breeder.sheep_id }}</td>
+                <td>{{ breeder.female_count }} / {{ breeder.male_count }}</td>
+                <td>
+                    <a href="{% url 'breeder_detail' breeder.pk %}" class="btn" style="padding: 5px 10px; font-size: 12px;">查看</a>
+                    <a href="{% url 'breeder_edit' breeder.pk %}" class="btn" style="padding: 5px 10px; font-size: 12px;">编辑</a>
+                    <a href="{% url 'breeder_delete' breeder.pk %}" class="btn btn-danger" style="padding: 5px 10px; font-size: 12px;">删除</a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="9" style="text-align: center; padding: 40px;">暂无数据</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
+

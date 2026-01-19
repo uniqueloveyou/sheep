@@ -1,0 +1,52 @@
+{% extends 'sheep_management/base.html' %}
+
+{% block content %}
+<div class="card">
+    <h2>用户列表</h2>
+    
+    <div class="search-box">
+        <form method="get">
+            <input type="text" name="search" placeholder="搜索用户名、昵称、openid或手机号..." value="{{ search }}">
+            <button type="submit" class="btn">搜索</button>
+        </form>
+    </div>
+    
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>用户名</th>
+                <th>昵称</th>
+                <th>OpenID</th>
+                <th>手机号</th>
+                <th>性别</th>
+                <th>创建时间</th>
+                <th>最后登录</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for user in user_list %}
+            <tr>
+                <td>{{ user.id }}</td>
+                <td>{{ user.username|default:"未设置" }}</td>
+                <td>{{ user.nickname|default:"未设置" }}</td>
+                <td>{{ user.openid|truncatechars:20 }}</td>
+                <td>{{ user.mobile|default:"未设置" }}</td>
+                <td>{{ user.get_gender_display|default:"未知" }}</td>
+                <td>{{ user.created_at|date:"Y-m-d H:i" }}</td>
+                <td>{{ user.last_login_at|date:"Y-m-d H:i"|default:"从未登录" }}</td>
+                <td>
+                    <a href="{% url 'user_detail' user.pk %}" class="btn" style="padding: 5px 10px; font-size: 12px;">查看</a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="9" style="text-align: center; padding: 40px;">暂无数据</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
+

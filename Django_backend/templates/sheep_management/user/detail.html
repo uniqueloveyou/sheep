@@ -1,0 +1,74 @@
+{% extends 'sheep_management/base.html' %}
+
+{% block content %}
+<div class="card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h2>用户详情 #{{ user.id }}</h2>
+        <a href="{% url 'user_list' %}" class="btn" style="background: #95a5a6;">返回列表</a>
+    </div>
+    
+    <table>
+        <tr>
+            <th>ID</th>
+            <td>{{ user.id }}</td>
+        </tr>
+        <tr>
+            <th>用户名</th>
+            <td>{{ user.username|default:"未设置" }}</td>
+        </tr>
+        <tr>
+            <th>密码</th>
+            <td>{% if user.password %}{{ user.password|truncatechars:20 }}...{% else %}未设置{% endif %}</td>
+        </tr>
+        <tr>
+            <th>OpenID</th>
+            <td>{{ user.openid }}</td>
+        </tr>
+        <tr>
+            <th>UnionID</th>
+            <td>{{ user.unionid|default:"未设置" }}</td>
+        </tr>
+        <tr>
+            <th>昵称</th>
+            <td>{{ user.nickname|default:"未设置" }}</td>
+        </tr>
+        <tr>
+            <th>头像URL</th>
+            <td>{{ user.avatar_url|default:"未设置"|truncatechars:50 }}</td>
+        </tr>
+        <tr>
+            <th>手机号</th>
+            <td>{{ user.mobile|default:"未设置" }}</td>
+        </tr>
+        <tr>
+            <th>性别</th>
+            <td>{{ user.get_gender_display|default:"未知" }}</td>
+        </tr>
+        <tr>
+            <th>国家</th>
+            <td>{{ user.country|default:"未设置" }}</td>
+        </tr>
+        <tr>
+            <th>省份</th>
+            <td>{{ user.province|default:"未设置" }}</td>
+        </tr>
+        <tr>
+            <th>城市</th>
+            <td>{{ user.city|default:"未设置" }}</td>
+        </tr>
+        <tr>
+            <th>创建时间</th>
+            <td>{{ user.created_at|date:"Y-m-d H:i:s" }}</td>
+        </tr>
+        <tr>
+            <th>更新时间</th>
+            <td>{{ user.updated_at|date:"Y-m-d H:i:s" }}</td>
+        </tr>
+        <tr>
+            <th>最后登录时间</th>
+            <td>{{ user.last_login_at|date:"Y-m-d H:i:s"|default:"从未登录" }}</td>
+        </tr>
+    </table>
+</div>
+{% endblock %}
+

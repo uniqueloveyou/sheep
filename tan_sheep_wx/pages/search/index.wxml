@@ -1,0 +1,175 @@
+<!--pages/search/index.wxml-->
+<view class="search-page">
+  <!-- 搜索框区域 -->
+  <view class="search-header">
+    <view class="search-box">
+      <van-icon name="search" size="40rpx" color="#999" class="search-icon"></van-icon>
+      <input 
+        class="search-input" 
+        type="text" 
+        placeholder="搜索羊只、养殖户、优惠活动..." 
+        value="{{searchKeyword}}"
+        bindinput="onInput"
+        bindconfirm="onSearch"
+        confirm-type="search"
+        focus="{{isFocus}}"
+      />
+      <view wx:if="{{searchKeyword}}" class="clear-btn" bindtap="clearInput">
+        <van-icon name="clear" size="32rpx" color="#999"></van-icon>
+      </view>
+    </view>
+    <view class="cancel-btn" bindtap="onCancel">取消</view>
+  </view>
+
+  <!-- 搜索前：显示历史记录和热门搜索 -->
+  <view wx:if="{{!hasSearched}}" class="search-content">
+    <!-- 历史搜索 -->
+    <view wx:if="{{historyList.length > 0}}" class="history-section">
+      <view class="section-header">
+        <text class="section-title">历史搜索</text>
+        <view class="clear-history" bindtap="clearHistory">
+          <van-icon name="delete-o" size="32rpx" color="#999"></van-icon>
+        </view>
+      </view>
+      <view class="tag-list">
+        <view 
+          wx:for="{{historyList}}" 
+          wx:key="index" 
+          class="tag-item"
+          bindtap="searchByHistory"
+          data-keyword="{{item}}"
+        >
+          {{item}}
+        </view>
+      </view>
+    </view>
+
+    <!-- 热门搜索 -->
+    <view class="hot-section">
+      <view class="section-header">
+        <text class="section-title">热门搜索</text>
+      </view>
+      <view class="tag-list">
+        <view 
+          wx:for="{{hotKeywords}}" 
+          wx:key="index" 
+          class="tag-item hot-tag"
+          bindtap="searchByHistory"
+          data-keyword="{{item}}"
+        >
+          <van-icon name="fire-o" size="28rpx" color="#ff6b6b"></van-icon>
+          {{item}}
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 搜索结果 -->
+  <view wx:else class="search-results">
+    <!-- 搜索结果统计 -->
+    <view class="result-header">
+      <text class="result-count">找到 {{resultList.length}} 个结果</text>
+      <view class="filter-btn" bindtap="showFilter">
+        <van-icon name="filter-o" size="32rpx"></van-icon>
+        <text>筛选</text>
+      </view>
+    </view>
+
+    <!-- 搜索结果列表 -->
+    <view wx:if="{{resultList.length > 0}}" class="result-list">
+      <view 
+        wx:for="{{resultList}}" 
+        wx:key="id" 
+        class="result-item"
+        bindtap="goToDetail"
+        data-id="{{item.id}}"
+        data-type="{{item.type}}"
+      >
+        <image class="item-image" src="{{item.image || '/images/default.png'}}" mode="aspectFill"></image>
+        <view class="item-content">
+          <view class="item-header">
+            <view class="item-title">{{item.name || item.title}}</view>
+            <view class="item-type-badge" wx:if="{{item.type}}">
+              <text wx:if="{{item.type === 'sheep'}}">羊只</text>
+              <text wx:elif="{{item.type === 'breeder'}}">养殖户</text>
+              <text wx:elif="{{item.type === 'activity'}}">活动</text>
+              <text wx:elif="{{item.type === 'coupon'}}">优惠券</text>
+            </view>
+          </view>
+          <view class="item-info">
+            <text wx:if="{{item.gender}}" class="info-tag">性别：{{item.gender}}</text>
+            <text wx:if="{{item.weight}}" class="info-tag">体重：{{item.weight}}kg</text>
+            <text wx:if="{{item.phone}}" class="info-tag">电话：{{item.phone}}</text>
+            <text wx:if="{{item.sheep_count}}" class="info-tag">羊只数：{{item.sheep_count}}</text>
+            <text wx:if="{{item.code}}" class="info-tag">优惠码：{{item.code}}</text>
+            <text wx:if="{{item.price > 0}}" class="item-price">¥{{item.price}}</text>
+          </view>
+          <view wx:if="{{item.description}}" class="item-desc">{{item.description}}</view>
+        </view>
+        <van-icon name="arrow" size="32rpx" color="#ccc"></van-icon>
+      </view>
+    </view>
+
+    <!-- 空状态 -->
+    <view wx:else class="empty-state">
+      <van-empty description="暂无搜索结果">
+        <view slot="image">
+          <van-icon name="search" size="120rpx" color="#ddd"></van-icon>
+        </view>
+      </van-empty>
+      <view class="empty-tips">
+        <text>试试其他关键词吧</text>
+      </view>
+    </view>
+  </view>
+</view>
+
+<!-- 筛选弹窗 -->
+<van-popup 
+  show="{{showFilterPopup}}" 
+  position="bottom" 
+  bind:close="closeFilter"
+  custom-style="height: 60%;"
+>
+  <view class="filter-popup">
+    <view class="filter-header">
+      <text class="filter-title">筛选</text>
+      <view class="filter-actions">
+        <text class="reset-btn" bindtap="resetFilter">重置</text>
+        <text class="confirm-btn" bindtap="applyFilter">确定</text>
+      </view>
+    </view>
+    <view class="filter-content">
+      <!-- 性别筛选 -->
+      <view class="filter-group">
+        <text class="filter-label">性别</text>
+        <view class="filter-options">
+          <view 
+            wx:for="{{genderOptions}}" 
+            wx:key="value"
+            class="filter-option {{selectedGender === item.value ? 'active' : ''}}"
+            bindtap="selectGender"
+            data-value="{{item.value}}"
+          >
+            {{item.label}}
+          </view>
+        </view>
+      </view>
+      <!-- 价格筛选 -->
+      <view class="filter-group">
+        <text class="filter-label">价格区间</text>
+        <view class="filter-options">
+          <view 
+            wx:for="{{priceRanges}}" 
+            wx:key="value"
+            class="filter-option {{selectedPriceRange === item.value ? 'active' : ''}}"
+            bindtap="selectPriceRange"
+            data-value="{{item.value}}"
+          >
+            {{item.label}}
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+</van-popup>

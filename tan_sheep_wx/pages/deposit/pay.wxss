@@ -1,0 +1,288 @@
+/* 页面整体布局 */
+page {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    background-color: #f5f5f9;
+    font-family: 'Helvetica', 'Arial', sans-serif;
+}
+
+/* 容器 */
+.container {
+    flex: 1;
+    padding: 20rpx;
+    background-color: #ffffff;
+    border-radius: 10rpx;
+    box-shadow: 0 4rpx 10rpx rgba(0, 0, 0, 0.1);
+}
+
+/* 资产显示 */
+.asset {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20rpx;
+    background-color: #fafafa;
+    border-radius: 8rpx;
+    margin-bottom: 20rpx;
+    box-shadow: 0 2rpx 5rpx rgba(0, 0, 0, 0.05);
+}
+
+.asset .item {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.asset .item view:first-child {
+    font-size: 24rpx;
+    color: #555;
+    margin-bottom: 5rpx;
+}
+
+.asset .item view:last-child {
+    font-size: 32rpx;
+    color: #333;
+    font-weight: bold;
+}
+
+/* 按钮视图 */
+.btn-view {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20rpx;
+}
+
+form {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+input[type="number"] {
+    width: 80%;
+    padding: 10rpx 15rpx;
+    margin-bottom: 15rpx;
+    border: 1rpx solid #ccc;
+    border-radius: 5rpx;
+    font-size: 28rpx;
+    outline: none;
+    transition: border-color 0.3s;
+}
+
+input[type="number"]:focus {
+    border-color: #67c23a;
+}
+
+/* 充值按钮 */
+button.btn {
+    width: 80%;
+    padding: 12rpx 0;
+    background-color: #409EFF;
+    color: #fff;
+    border: none;
+    border-radius: 5rpx;
+    font-size: 28rpx;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.2s;
+}
+
+button.btn:hover {
+    background-color: #66b1ff;
+    transform: translateY(-2rpx);
+}
+
+button.btn:active {
+    transform: translateY(0);
+}
+
+/* 清零按钮样式 */
+.reset-btn {
+    width: 80%;
+    padding: 12rpx 0;
+    background-color: #f56c6c; /* 红色背景，表示危险操作 */
+    color: #fff;
+    border: none;
+    border-radius: 5rpx;
+    font-size: 28rpx;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.2s;
+    margin-top: 10rpx;
+}
+
+.reset-btn:hover {
+    background-color: #ff7875;
+    transform: translateY(-2rpx);
+}
+
+.reset-btn:active {
+    transform: translateY(0);
+}
+
+/* 模拟充值切换按钮 */
+.mock-toggle {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20rpx;
+}
+
+.mock-toggle button {
+    padding: 10rpx 20rpx;
+    background-color: #ffffff;
+    color: #409EFF;
+    border: 1rpx solid #409EFF;
+    border-radius: 5rpx;
+    font-size: 28rpx;
+    cursor: pointer;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.mock-toggle button:hover {
+    background-color: #409EFF;
+    color: #ffffff;
+}
+
+/* 通用按钮样式 */
+button[type="default"] {
+    background-color: #ffffff;
+    color: #000;
+    border: 1rpx solid #ccc;
+    padding: 10rpx 20rpx;
+    border-radius: 5rpx;
+    font-size: 28rpx;
+    cursor: pointer;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+button[type="default"]:hover {
+    background-color: #f0f0f0;
+}
+
+/* 地址详情 */
+.addr-details {
+    padding: 20rpx;
+    border-bottom: 1rpx solid #eee;
+    display: flex;
+    flex-direction: column;
+    font-size: 28rpx;
+    color: #333;
+}
+
+.addr-details .label {
+    margin-bottom: 10rpx;
+    font-weight: bold;
+}
+
+.addr-details textarea {
+    width: 100%;
+    min-height: 100rpx;
+    padding: 10rpx;
+    border: 1rpx solid #ccc;
+    border-radius: 5rpx;
+    font-size: 28rpx;
+    resize: vertical;
+    outline: none;
+    transition: border-color 0.3s;
+}
+
+.addr-details textarea:focus {
+    border-color: #67c23a;
+}
+
+/* 充值规则 */
+.charge-rule-wrap {
+    background: #ffffff;
+    margin-top: 20rpx;
+    padding: 20rpx;
+    border-radius: 10rpx;
+    box-shadow: 0 2rpx 5rpx rgba(0, 0, 0, 0.05);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20rpx;
+}
+
+.charge-detail {
+    flex: 1 1 220rpx;
+    height: 100rpx;
+    color: rgba(99, 190, 133, 1);
+    background-color: #f0fff4;
+    border: 3rpx solid rgba(99, 190, 133, 1);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 8rpx;
+    font-weight: 500;
+    font-size: 28rpx;
+    transition: background-color 0.3s, transform 0.2s;
+}
+
+.charge-detail:hover {
+    background-color: rgba(99, 190, 133, 0.1);
+    transform: translateY(-2rpx);
+}
+
+/* 适配不同按钮 */
+.save-btn,
+.cancel-btn {
+    width: 80%;
+    padding: 12rpx 0;
+    text-align: center;
+    margin-top: 30rpx;
+    border-radius: 6rpx;
+    box-sizing: border-box;
+    font-size: 28rpx;
+    cursor: pointer;
+    transition: background-color 0.3s, color 0.3s, transform 0.2s;
+}
+
+.save-btn {
+    background-color: #e64340;
+    color: #fff;
+}
+
+.save-btn:hover {
+    background-color: #ff4d4f;
+    transform: translateY(-2rpx);
+}
+
+.cancel-btn {
+    background-color: #ffffff;
+    color: #e64340;
+    border: 1rpx solid #e64340;
+}
+
+.cancel-btn:hover {
+    background-color: #ffe6e6;
+    transform: translateY(-2rpx);
+}
+
+/* 其他通用样式 */
+.arrow-right {
+    width: 15rpx;
+    height: 24rpx;
+}
+
+.hui {
+    color: #777;
+}
+
+/* 响应式设计 */
+@media (max-width: 750rpx) {
+    .row-wrap,
+    .charge-detail {
+        width: 100%;
+    }
+
+    input[type="number"],
+    button.btn,
+    .save-btn,
+    .cancel-btn {
+        width: 100%;
+    }
+
+    .charge-rule-wrap {
+        flex-direction: column;
+        align-items: center;
+    }
+}

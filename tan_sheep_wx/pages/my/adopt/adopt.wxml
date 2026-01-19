@@ -1,0 +1,22 @@
+<view class="container">
+    <view class="title">我的领养记录</view>
+    <view class="adoption-list">
+      <block wx:if="{{adoptionList.length === 0}}">
+        <view class="no-records">暂无领养记录</view>
+      </block>
+      <block wx:else>
+        <view wx:for="{{adoptionList}}" wx:key="index" class="adoption-item">
+          <view class="sheep-info">
+            <text>ID: {{item.id}}</text>
+            <text>性别: {{item.gender}}</text>
+            <text>体重: {{item.weight}}</text>
+            <text>体高: {{item.height}}</text>
+            <text>体长: {{item.length}}</text>
+            <text>领养日期: {{item.adoptionDate}}</text>
+          </view>
+          <button class="delete-btn" bindtap="deleteAdoption" data-index="{{index}}">删除</button>
+        </view>
+      </block>
+    </view>
+  </view>
+  

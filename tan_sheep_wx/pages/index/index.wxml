@@ -1,0 +1,106 @@
+<view>
+    <SearchBar></SearchBar>
+    <!-- 轮播图容器 -->
+    <view class="swiper-container">
+        <swiper 
+            autoplay="{{true}}" 
+            interval="{{5000}}" 
+            duration="{{500}}" 
+            circular="{{true}}" 
+            indicator-dots="{{true}}"
+            indicator-color="rgba(255,255,255,0.5)"
+            indicator-active-color="#238E23">
+            <block wx:for="{{imageUrls}}" wx:key="index">
+                <swiper-item>
+                    <image 
+                        src="{{item}}" 
+                        class="slide-image" 
+                        mode="aspectFill"
+                        lazy-load="{{true}}"
+                        data-index="{{index}}"
+                        binderror="onImageError" />
+                </swiper-item>
+            </block>
+        </swiper>
+    </view>
+<view class="function-grid">
+    <navigator url="/pages/feature1/feature1" class="function-item">
+        <image src="{{functionIcons.f1}}" class="function-icon" />
+        <text>定制领养</text>
+    </navigator>
+    <navigator url="/pages/feature6/feature6" class="function-item">
+        <image src="{{functionIcons.f6}}" class="function-icon" />
+        <text>场地监控</text>
+    </navigator>
+
+    <navigator url="/pages/feature3/feature3" class="function-item">
+        <image src="{{functionIcons.f3}}" class="function-icon" />
+        <text>盐池县地图</text>
+    </navigator>
+    <navigator url="/pages/feature5/feature5" class="function-item">
+        <image src="{{functionIcons.f5}}" class="function-icon" />
+        <text>生长周期</text>
+    </navigator>
+    <navigator url="/pages/feature4/feature4" class="function-item">
+        <image src="{{functionIcons.f4}}" class="function-icon" />
+        <text>优惠活动</text>
+    </navigator>
+  
+    <navigator url="/pages/feature2/feature2" class="function-item">
+        <image src="{{functionIcons.food}}" class="function-icon" />
+        <text>滩羊食谱</text>
+    </navigator>
+    <!-- <navigator url="/pages/feature6/feature6" class="function-item">
+        <image src="{{functionIcons.f6}}" class="function-icon" />
+        <text>场地监控</text>
+    </navigator> -->
+    <navigator url="/pages/feature7/feature7" class="function-item">
+        <image src="{{functionIcons.f7}}" class="function-icon" />
+        <text>日常饲料</text>
+    </navigator>
+    <navigator url="/pages/feature8/feature8" class="function-item">
+        <image src="{{functionIcons.f8}}" class="function-icon" />
+        <text>养殖户</text>
+    </navigator>
+</view>
+    <view class="video-title">滩羊咨询</view>
+    
+    <!-- 动态显示咨询内容（视频和文字信息随机） -->
+    <view class="consultation-list">
+        <view class="consultation-item" wx:for="{{consultationItems}}" wx:key="index">
+            <!-- 视频类型 -->
+            <view wx:if="{{item.type === 'video'}}" class="consultation-video">
+                <view class="consultation-title">{{item.title}}</view>
+                <view class="consultation-meta">
+                    <text class="consultation-date">{{item.date}}</text>
+                    <text class="consultation-tag video-tag">视频</text>
+                </view>
+                <video 
+                    src="{{videoUrls[item.videoIndex]}}" 
+                    controls="{{true}}" 
+                    class="video"
+                    show-center-play-btn="{{true}}"
+                    enable-play-gesture="{{true}}"
+                    binderror="onVideoError"
+                    wx:if="{{videoUrls[item.videoIndex]}}" /> 
+                <view class="video-placeholder" wx:if="{{!videoUrls[item.videoIndex]}}">
+                    <text>视频暂不可用</text>
+                </view>
+            </view>
+            
+            <!-- 文字信息类型 -->
+            <view wx:if="{{item.type === 'text'}}" class="consultation-text">
+                <view class="consultation-header">
+                    <text class="consultation-tag text-tag">{{item.tag}}</text>
+                    <text class="consultation-date">{{item.date}}</text>
+                </view>
+                <view class="consultation-title">{{item.title}}</view>
+                <view class="consultation-content">{{item.content}}</view>
+            </view>
+        </view>
+    </view>
+    <view bindtap="getLocalPath">{{localPath}}</view>
+    
+    <!-- 智能问答悬浮窗 -->
+    <QAChat show="{{showQAChat}}" bind:open="onQAChatOpen" bind:close="onQAChatClose"></QAChat>
+</view>

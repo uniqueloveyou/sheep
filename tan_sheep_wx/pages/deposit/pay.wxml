@@ -1,0 +1,22 @@
+<view class="asset">
+    <view class='item'>
+      <view>可用余额(元)</view>
+      <view>{{balance}}</view>
+    </view>
+  </view>
+  
+  <view class='btn-view'>
+    <form bindsubmit="bindSave" report-submit="true">
+      <input type="number" name="amount" placeholder="请输入充值金额" />
+      <button class="btn" type="default" size="mini" form-type="submit" hover-class="btn-hover" plain="true">
+        充值
+      </button>
+    </form>
+  </view>
+  
+  <!-- <view class="mock-toggle">
+    <button bindtap="toggleMock" type="default" size="mini" hover-class="btn-hover" plain="true">
+      {{ isMock ? '关闭模拟充值' : '开启模拟充值' }}
+    </button>
+  </view>
+   -->

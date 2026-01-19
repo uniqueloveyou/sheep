@@ -1,0 +1,35 @@
+<view class="root">
+    <block wx:for="{{breeders}}" wx:key="id" wx:for-index="index">
+      <view class="item" bindtap="redirectToNextPage" data-index="{{index}}">
+        <image class="breeder-icon" src="{{item.iconUrl || item.icon_url || '/images/icons/function/f8.png'}}" mode="aspectFill" binderror="onImageError" data-index="{{index}}"></image>
+        <view class="breeder-info">
+          <view class="breeder-name-row">
+            <text class="breeder-name">{{item.name}}</text>
+            <text class="breeder-rating" wx:if="{{item.rating}}">⭐ {{item.rating}}</text>
+          </view>
+          <view class="breeder-details">
+            <text class="breeder-detail">{{item.gender}}</text>
+            <text class="breeder-detail" wx:if="{{item.phone}}">{{item.phone}}</text>
+          </view>
+          <view class="breeder-stats">
+            <text class="stat-item">记录：{{item.sheep_count}}只</text>
+            <text class="stat-item actual" wx:if="{{item.actual_sheep_count !== undefined}}">
+              实际：{{item.actual_sheep_count}}只
+            </text>
+            <text class="stat-item healthy" wx:if="{{item.healthy_count !== undefined}}">
+              健康：{{item.healthy_count}}只
+            </text>
+          </view>
+          <view class="breeder-meta" wx:if="{{item.followers_count !== undefined}}">
+            <text class="meta-item">{{item.followers_count}}人关注</text>
+          </view>
+        </view>
+        <text class="symbol">》</text>
+      </view>
+      <view class="divider"></view>
+    </block>
+    <view class="empty-tip" wx:if="{{breeders.length === 0}}">
+      <text>暂无养殖户信息</text>
+    </view>
+  </view>
+  

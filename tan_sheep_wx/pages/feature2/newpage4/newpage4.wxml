@@ -1,0 +1,22 @@
+<view class="container">
+    <image src="http://localhost:5001/images/recipe/04.jpg" class="recipe-image" mode="aspectFill" />
+    <view class="recipe-info">
+      <text class="recipe-title">红烧羊腱子</text>
+      <view class="recipe-ingredients">
+        <text class="section-title">配料：</text>
+        <text class="ingredients">
+          葱 、姜、 蒜、 花椒、 干海椒、 香叶 、八角 、桂皮 、茴香 、干山楂、 料酒 、生抽、 老抽 、 白糖、 盐 、香菜、 鸡精、油、胡萝卜等配菜
+        </text>
+      </view>
+      <view class="recipe-method">
+        <text class="section-title">做法：</text>
+        <text class="method">
+          1.羊肉洗净切成合适大小，再焯水过一下，去浮沫。
+          2.把葱姜切片，以及八角等香料放入油锅煎香。
+          3.放入羊肉煎至均匀变色，加入生抽、老抽、料酒、白糖、少许水淹没肉。
+          4.炖约30分钟，加入胡萝卜等炖熟，收汁加入适量盐翻拌均匀。
+          5.出锅撒上香菜即可。
+        </text>
+      </view>
+    </view>
+</view>

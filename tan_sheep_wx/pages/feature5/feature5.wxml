@@ -1,0 +1,152 @@
+<view class="container">
+    <!-- 搜索区域 -->
+    <view class="search-section">
+        <view class="search-box">
+            <view class="search-icon">🔍</view>
+            <input class="search-input" type="number" placeholder="请输入羊只ID" bindinput="onInputChange" value="{{searchId}}" />
+            <button class="search-button" bindtap="onSearch">查询</button>
+        </view>
+    </view>
+
+    <!-- 基本信息卡片 -->
+    <view class="card sheep-info-card" wx:if="{{sheepInfo}}">
+        <view class="card-header">
+            <view class="card-title">
+                <text class="title-icon">🐑</text>
+                <text class="title-text">基本信息</text>
+            </view>
+        </view>
+        <view class="card-body">
+            <view class="info-grid">
+                <view class="info-item">
+                    <text class="info-label">羊只ID</text>
+                    <text class="info-value">{{sheepInfo.id}}</text>
+                </view>
+                <view class="info-item">
+                    <text class="info-label">性别</text>
+                    <text class="info-value gender-{{sheepInfo.gender}}">{{sheepInfo.gender}}</text>
+                </view>
+                <view class="info-item highlight">
+                    <text class="info-label">体重</text>
+                    <text class="info-value">{{sheepInfo.weight}}<text class="unit">kg</text></text>
+                </view>
+                <view class="info-item">
+                    <text class="info-label">身高</text>
+                    <text class="info-value">{{sheepInfo.height}}<text class="unit">cm</text></text>
+                </view>
+                <view class="info-item">
+                    <text class="info-label">体长</text>
+                    <text class="info-value">{{sheepInfo.length}}<text class="unit">cm</text></text>
+                </view>
+            </view>
+        </view>
+    </view>
+
+    <!-- 生长趋势图表 -->
+    <view class="card chart-card" wx:if="{{sheepInfo.growth_records && sheepInfo.growth_records.length > 0}}">
+        <view class="card-header">
+            <view class="card-title">
+                <text class="title-icon">📈</text>
+                <text class="title-text">生长趋势</text>
+            </view>
+        </view>
+        <view class="card-body">
+            <ec-canvas id="growthChart" canvas-id="growthChart" ec="{{ ec }}"></ec-canvas>
+        </view>
+    </view>
+
+    <!-- 生长记录列表 -->
+    <view class="card records-card" wx:if="{{sheepInfo.growth_records && sheepInfo.growth_records.length > 0}}">
+        <view class="card-header">
+            <view class="card-title">
+                <text class="title-icon">📋</text>
+                <text class="title-text">生长记录</text>
+                <text class="record-count">({{sheepInfo.growth_records.length}}条)</text>
+            </view>
+        </view>
+        <view class="card-body">
+            <view wx:for="{{sheepInfo.growth_records}}" wx:key="id" class="record-item">
+                <view class="record-date">
+                    <text class="date-icon">📅</text>
+                    <text class="date-text">{{item.record_date}}</text>
+                </view>
+                <view class="record-data">
+                    <view class="data-item">
+                        <text class="data-label">体重</text>
+                        <text class="data-value weight">{{item.weight}}kg</text>
+                    </view>
+                    <view class="data-item">
+                        <text class="data-label">身高</text>
+                        <text class="data-value height">{{item.height}}cm</text>
+                    </view>
+                    <view class="data-item">
+                        <text class="data-label">体长</text>
+                        <text class="data-value length">{{item.length}}cm</text>
+                    </view>
+                </view>
+            </view>
+        </view>
+    </view>
+
+    <!-- 喂养记录 -->
+    <view class="card feeding-card" wx:if="{{sheepInfo.feeding_records && sheepInfo.feeding_records.length > 0}}">
+        <view class="card-header">
+            <view class="card-title">
+                <text class="title-icon">🌾</text>
+                <text class="title-text">喂养记录</text>
+                <text class="record-count">({{sheepInfo.feeding_records.length}}条)</text>
+            </view>
+        </view>
+        <view class="card-body">
+            <view wx:for="{{sheepInfo.feeding_records}}" wx:key="id" class="feeding-item">
+                <view class="feeding-header">
+                    <text class="feeding-type">{{item.feed_type}}</text>
+                    <text class="feeding-amount">{{item.amount}}{{item.unit}}</text>
+                </view>
+                <view class="feeding-date">
+                    <text class="date-range">{{item.start_date}}</text>
+                    <text class="date-separator" wx:if="{{item.end_date}}">至</text>
+                    <text class="date-range" wx:if="{{item.end_date}}">{{item.end_date}}</text>
+                    <text class="date-range ongoing" wx:if="{{!item.end_date}}">进行中</text>
+                </view>
+            </view>
+        </view>
+    </view>
+
+    <!-- 疫苗接种记录 -->
+    <view class="card vaccine-card" wx:if="{{sheepInfo.vaccination_records && sheepInfo.vaccination_records.length > 0}}">
+        <view class="card-header">
+            <view class="card-title">
+                <text class="title-icon">💉</text>
+                <text class="title-text">疫苗接种</text>
+                <text class="record-count">({{sheepInfo.vaccination_records.length}}条)</text>
+            </view>
+        </view>
+        <view class="card-body">
+            <view wx:for="{{sheepInfo.vaccination_records}}" wx:key="id" class="vaccine-item">
+                <view class="vaccine-header">
+                    <text class="vaccine-type">{{item.vaccine_type}}</text>
+                    <text class="vaccine-status {{item.is_valid ? 'valid' : 'expired'}}">
+                        {{item.is_valid ? '有效' : '已过期'}}
+                    </text>
+                </view>
+                <view class="vaccine-info">
+                    <text class="vaccine-date">接种日期: {{item.vaccination_date}}</text>
+                    <text class="vaccine-date">有效期至: {{item.expiry_date}}</text>
+                </view>
+            </view>
+        </view>
+    </view>
+    
+    <!-- 空状态 -->
+    <view class="empty-state" wx:if="{{noDataFound}}">
+        <text class="empty-icon">🔍</text>
+        <text class="empty-text">未找到数据</text>
+        <text class="empty-tip">请检查羊只ID是否正确</text>
+    </view>
+
+    <!-- 加载状态 -->
+    <view class="loading-state" wx:if="{{isLoading}}">
+        <text class="loading-text">加载中...</text>
+    </view>
+</view>

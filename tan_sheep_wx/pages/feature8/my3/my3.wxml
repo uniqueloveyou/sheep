@@ -1,0 +1,58 @@
+<!-- 人物信息页面的 wxml 文件 -->
+<view class="container" wx:if="{{breeder}}">
+    <!-- 头部信息卡片 -->
+    <view class="header-card">
+        <view class="avatar-wrapper">
+            <image class="avatar" src="{{breeder.iconUrl || breeder.icon_url || '/images/icons/function/f8.png'}}" mode="aspectFill" binderror="onImageError"></image>
+        </view>
+        <view class="name-section">
+            <text class="name">{{breeder.name}}</text>
+            <text class="gender" wx:if="{{breeder.gender}}">{{breeder.gender}}</text>
+        </view>
+    </view>
+
+    <!-- 基本信息卡片 -->
+    <view class="info-card">
+        <view class="card-title">基本信息</view>
+        <view class="info-list">
+            <view class="info-item" wx:if="{{breeder.phone}}">
+                <view class="info-icon">📞</view>
+                <view class="info-content">
+                    <text class="info-label">联系电话</text>
+                    <text class="info-value">{{breeder.phone}}</text>
+                </view>
+            </view>
+        </view>
+    </view>
+
+    <!-- 羊只统计卡片 -->
+    <view class="info-card">
+        <view class="card-title">羊只统计</view>
+        <view class="stats-grid">
+            <view class="stat-item">
+                <text class="stat-value">{{breeder.actual_sheep_count !== undefined ? breeder.actual_sheep_count : breeder.sheep_count}}</text>
+                <text class="stat-label">总数量</text>
+            </view>
+            <view class="stat-item" wx:if="{{breeder.actual_female_count !== undefined || breeder.female_count}}">
+                <text class="stat-value female">{{breeder.actual_female_count !== undefined ? breeder.actual_female_count : breeder.female_count}}</text>
+                <text class="stat-label">母羊</text>
+            </view>
+            <view class="stat-item" wx:if="{{breeder.actual_male_count !== undefined || breeder.male_count}}">
+                <text class="stat-value male">{{breeder.actual_male_count !== undefined ? breeder.actual_male_count : breeder.male_count}}</text>
+                <text class="stat-label">公羊</text>
+            </view>
+        </view>
+    </view>
+
+    <!-- 羊只编号卡片 -->
+    <view class="info-card" wx:if="{{sheepIdsText}}">
+        <view class="card-title">羊只编号</view>
+        <view class="sheep-ids">
+            <text class="sheep-ids-text">{{sheepIdsText}}</text>
+        </view>
+    </view>
+</view>
+
+<view class="loading" wx:else>
+    <text>加载中...</text>
+</view>

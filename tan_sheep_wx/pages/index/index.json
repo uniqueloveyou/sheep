@@ -1,0 +1,7 @@
+{
+    "usingComponents": {
+        "SearchBar":"/components/SearchBar/SearBar",
+        "QAChat": "/components/QAChat/QAChat"
+    },
+    "navigationBarTitleText": "滩羊智品"
+  }

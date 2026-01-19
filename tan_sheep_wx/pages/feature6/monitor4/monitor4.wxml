@@ -1,0 +1,102 @@
+<view class="container">
+  <!-- 视频监控展示 -->
+  <view class="video-container">
+    <view class="video-wrapper">
+      <video 
+        id="monitor-video"
+        src="{{streamUrl}}" 
+        autoplay 
+        controls 
+        class="video-player"
+        show-center-play-btn="{{true}}"
+        enable-play-gesture="{{true}}"
+        binderror="onVideoError"
+        bindplay="onVideoPlay"
+        bindwaiting="onVideoWaiting"
+        bindloadedmetadata="onVideoLoaded"
+        wx:if="{{streamUrl && !loadError}}">
+      </video>
+      
+      <!-- 加载状态 -->
+      <view class="video-loading" wx:if="{{isLoading}}">
+        <view class="loading-spinner"></view>
+        <text class="loading-text">视频加载中...</text>
+      </view>
+      
+      <!-- 错误状态 -->
+      <view class="video-error" wx:if="{{loadError}}">
+        <text class="error-icon">⚠️</text>
+        <text class="error-text">{{errorMessage || '视频加载失败'}}</text>
+        <button class="retry-btn" bindtap="loadVideoStream">重试</button>
+      </view>
+      
+      <!-- 无视频流提示 -->
+      <view class="video-placeholder" wx:if="{{!streamUrl && !isLoading && !loadError}}">
+        <text class="placeholder-text">暂无视频流</text>
+      </view>
+    </view>
+  </view>
+  
+  <!-- 羊圈信息展示 -->
+  <view class="info-container">
+    <text class="info-title">🐑 羊圈编号：{{monitorName}}</text>
+
+    <!-- 羊只总数 -->
+    <view class="info-item">
+      <text class="info-label">🐏 羊只总数：</text>
+      <text class="info-value">{{sheepInfo.total}} 只</text>
+    </view>
+
+    <!-- 羊龄分布 -->
+    <view class="info-item">
+      <text class="info-label">📊 羊龄分布：</text>
+      <view class="age-distribution">
+        <view class="info-item">
+          <text>🍼 {{sheepInfo.ageDistribution.newborn.label}}：</text>
+          <text class="info-percentage">{{sheepInfo.ageDistribution.newborn.percentage}}%</text>
+        </view>
+        <view class="info-item">
+          <text>🐑 {{sheepInfo.ageDistribution.young.label}}：</text>
+          <text class="info-percentage">{{sheepInfo.ageDistribution.young.percentage}}%</text>
+        </view>
+        <view class="info-item">
+          <text>🐏 {{sheepInfo.ageDistribution.adult.label}}：</text>
+          <text class="info-percentage">{{sheepInfo.ageDistribution.adult.percentage}}%</text>
+        </view>
+        <view class="info-item">
+          <text>🐐 {{sheepInfo.ageDistribution.old.label}}：</text>
+          <text class="info-percentage">{{sheepInfo.ageDistribution.old.percentage}}%</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 羊群健康状况 -->
+    <view class="info-item">
+      <text class="info-label">🩺 健康状况：</text>
+      <text class="info-value">{{sheepInfo.health}}</text>
+    </view>
+
+    <!-- 羊群活动情况 -->
+    <view class="info-item">
+      <text class="info-label">🏃‍♂️ 活动情况：</text>
+      <text class="info-value">{{sheepInfo.activity}}</text>
+    </view>
+
+    <!-- 环境监测 -->
+    <view class="info-item">
+      <text class="info-label">🌡️ 环境监测：</text>
+      <text class="info-value">{{sheepInfo.environment}}</text>
+    </view>
+
+    <!-- 繁殖情况 -->
+    <view class="info-item">
+      <text class="info-label">🤰 繁殖情况：</text>
+      <text class="info-value">{{sheepInfo.breeding}}</text>
+    </view>
+
+    <!-- 刷新按钮 -->
+    <view class="refresh-btn-container">
+      <button class="refresh-btn" bindtap="refreshData">刷新数据</button>
+    </view>
+  </view>
+</view>

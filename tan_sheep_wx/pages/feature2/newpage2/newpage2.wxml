@@ -1,0 +1,17 @@
+<view class="container">
+    <image src="http://localhost:5001/images/recipe/02.jpg" class="recipe-image" mode="aspectFill" />
+    <view class="recipe-info">
+      <text class="recipe-title">孜然羊肉</text>
+      <view class="recipe-ingredients">
+        <text class="section-title">配料：</text>
+        <text class="ingredients">洋葱块、青红椒片、花椒面、孜然面、辣椒面、生抽、醋、盐。</text>
+      </view>
+      <view class="recipe-method">
+        <text class="section-title">做法：</text>
+        <text class="method">
+          1.取出羊肉，用清水泡化开，沥干水分。
+          2.锅内放入油，将羊肉下锅，炒干水分，放入洋葱块，青红椒块，加入适量生抽、盐炒熟，加入少许花椒面，适量的孜然面和辣椒面，淋少许香醋出锅即可。
+        </text>
+      </view>
+    </view>
+</view>

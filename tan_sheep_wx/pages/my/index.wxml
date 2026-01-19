@@ -1,0 +1,127 @@
+<!--pages/my/index.wxml-->
+<view class="my-page">
+  <!-- 头部区域 -->
+  <view class="header-section">
+    <!-- 未登录状态 -->
+    <view wx:if="{{ !apiUserInfoMap }}" class="header-not-login">
+      <view class="login-prompt">
+        <image class="default-avatar" src="/images/default.png" mode="aspectFill"></image>
+        <view class="login-text">登录后享受更多服务</view>
+        <van-button type="warning" size="small" round bind:click="login" custom-class="login-btn-small">
+          立即登录
+        </van-button>
+      </view>
+    </view>
+    
+    <!-- 已登录状态 -->
+    <view wx:else class="header-logged-in">
+      <view class="user-info">
+        <button class="avatar-btn" open-type="chooseAvatar" bind:chooseavatar="onChooseAvatar">
+          <image class="avatar-img" src="{{ apiUserInfoMap.base.avatarUrl ? apiUserInfoMap.base.avatarUrl : '/images/default.png' }}" mode="aspectFill"></image>
+          <view class="avatar-badge">
+            <van-icon name="photo-o" size="32rpx" color="#fff"></van-icon>
+          </view>
+        </button>
+        <view class="user-details">
+          <view class="nickname-row">
+            <text class="nickname" bindtap="editNick">
+              {{ apiUserInfoMap.base.nick ? apiUserInfoMap.base.nick : '点击设置昵称' }}
+            </text>
+            <van-icon name="edit" size="32rpx" color="#999" class="edit-icon"></van-icon>
+          </view>
+          <view class="user-meta">
+            <text class="user-id" bind:tap="copyUid">ID: {{ apiUserInfoMap.base.id }}</text>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 数据卡片区域 -->
+  <view class="data-cards">
+    <view class="card-item" bindtap="goAsset">
+      <view class="card-icon balance-icon">
+        <van-icon name="balance-o" size="48rpx" color="#238E23"></van-icon>
+      </view>
+      <view class="card-content">
+        <view class="card-amount">¥{{balance}}</view>
+        <view class="card-label">余额</view>
+      </view>
+    </view>
+    <view class="card-item" bindtap="goAsset">
+      <view class="card-icon consume-icon">
+        <van-icon name="shopping-cart-o" size="48rpx" color="#FF9800"></van-icon>
+      </view>
+      <view class="card-content">
+        <view class="card-amount">¥{{freeze}}</view>
+        <view class="card-label">累计消费</view>
+      </view>
+    </view>
+    <view class="card-item" bindtap="goScore">
+      <view class="card-icon score-icon">
+        <van-icon name="star-o" size="48rpx" color="#FFD700"></van-icon>
+      </view>
+      <view class="card-content">
+        <view class="card-amount">{{score}}</view>
+        <view class="card-label">积分</view>
+      </view>
+    </view>
+    <view class="card-item" bindtap="gogrowth">
+      <view class="card-icon growth-icon">
+        <van-icon name="friends-o" size="48rpx" color="#4CAF50"></van-icon>
+      </view>
+      <view class="card-content">
+        <view class="card-amount">{{growth}}</view>
+        <view class="card-label">关注农户</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 功能菜单区域 -->
+  <view class="menu-section">
+    <!-- 我的服务 -->
+    <view class="menu-group">
+      <view class="menu-title">我的服务</view>
+      <view class="menu-list">
+        <view class="menu-item" wx:for="{{serviceMenus}}" wx:key="index" bindtap="handleItemTap" data-url="{{item.url}}">
+          <view class="menu-icon-wrapper">
+            <image class="menu-icon" src="{{item.icon}}" mode="aspectFit"></image>
+          </view>
+          <view class="menu-text">{{item.text}}</view>
+          <view wx:if="{{item.badge}}" class="menu-badge">{{item.badge}}</view>
+          <van-icon name="arrow" size="32rpx" color="#ccc" class="menu-arrow"></van-icon>
+        </view>
+      </view>
+    </view>
+
+    <!-- 其他功能 -->
+    <view class="menu-group">
+      <view class="menu-title">其他功能</view>
+      <view class="menu-list">
+        <view class="menu-item" wx:for="{{otherMenus}}" wx:key="index" bindtap="handleItemTap" data-url="{{item.url}}">
+          <view class="menu-icon-wrapper">
+            <van-icon name="{{item.icon}}" size="48rpx" color="{{item.color}}"></van-icon>
+          </view>
+          <view class="menu-text">{{item.text}}</view>
+          <view wx:if="{{item.badge}}" class="menu-badge">{{item.badge}}</view>
+          <van-icon name="arrow" size="32rpx" color="#ccc" class="menu-arrow"></van-icon>
+        </view>
+      </view>
+    </view>
+  </view>
+</view>
+
+<!-- 编辑昵称弹窗 -->
+<van-dialog
+  show="{{ nickShow }}"
+  title="编辑昵称"
+  show-cancel-button
+  confirm-button-text="保存"
+  cancel-button-text="取消"
+  bind:confirm="saveNick"
+  bind:cancel="cancelEditNick"
+>
+  <view class="nick-input-wrapper">
+    <input class="nick-input" type="text" placeholder="请输入昵称" value="{{ newNick }}" bindinput="onNickInput" maxlength="20" />
+  </view>
+</van-dialog>

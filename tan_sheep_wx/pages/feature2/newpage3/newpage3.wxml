@@ -1,0 +1,17 @@
+<view class="container">
+    <image src="http://localhost:5001/images/recipe/03.jpg" class="recipe-image" mode="aspectFill" />
+    <view class="recipe-info">
+      <text class="recipe-title">炒肉臊子</text>
+      <view class="recipe-ingredients">
+        <text class="section-title">配料：</text>
+        <text class="ingredients">花椒面、八角面、辣椒面、盐、鸡精、生抽、老抽、葱、姜、蒜沫。</text>
+      </view>
+      <view class="recipe-method">
+        <text class="section-title">做法：</text>
+        <text class="method">
+          1.取出羊肉块切丁，锅内放入油，加羊肉丁，下锅炒干水分，下入调配料即可。
+          2.炒好羊肉臊子也可做羊肉饺子。
+        </text>
+      </view>
+    </view>
+</view>

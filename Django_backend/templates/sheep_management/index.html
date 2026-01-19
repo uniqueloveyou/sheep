@@ -1,0 +1,42 @@
+{% extends 'sheep_management/base.html' %}
+
+{% block content %}
+<div class="stats">
+    <div class="stat-card">
+        <h3>{{ sheep_count }}</h3>
+        <p>羊只总数</p>
+    </div>
+    <div class="stat-card">
+        <h3>{{ breeder_count }}</h3>
+        <p>养殖户数量</p>
+    </div>
+    <div class="stat-card">
+        <h3>{{ growth_record_count }}</h3>
+        <p>生长记录</p>
+    </div>
+    <div class="stat-card">
+        <h3>{{ feeding_record_count }}</h3>
+        <p>喂养记录</p>
+    </div>
+    <div class="stat-card">
+        <h3>{{ vaccination_count }}</h3>
+        <p>疫苗接种记录</p>
+    </div>
+    <div class="stat-card">
+        <h3>{{ user_count }}</h3>
+        <p>用户数量</p>
+    </div>
+</div>
+
+<div class="card">
+    <h2>快速操作</h2>
+    <div style="display: flex; gap: 10px; margin-top: 20px; flex-wrap: wrap;">
+        <a href="{% url 'sheep_create' %}" class="btn">添加羊只</a>
+        <a href="{% url 'breeder_create' %}" class="btn">添加养殖户</a>
+        <a href="{% url 'growth_record_create' %}" class="btn">添加生长记录</a>
+        <a href="{% url 'feeding_record_create' %}" class="btn">添加喂养记录</a>
+        <a href="{% url 'vaccination_create' %}" class="btn">添加疫苗接种</a>
+    </div>
+</div>
+{% endblock %}
+

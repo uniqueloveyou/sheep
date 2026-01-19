@@ -1,0 +1,49 @@
+/* 人物信息页面的 wxss 文件 */
+.container {
+    padding: 20px;
+}
+
+.profile {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+}
+
+.avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    margin-right: 20px;
+}
+
+.info {
+    flex: 1;
+    font-size: 20px;
+}
+
+.table {
+    background-color: #fff;
+    padding: 10px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    font-size: 20px;
+}
+
+.label {
+    font-weight: bold;
+}
+
+.data {
+    color: #555;
+    font-size: 20px;
+}

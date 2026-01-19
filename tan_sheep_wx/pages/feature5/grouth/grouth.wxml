@@ -1,0 +1,36 @@
+<view class="sheep-info">
+    <view class="feeding-records">
+        <text>喂养记录:</text>
+        <view wx:for="{{feedingRecords}}" wx:key="index">
+            <text>日期: {{item.feeding_date}}</text>
+            <text>时间: {{item.feeding_time}}</text>
+            <text>饲料类型: {{item.feed_type}}</text>
+            <text>喂养量: {{item.feed_amount}} kg</text>
+            <text>喂养者: {{item.feeder}}</text>
+            <text>备注: {{item.notes || '无'}}</text>
+        </view>
+    </view>
+    <view class="basic-info">
+        <text>羊ID: {{sheep.id}}</text>
+        <text>名称: {{sheep.name}}</text>
+        <text>出生日期: {{sheep.birth_date}}</text>
+    </view>
+    <view class="growth-records">
+        <text>生长记录:</text>
+        <view wx:for="{{growth_records}}" wx:key="index">
+            <text>日期: {{item.record_date}}</text>
+            <text>体重: {{item.weight}} kg</text>
+            <text>体高: {{item.height}} cm</text>
+            <text>体长: {{item.length}} cm</text>
+        </view>
+    </view>
+    <view class="vaccination-records">
+        <text>疫苗接种记录:</text>
+        <view wx:for="{{vaccination_records}}" wx:key="index">
+            <text>疫苗类型: {{item.vaccine_type}}</text>
+            <text>接种日期: {{item.vaccination_date}}</text>
+            <text>有效期: {{item.expiry_date}}</text>
+            <text>接种剂量: {{item.dosage}} ml</text>
+        </view>
+    </view>
+</view>

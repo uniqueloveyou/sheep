@@ -1,0 +1,37 @@
+<view class="sheep-category">
+    <swiper class="sheep-swiper" autoplay interval="5000" circular>
+        <swiper-item wx:for="{{imageList}}" wx:key="index" class="sheep-swiper-item">
+            <image class="sheep-image" src="{{item.src}}" mode="aspectFill"></image>
+        </swiper-item>
+    </swiper>
+    <swiper-dots class="swiper-dots" />
+    <view class="sheep-item" wx:for="{{sheepList}}" wx:key="id">
+        <view class="sheep-info">
+            <view class="sheep-description">
+                <text class="sheep-title">{{sheepDetail.title}}</text>
+                <text class="sheep-gender">性别: {{sheepDetail.gender}}</text>
+                <text class="sheep-measurements">身高: {{sheepDetail.height}} cm, 体长: {{sheepDetail.length}} cm, 体重: {{sheepDetail.weight}} kg</text>
+                <text class="sheep-price">价格: {{sheepDetail.price}}430元</text>
+                <text class="sheep-id">羊ID:7</text>
+                <text class="sheep-breeder">养殖户姓名:李明</text>
+                <text class="sheep-phone">养殖户电话:13000000000</text>
+            </view>
+            <view class="sheep-action">
+                <button class="action-button add-to-cart" bindtap="addToCart" data-id="{{sheepDetail.id}}">返回购物车</button>
+                <button class="action-button buy-now" bindtap="openBuyNowModal" data-id="{{sheepDetail.id}}">立即购买</button>
+            </view>
+        </view>
+    </view>
+
+    <!-- 立即购买弹窗 -->
+    <view class="modal-overlay" wx:if="{{isBuyNowModalVisible}}">
+        <view class="modal-content">
+            <text class="modal-title">确认购买</text>
+            <text class="modal-message">您确定要购买这只羊吗？</text>
+            <view class="modal-buttons">
+                <button class="modal-button cancel-button" bindtap="closeBuyNowModal">取消</button>
+                <button class="modal-button confirm-button" bindtap="confirmBuyNow">确定</button>
+            </view>
+        </view>
+    </view>
+</view>

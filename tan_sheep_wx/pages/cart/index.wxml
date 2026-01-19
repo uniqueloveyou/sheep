@@ -1,0 +1,23 @@
+<view class="cart-container">
+    <view class="cart-title">购物车</view>
+    <block wx:for="{{cartItems}}" wx:key="id">
+        <view class="cart-item">
+            <checkbox class="cart-checkbox" value="{{item.id}}" bindchange="updateSelection" />
+            <image class="cart-image" src="/images/icons/function/f1.png" mode="aspectFill"></image>
+            <view class="cart-details">
+                <text>ID: {{item.id}}</text>
+                <text>性别: {{item.gender}}</text>
+                <text>体重: {{item.weight}} kg</text>
+                <text>数量: {{item.quantity || 1}}</text>
+                <text>单价: ¥{{item.price}}</text>
+                <text wx:if="{{item.total_price}}">小计: ¥{{item.total_price}}</text>
+                <view class="button-group">
+                    <button class="detail-button" bindtap="viewOrderDetail" data-id="{{item.id}}">查看订单</button>
+                    <button class="delete-button" bindtap="deleteItem" data-id="{{item.id}}" data-cart-item-id="{{item.cart_item_id}}">删除</button>
+                </view>
+            </view>
+        </view>
+    </block>
+    <view class="total-price">总价: ¥{{totalPrice}}</view>
+    <button class="checkout-button" bindtap="checkout">结算</button>
+</view>

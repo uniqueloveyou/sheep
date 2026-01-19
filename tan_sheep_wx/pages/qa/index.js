@@ -1,0 +1,204 @@
+// pages/qa/index.js
+const API = require('../../utils/api.js');
+
+Page({
+  data: {
+    messages: [], // 聊天消息列表
+    inputValue: '', // 输入框内容
+    isLoading: false, // 是否正在加载
+    scrollTop: 0, // 滚动位置
+    // 预设问题
+    quickQuestions: [
+      '滩羊的养殖方法',
+      '滩羊肉的营养价值',
+      '如何挑选优质滩羊',
+      '滩羊的烹饪方法',
+      '滩羊的生长周期',
+      '盐池滩羊的特点'
+    ]
+  },
+
+  onLoad: function() {
+    // 初始化欢迎消息
+    this.addMessage({
+      type: 'bot',
+      content: '您好！我是滩羊智品智能助手，可以为您解答关于滩羊养殖、营养、烹饪等方面的问题。请问有什么可以帮助您的吗？',
+      time: this.getCurrentTime()
+    });
+  },
+
+  // 获取当前时间
+  getCurrentTime: function() {
+    const now = new Date();
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    return `${hours}:${minutes}`;
+  },
+
+  // 添加消息
+  addMessage: function(message) {
+    const messages = this.data.messages;
+    messages.push(message);
+    this.setData({
+      messages: messages,
+      scrollTop: messages.length * 1000 // 滚动到底部
+    });
+    
+    // 延迟滚动，确保DOM更新
+    setTimeout(() => {
+      this.setData({
+        scrollTop: messages.length * 1000
+      });
+    }, 100);
+  },
+
+  // 输入框内容变化
+  onInputChange: function(e) {
+    this.setData({
+      inputValue: e.detail.value
+    });
+  },
+
+  // 发送消息
+  sendMessage: function() {
+    const content = this.data.inputValue.trim();
+    if (!content) {
+      wx.showToast({
+        title: '请输入问题',
+        icon: 'none'
+      });
+      return;
+    }
+
+    // 添加用户消息
+    this.addMessage({
+      type: 'user',
+      content: content,
+      time: this.getCurrentTime()
+    });
+
+    // 清空输入框
+    this.setData({
+      inputValue: '',
+      isLoading: true
+    });
+
+    // 调用API获取回答
+    this.getAnswer(content);
+  },
+
+  // 快速问题点击
+  onQuickQuestionTap: function(e) {
+    const question = e.currentTarget.dataset.question;
+    this.setData({
+      inputValue: question
+    });
+    this.sendMessage();
+  },
+
+  // 获取AI回答
+  getAnswer: function(question) {
+    const that = this;
+    
+    // 先显示加载状态
+    const loadingMessage = {
+      type: 'bot',
+      content: '正在思考中...',
+      time: this.getCurrentTime(),
+      isLoading: true
+    };
+    this.addMessage(loadingMessage);
+
+    // 调用后端API
+    API.request('/api/qa/ask', 'POST', {
+      question: question
+    }).then(function(res) {
+      const messages = that.data.messages;
+      messages.pop(); // 移除加载消息
+      
+      let answer = '抱歉，我暂时无法回答这个问题。';
+      if (res.code === 0 && res.data && res.data.answer) {
+        answer = res.data.answer;
+      } else if (res.answer) {
+        // 兼容旧格式
+        answer = res.answer;
+      }
+      
+      messages.push({
+        type: 'bot',
+        content: answer,
+        time: that.getCurrentTime(),
+        isLoading: false
+      });
+      
+      that.setData({
+        messages: messages,
+        isLoading: false,
+        scrollTop: messages.length * 1000
+      });
+    }).catch(function(err) {
+      console.error('获取回答失败:', err);
+      const messages = that.data.messages;
+      messages.pop(); // 移除加载消息
+      
+      // API调用失败，使用本地回答作为备用
+      const answer = that.generateAnswer(question);
+      messages.push({
+        type: 'bot',
+        content: answer + '\n\n（注：当前使用本地回答，大模型服务暂时不可用）',
+        time: that.getCurrentTime(),
+        isLoading: false
+      });
+      
+      that.setData({
+        messages: messages,
+        isLoading: false,
+        scrollTop: messages.length * 1000
+      });
+    });
+  },
+
+  // 生成回答（本地模拟，实际应该调用后端API）
+  generateAnswer: function(question) {
+    const q = question.toLowerCase();
+    
+    // 根据关键词匹配回答
+    if (q.includes('养殖') || q.includes('饲养') || q.includes('喂养')) {
+      return '滩羊养殖需要注意以下几点：\n1. 选择优质草场，确保充足的草料供应\n2. 定期进行疫苗接种和驱虫\n3. 保持圈舍清洁卫生，定期消毒\n4. 根据生长阶段调整饲料配比\n5. 注意观察羊群健康状况，及时处理疾病\n6. 提供充足的清洁饮水\n\n建议咨询专业养殖户获取更详细的指导。';
+    } else if (q.includes('营养') || q.includes('价值') || q.includes('成分')) {
+      return '滩羊肉富含以下营养成分：\n1. 优质蛋白质：含量高达20%以上，易于消化吸收\n2. 维生素B群：有助于新陈代谢和神经系统健康\n3. 铁元素：预防贫血，提高免疫力\n4. 锌元素：促进生长发育，增强抵抗力\n5. 低脂肪：相比其他肉类，脂肪含量适中\n6. 氨基酸：含有人体必需的多种氨基酸\n\n滩羊肉具有温补作用，适合冬季进补，对体虚、贫血等有良好效果。';
+    } else if (q.includes('挑选') || q.includes('选择') || q.includes('识别')) {
+      return '挑选优质滩羊的方法：\n1. 看体型：体型匀称，肌肉发达，骨骼健壮\n2. 看毛色：毛色纯正，光泽良好，无脱毛现象\n3. 看眼睛：眼睛明亮有神，无分泌物\n4. 看精神状态：活泼好动，食欲正常\n5. 看生长记录：查看疫苗接种记录和生长数据\n6. 闻气味：优质滩羊没有异味，肉质清香\n\n建议选择有完整生长记录和健康证明的滩羊。';
+    } else if (q.includes('烹饪') || q.includes('做法') || q.includes('怎么吃')) {
+      return '滩羊肉的常见烹饪方法：\n1. 清炖：保留原汁原味，适合老人和小孩\n2. 红烧：搭配时令蔬菜，营养丰富\n3. 手抓羊肉：配蒜泥和辣椒面，口感更佳\n4. 烤羊肉：外焦里嫩，香味浓郁\n5. 羊肉汤：温补暖身，适合冬季\n6. 涮羊肉：鲜嫩爽滑，原汁原味\n\n详细做法请查看小程序中的"滩羊食谱"模块。';
+    } else if (q.includes('生长') || q.includes('周期') || q.includes('时间')) {
+      return '滩羊的生长周期：\n1. 哺乳期：0-3个月，主要依靠母乳\n2. 断奶期：3-6个月，开始吃草料\n3. 育成期：6-12个月，快速生长期\n4. 成熟期：12-18个月，达到出栏标准\n5. 成年期：18个月以上，可用于繁殖\n\n不同阶段的饲养重点不同，需要根据生长阶段调整饲料和管理方式。';
+    } else if (q.includes('盐池') || q.includes('特点') || q.includes('特色')) {
+      return '盐池滩羊的特点：\n1. 地理优势：盐池县独特的地理环境和气候条件\n2. 肉质特点：肉质鲜嫩，不腥不膻，被誉为"羊肉界的顶流"\n3. 营养价值：富含优质蛋白质和多种微量元素\n4. 品牌价值：国家地理标志产品，品质有保障\n5. 养殖传统：拥有悠久的养殖历史和丰富的经验\n6. 市场认可：深受消费者喜爱，价格稳定\n\n盐池滩羊是宁夏的特色农产品，具有很高的市场价值。';
+    } else {
+      return '感谢您的提问！关于"' + question + '"的问题，我建议您：\n1. 查看小程序中的相关功能模块（如"生长周期"、"日常饲料"等）\n2. 咨询专业养殖户获取详细指导\n3. 联系客服获取更多帮助\n\n如果您有其他关于滩羊的问题，欢迎继续提问！';
+    }
+  },
+
+  // 清空聊天记录
+  clearMessages: function() {
+    wx.showModal({
+      title: '确认清空',
+      content: '确定要清空所有聊天记录吗？',
+      success: (res) => {
+        if (res.confirm) {
+          this.setData({
+            messages: []
+          });
+          // 重新添加欢迎消息
+          this.addMessage({
+            type: 'bot',
+            content: '您好！我是滩羊智品智能助手，可以为您解答关于滩羊养殖、营养、烹饪等方面的问题。请问有什么可以帮助您的吗？',
+            time: this.getCurrentTime()
+          });
+        }
+      }
+    });
+  }
+});
+

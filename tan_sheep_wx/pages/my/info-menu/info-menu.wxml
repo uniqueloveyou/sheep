@@ -1,0 +1,77 @@
+<!-- personal-profile.wxml -->
+<view class="container">
+  
+    <!-- 用户头像与昵称 -->
+    <view class="profile section">
+      <button class="avatar-btn" open-type="chooseAvatar" bindchooseavatar="onChooseAvatar">
+        <image class="avatar" src="{{userInfo.avatarUrl || '/images/default-avatar.png'}}" mode="aspectFill"/>
+      </button>
+      <view class="nickname-container">
+        <input class="nickname-input" placeholder="请输入昵称" bindinput="onNicknameInput" value="{{userInfo.nickName}}" />
+      </view>
+    </view>
+    
+    <!-- 个人简介 -->
+    <view class="bio section">
+      <text class="section-title">个人简介</text>
+      <textarea class="bio-textarea" placeholder="请输入个人简介" bindinput="onBioInput">{{userInfo.bio}}</textarea>
+    </view>
+    
+    <!-- 生日与性别 -->
+    <view class="info section">
+      <text class="section-title">基本信息</text>
+      
+      <!-- 生日选择 -->
+      <picker mode="date" value="{{userInfo.birthday}}" start="1900-01-01" end="2005-12-31" bindchange="onBirthdayChange">
+        <view class="picker-item">生日：{{userInfo.birthday || '请选择生日'}}</view>
+      </picker>
+      
+      <!-- 性别选择 -->
+      <picker mode="selector" range="{{genders}}" bindchange="onGenderChange">
+        <view class="picker-item">性别：{{userInfo.gender || '请选择性别'}}</view>
+      </picker>
+    </view>
+    
+    <!-- 收件地址管理 -->
+    <view class="address section">
+      <text class="section-title">收件地址</text>
+      
+      <!-- 选择历史地址 -->
+      <picker mode="selector" range="{{historyAddresses}}" bindchange="onSelectHistoryAddress" wx:if="{{historyAddresses.length > 0}}">
+        <view class="picker history-picker">选择历史地址</view>
+      </picker>
+      
+      <!-- 新地址选择 -->
+      <view class="address-selector">
+        <picker mode="selector" range="{{provinces}}" bindchange="onProvinceChange">
+          <view class="picker">省份：{{selectedProvince || '请选择'}}</view>
+        </picker>
+        <picker mode="selector" range="{{cities}}" bindchange="onCityChange">
+          <view class="picker">城市：{{selectedCity || '请选择'}}</view>
+        </picker>
+        <picker mode="selector" range="{{counties}}" bindchange="onCountyChange">
+          <view class="picker">区县：{{selectedCounty || '请选择'}}</view>
+        </picker>
+      </view>
+      
+      <!-- 详细地址输入 -->
+      <view class="detailed-address">
+        <text>详细地址：</text>
+        <input class="detail-input" placeholder="请输入街道、门牌号等" bindinput="onDetailInput" value="{{detailAddress}}"/>
+      </view>
+      
+      <!-- 完整地址展示 -->
+      <view class="complete-address">
+        <text>完整地址：</text>
+        <text class="address-summary">{{completeAddress || '暂无'}}</text>
+      </view>
+      
+      <!-- 保存地址按钮 -->
+      <button class="btn-save" bindtap="saveAddress">保存地址</button>
+    </view>
+    
+    <!-- 保存个人资料按钮 -->
+    <button class="btn-submit" bindtap="submitProfile">保存个人资料</button>
+    
+  </view>
+  

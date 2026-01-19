@@ -1,0 +1,51 @@
+<view class="view-container">
+    <view class="title">滩羊生长信息</view>
+    <view wx:if="{{sheepDetail.id}}" class="detail-item">
+        <text class="label">ID:</text> {{sheepDetail.id}}
+    </view>
+    <view wx:if="{{sheepDetail.gender}}" class="detail-item">
+        <text class="label">性别:</text> {{sheepDetail.gender}}
+    </view>
+    <view wx:if="{{sheepDetail.weight && sheepDetail.weight != '0'}}" class="detail-item">
+        <text class="label">体重:</text> {{sheepDetail.weight}} kg
+    </view>
+    <view wx:if="{{sheepDetail.height && sheepDetail.height != '0'}}" class="detail-item">
+        <text class="label">体高:</text> {{sheepDetail.height}} cm
+    </view>
+    <view wx:if="{{sheepDetail.length && sheepDetail.length != '0'}}" class="detail-item">
+        <text class="label">体长:</text> {{sheepDetail.length}} cm
+    </view>
+    <view wx:if="{{!sheepDetail.id}}" class="detail-item">
+        <text class="label" style="color: #999;">正在加载数据...</text>
+    </view>
+    <image class="sheep-image" src="{{imagePath}}" mode="aspectFill" binderror="onImageError"></image>
+    
+    <!-- 领养按钮 -->
+    <button class="adopt-button {{isAdopted ? 'adopted' : ''}}" bindtap="adoptSheep">
+        {{isAdopted ? '已领养' : '领养'}}
+    </button>
+    
+    <!-- 加入购物车按钮 -->
+    <button class="cart-button" bindtap="addToCart" disabled="{{isInCart}}">
+        {{isInCart ? '已加入购物车' : '加入购物车'}}
+    </button>    
+</view>
+
+<view class="section">
+    <view class="section-title">疫苗接种记录</view>
+    <view class="vaccine-records-list">
+      <view wx:if="{{vaccineRecords.length === 0}}" class="no-records">
+        暂无疫苗接种记录
+      </view>
+      <view wx:else>
+        <view wx:for="{{vaccineRecords}}" wx:key="VaccinationID" class="vaccine-record-item">
+          <text class="vaccine-type">疫苗类型: {{item.VaccineType}}</text>
+          <text>接种日期: {{item.VaccinationDate}}</text>
+          <text>有效期至: {{item.ExpiryDate}}</text>
+          <text>剂量: {{item.Dosage}}毫升</text>
+          <text>接种者: {{item.AdministeredBy}}</text>
+          <text wx:if="{{item.Notes}}">备注: {{item.Notes}}</text>
+        </view>
+      </view>
+    </view>
+</view>

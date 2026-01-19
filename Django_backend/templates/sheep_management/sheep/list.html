@@ -1,0 +1,51 @@
+{% extends 'sheep_management/base.html' %}
+
+{% block content %}
+<div class="card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h2>羊只列表</h2>
+        <a href="{% url 'sheep_create' %}" class="btn">添加羊只</a>
+    </div>
+    
+    <div class="search-box">
+        <form method="get">
+            <input type="text" name="search" placeholder="搜索ID或性别..." value="{{ search }}">
+            <button type="submit" class="btn">搜索</button>
+        </form>
+    </div>
+    
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>性别</th>
+                <th>体重(kg)</th>
+                <th>身高(cm)</th>
+                <th>体长(cm)</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for sheep in sheep_list %}
+            <tr>
+                <td>{{ sheep.id }}</td>
+                <td>{{ sheep.gender }}</td>
+                <td>{{ sheep.weight }}</td>
+                <td>{{ sheep.height }}</td>
+                <td>{{ sheep.length }}</td>
+                <td>
+                    <a href="{% url 'sheep_detail' sheep.pk %}" class="btn" style="padding: 5px 10px; font-size: 12px;">查看</a>
+                    <a href="{% url 'sheep_edit' sheep.pk %}" class="btn" style="padding: 5px 10px; font-size: 12px;">编辑</a>
+                    <a href="{% url 'sheep_delete' sheep.pk %}" class="btn btn-danger" style="padding: 5px 10px; font-size: 12px;">删除</a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="6" style="text-align: center; padding: 40px;">暂无数据</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
+

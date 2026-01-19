@@ -1,0 +1,57 @@
+<view class="root">
+    <view class="item" bindtap="redirectToNextPage">
+        <image class='background-image' src='/images/icons/function/f1.png' mode="aspectFill" binderror="onImageError"></image>
+        <text class="content">清炖盐池滩羊肉</text>
+        <text class="symbol">》</text>
+    </view>
+    <view class="divider"></view>
+
+    <view class="item" bindtap="redirectToNextPage2">
+        <image class='background-image' src='/images/icons/function/f1.png' mode="aspectFill" binderror="onImageError"></image>
+        <text class="content">孜然羊肉</text>
+        <text class="symbol">》</text>
+    </view>
+    <view class="divider"></view>
+
+    <view class="item" bindtap="redirectToNextPage3">
+        <image class='background-image' src='/images/icons/function/f1.png' mode="aspectFill" binderror="onImageError"></image>
+        <text class="content">炒肉臊子</text>
+        <text class="symbol">》</text>
+    </view>
+    <view class="divider"></view>
+
+    <view class="item" bindtap="redirectToNextPage4">
+        <image class='background-image' src='/images/icons/function/f1.png' mode="aspectFill" binderror="onImageError"></image>
+        <text class="content">红烧羊腱子</text>
+        <text class="symbol">》</text>
+    </view>
+    <view class="divider"></view>
+
+    <view class="item" bindtap="redirectToNextPage5">
+        <image class='background-image' src='/images/icons/function/f1.png' mode="aspectFill" binderror="onImageError"></image>
+        <text class="content">切片涮肉</text>
+        <text class="symbol">》</text>
+    </view>
+    <view class="divider"></view>
+
+    <view class="item" bindtap="redirectToNextPage6">
+        <image class='background-image' src='/images/icons/function/f1.png' mode="aspectFill" binderror="onImageError"></image>
+        <text class="content">手抓羊排</text>
+        <text class="symbol">》</text>
+    </view>
+    <view class="divider"></view>
+
+    <view class="item" bindtap="redirectToNextPage7">
+        <image class='background-image' src='/images/icons/function/f1.png' mode="aspectFill" binderror="onImageError"></image>
+        <text class="content">法式煎羊排</text>
+        <text class="symbol">》</text>
+    </view>
+    <view class="divider"></view>
+
+    <view class="item" bindtap="redirectToNextPage8">
+        <image class='background-image' src='/images/icons/function/f1.png' mode="aspectFill" binderror="onImageError"></image>
+        <text class="content">煎烤羊颈片</text>
+        <text class="symbol">》</text>
+    </view>
+    <view class="divider"></view>
+</view>

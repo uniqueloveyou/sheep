@@ -1,0 +1,18 @@
+<view class="container">
+    <image src="http://localhost:5001/images/recipe/05.jpg" class="recipe-image" mode="aspectFill" />
+    <view class="recipe-info">
+      <text class="recipe-title">切片涮肉</text>
+      <view class="recipe-ingredients">
+        <text class="section-title">配料：</text>
+        <text class="ingredients">成品火锅底料、姜片、葱段。</text>
+      </view>
+      <view class="recipe-method">
+        <text class="section-title">做法：</text>
+        <text class="method">
+          1.使用成品火锅底料，加入适量清水或高汤，姜片，葱段。
+          2.待锅底烧开，放入切好的肉卷涮食即可。
+          3.可根据个人口味搭配蘸料。
+        </text>
+      </view>
+    </view>
+</view>

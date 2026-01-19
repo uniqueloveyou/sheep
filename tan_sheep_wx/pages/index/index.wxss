@@ -1,0 +1,183 @@
+/* 轮播图容器 */
+.swiper-container {
+    width: 100%;
+    height: 400rpx;
+    margin-bottom: 20rpx;
+    background-color: #f5f5f5;
+}
+
+/* swiper组件样式 */
+.swiper-container swiper {
+    width: 100%;
+    height: 100%;
+}
+
+/* 轮播图项 */
+.swiper-container swiper-item {
+    width: 100%;
+    height: 100%;
+}
+
+/* 图片样式 */
+.slide-image {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+video {
+    width: 100%;
+}
+
+/*index.wxss*/
+.charts {
+    width: 750rpx;
+    height: 500rpx;
+}
+
+.function-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    padding: 10px;
+}
+
+.function-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.function-icon {
+    width: 60px;
+    height: 60px;
+    margin-bottom: 5px;
+}
+
+.video-title {
+    font-size: 32px;
+    font-weight: bold;
+    color: #007bff;
+    text-align: center;
+    background-color: #f8f9fa;
+    padding: 10px;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.video1 {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+}
+.video-title {
+    font-size: 20px;
+    font-weight: bold;
+    margin-bottom: 10px;
+  }
+  
+  .zx1,
+  .zx2 {
+    font-size: 16px;
+    margin-bottom: 10px;
+  }
+  
+.video {
+    width: 100%;
+}
+
+.video-placeholder {
+    width: 100%;
+    height: 200rpx;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f5f5f5;
+    color: #999;
+    font-size: 28rpx;
+    margin: 20rpx 0;
+}
+
+/* 咨询内容列表 */
+.consultation-list {
+    padding: 0 20rpx;
+}
+
+.consultation-item {
+    margin-bottom: 40rpx;
+    background-color: #ffffff;
+    border-radius: 10rpx;
+    overflow: hidden;
+    box-shadow: 0 2rpx 10rpx rgba(0,0,0,0.1);
+}
+
+/* 视频类型样式 */
+.consultation-video {
+    padding: 20rpx;
+}
+
+.consultation-video .consultation-title {
+    font-size: 30rpx;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 15rpx;
+    line-height: 1.5;
+}
+
+.consultation-video .consultation-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15rpx;
+}
+
+/* 文字信息类型样式 */
+.consultation-text {
+    padding: 30rpx;
+}
+
+.consultation-text .consultation-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15rpx;
+}
+
+.consultation-text .consultation-title {
+    font-size: 32rpx;
+    font-weight: bold;
+    color: #238E23;
+    margin-bottom: 20rpx;
+    line-height: 1.5;
+}
+
+.consultation-text .consultation-content {
+    font-size: 28rpx;
+    color: #666;
+    line-height: 1.8;
+    text-align: justify;
+}
+
+/* 标签和日期样式 */
+.consultation-tag {
+    display: inline-block;
+    padding: 6rpx 16rpx;
+    border-radius: 20rpx;
+    font-size: 22rpx;
+    font-weight: bold;
+}
+
+.video-tag {
+    background-color: #238E23;
+    color: #ffffff;
+}
+
+.text-tag {
+    background-color: #ff9800;
+    color: #ffffff;
+}
+
+.consultation-date {
+    font-size: 24rpx;
+    color: #999;
+}

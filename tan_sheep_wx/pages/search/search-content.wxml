@@ -1,0 +1,43 @@
+<!--pages/search/search-content.wxml-->
+<view class="search-content-page">
+  <van-search 
+    placeholder="请输入搜索关键词" 
+    value="{{keyword}}"
+    focus 
+    bind:search="search" 
+    use-right-icon-slot
+  >
+    <van-icon slot="right-icon" name="scan" bind:click="searchscan" />
+  </van-search>
+  
+  <view wx:if="{{ !searchHistory || searchHistory.length == 0 }}" class="empty-container">
+    <van-empty description="暂无历史搜索" />
+  </view>
+  
+  <view wx:if="{{ searchHistory && searchHistory.length > 0 }}" class="history-container">
+    <view class="history-header">
+      <text class="history-title">历史搜索</text>
+    </view>
+    <van-cell-group>
+      <van-cell 
+        wx:for="{{searchHistory}}" 
+        wx:key="*this"
+        data-idx="{{ index }}" 
+        bindtap="go"
+        title="{{item}}"
+        is-link
+      >
+        <van-tag
+          slot="right-icon"
+          closeable
+          size="medium"
+          type="primary"
+          data-idx="{{ index }}"
+          bind:close="onClose"
+        >
+          删除
+        </van-tag>
+      </van-cell>
+    </van-cell-group>
+  </view>
+</view>
