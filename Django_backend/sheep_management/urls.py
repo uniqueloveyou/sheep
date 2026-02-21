@@ -1,24 +1,38 @@
 from django.urls import path
-from . import views  # ✅ 修正这里，直接导入 views
+from . import views  # 传统视图 + 其余 API（后续逐步迁移）
+from .api import auth_api  # 认证 API（已重构）
+from .api import user_api  # 用户 API
 
 urlpatterns = [
     # ==========================
-    # 核心修复区域：登录接口
+    # 认证接口（已迁移到 api/auth_api.py）
     # ==========================
 
     # 1. 手机号一键登录
-    path('api/auth/login_by_phone', views.api_login_by_phone, name='api_login_by_phone'),
+    path('api/auth/login_by_phone', auth_api.api_login_by_phone, name='api_login_by_phone'),
 
-    # 2. 微信静默登录 (修复 404 的关键)
-    # 指向 api_login_wx 函数
-    path('api/auth/login', views.api_login_wx, name='api_login_wx'),
+    # 2. 微信静默登录
+    path('api/auth/login', auth_api.api_login_wx, name='api_login_wx'),
     
     # 3. 用户名密码登录
-    path('api/auth/login_password', views.api_login, name='api_login_password'),
+    path('api/auth/login_password', auth_api.api_login, name='api_login_password'),
+
+    # 4. 用户注册
+    path('api/auth/register', auth_api.api_register, name='api_register'),
 
     # Token 验证
-    path('api/auth/check_token', views.api_check_token, name='api_check_token_new'),
-    path('check_token', views.api_check_token, name='api_check_token'),
+    path('api/auth/check_token', auth_api.api_check_token, name='api_check_token_new'),
+    path('check_token', auth_api.api_check_token, name='api_check_token'),
+
+    # ==========================
+    # 用户接口（api/user_api.py）
+    # ==========================
+    path('api/user/info', user_api.api_user_info, name='api_user_info'),
+    path('api/user/avatar/upload-url', user_api.api_get_avatar_upload_url, name='api_get_avatar_upload_url'),
+    path('api/user/avatar/confirm', user_api.api_confirm_avatar, name='api_confirm_avatar'),
+    path('api/user/profile', user_api.api_get_profile, name='api_get_profile'),
+    path('api/user/profile_update', user_api.api_update_profile, name='api_update_profile'),
+    path('api/user/apply_breeder', user_api.api_apply_breeder, name='api_apply_breeder'),
 
     # ==========================
     # 其他业务接口

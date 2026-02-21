@@ -73,15 +73,15 @@ WSGI_APPLICATION = 'Django_backend.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
-
+# 云端数据库
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'sheep_db',
-        'USER': 'root',
-        'PASSWORD': '123456',
-        'HOST': 'localhost',
-        'PORT': '3306',
+        'NAME': 'sheep_xdb',
+        'USER': 'mxlsheep',
+        'PASSWORD': 'xUW8fnh1oylmTrK9',
+        'HOST': 'mysql3.sqlpub.com',
+        'PORT': '3308',
         'OPTIONS': {
             'charset': 'utf8mb4',
         },
@@ -137,3 +137,17 @@ MEDIA_ROOT = BASE_DIR / 'media'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# 指定自定义用户模型
+AUTH_USER_MODEL = 'sheep_management.User'
+
+# 微信小程序配置
+WX_APP_ID = 'wx584a350ed4b974a0'
+WX_APP_SECRET = '11f0f8f7eed7e4cdc39ca4333bfd2134'
+
+# Cloudflare R2 配置
+R2_ACCOUNT_ID = '4b9f4af50152c4c4b85005817e83e269'           # Cloudflare 账户 ID
+R2_ACCESS_KEY_ID = '258fadb6983f5bbb316d248e9ecf767c'        # R2 API Token 的 Access Key ID
+R2_SECRET_ACCESS_KEY = '36728826ba79e351a73374accca82c1885ba1c58666e502bcbccab7a444f2c47'    # R2 API Token 的 Secret Access Key
+R2_BUCKET_NAME = 'avatar-bucket'          # 存储桶名称
+R2_PUBLIC_URL = 'https://avatar.youzilite.us.kg'           # 公开访问域名，例如 https://assets.example.com

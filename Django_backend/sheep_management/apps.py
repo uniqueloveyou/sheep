@@ -6,3 +6,5 @@ class SheepManagementConfig(AppConfig):
     name = 'sheep_management'
     verbose_name = '羊只管理系统'
 
+    def ready(self):
+        import sheep_management.signals  # noqa: F401 注册信号

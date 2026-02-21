@@ -1,49 +1,92 @@
-<form catchsubmit="formSubmit">
-  <van-cell title="头像" is-link center>
-    <!-- <van-image
-      round
-      width="64rpx"
-      height="64rpx"
-      src="{{ avatarUrl }}"
-    /> -->
-    <button class="avatar" open-type="chooseAvatar" bind:chooseavatar="onChooseAvatar">
+<view class="container">
+
+  <!-- 顶部：头像与昵称 -->
+  <view class="card top-card">
+    <button class="avatar-btn" open-type="chooseAvatar" bind:chooseavatar="onChooseAvatar">
       <image class="avatar-img" src="{{ avatarUrl ? avatarUrl : '/images/default.png' }}" mode="aspectFill"></image>
     </button>
-  </van-cell>  
-  <van-field
-    type="nickname"
-    label="昵称"
-    model:value="{{ nick }}"
-    placeholder="请输入昵称"
-    clearable
-    input-align="right"
-  />
-  <picker bindchange="bindPickerChange" value="{{ genderIndex }}" range="{{genderArray}}">
-    <van-cell title="性别" value="{{ gender }}" is-link />
-  </picker>
-  <van-field
-    model:value="{{ apiUserInfoMap.base.mobile }}"
-    center
-    readonly
-    clearable
-    label="手机号码"
-    use-button-slot
-  >
-    <van-button slot="button" type="primary" size="small" bind:tap="bindMobile">一键绑定</van-button>
-  </van-field>
-  <van-field
-    wx:for="{{apiUserInfoMap.ext}}" wx:for-index='k' wx:key="index"
-    label="{{ k }}"
-    name="{{ k}}"
-    value="{{ item }}"
-    placeholder="请输入信息"
-    clearable
-  />
-  <view class="btn">
-    <van-button type="primary" block form-type="submit">保存</van-button>
+    
+    <view class="nick-input-box">
+      <input 
+        class="nick-input" 
+        type="nickname" 
+        value="{{ nickname }}" 
+        bindinput="onNickInput" 
+        bindblur="onNickBlur"
+        placeholder="请输入昵称" 
+        placeholder-class="placeholder"
+        maxlength="20"
+        always-embed="true"
+        confirm-type="done"
+      />
+    </view>
   </view>
-</form>
 
+  <!-- 个人简介（暂未开放） -->
+  <view class="card">
+    <view class="card-header">个人简介</view>
+    <view class="desc-area disabled-area">
+      <textarea 
+        class="desc-input disabled-text" 
+        value="{{ description || '暂不可用' }}" 
+        disabled="true"
+        placeholder-class="placeholder"
+        maxlength="100"
+      ></textarea>
+    </view>
+  </view>
+
+  <!-- 基本信息 -->
+  <view class="card">
+    <view class="card-header">基本信息</view>
+    
+    <!-- 生日预留（暂无接口，置灰不可用） -->
+    <view class="list-item disabled-item">
+      <view class="item-label">生日：</view>
+      <view class="item-value disabled-text">
+        暂不开放
+      </view>
+    </view>
+
+    <picker bindchange="bindPickerChange" value="{{ genderIndex }}" range="{{genderArray}}">
+      <view class="list-item" hover-class="item-hover">
+        <view class="item-label">性别：</view>
+        <view class="item-value {{ gender && gender !== '保密' ? '' : 'placeholder' }}">
+          {{ gender && gender !== '保密' ? gender : '请选择性别' }}
+        </view>
+      </view>
+    </picker>
+
+    <view class="list-item">
+      <view class="item-label">手机：</view>
+      <view class="item-value mobile-text" style="{{ !mobile ? 'color: #f44336;' : '' }}">{{ mobile || '未绑定' }}</view>
+      <van-button 
+        wx:if="{{ !mobile }}" 
+        type="primary" 
+        size="small" 
+        bind:click="bindMobile" 
+        custom-style="padding: 0 16rpx; height: 50rpx; background: #238E23; border-color: #238E23;"
+      >
+        绑定
+      </van-button>
+    </view>
+  </view>
+
+  <!-- 底部保存按钮 -->
+  <view class="btn-box">
+    <van-button 
+      block 
+      bind:click="saveProfile" 
+      custom-class="save-btn" 
+      loading="{{ isUploadingAvatar }}"
+    >
+      保存修改
+    </van-button>
+  </view>
+
+</view>
+
+<!-- 绑定手机组件 -->
 <bind-mobile
   title="绑定手机号码"
   alarmText="为保障您的资金安全，请先绑定手机号码"

@@ -110,3 +110,8 @@
     width: 100%;
     text-align: center;
 }
+
+page {
+    /* 防止 tabBar 遮挡底部内容 */
+    padding-bottom: 120rpx;
+}

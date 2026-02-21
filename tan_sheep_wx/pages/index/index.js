@@ -50,11 +50,21 @@ Page({
     this.loadVideos();
   },
 
+  onShow() {
+    if (typeof this.getTabBar === 'function' && this.getTabBar()) {
+      const tabBar = this.getTabBar();
+      tabBar.initTabBar();
+      tabBar.setData({
+        selected: 0 // 首页索引始终是 0
+      });
+    }
+  },
+
   // 检查图片加载
   checkImages() {
     const imageUrls = this.data.imageUrls;
     let failedCount = 0;
-    
+
     imageUrls.forEach((url, index) => {
       wx.getImageInfo({
         src: url,
@@ -83,7 +93,7 @@ Page({
     console.error('轮播图加载错误:', e.detail);
     const index = e.currentTarget.dataset.index;
     console.warn(`图片${index + 1}加载失败`);
-    
+
     // 如果本地图片加载失败，尝试使用服务器图片（需要确保服务器运行）
     // 注意：小程序可能不支持HTTP，建议使用本地图片
     // const serverUrls = this.data.serverImageUrls;
@@ -194,7 +204,7 @@ Page({
   // 开发环境可以使用HTTP，但需要在开发者工具中开启"不校验合法域名"
   loadVideos() {
     var that = this;
-    
+
     // 使用本地服务器路径（开发环境）
     // 服务器地址：http://localhost:5001
     // 视频文件位置：server/images/coupon/video/
@@ -204,12 +214,12 @@ Page({
       `${SERVER_URL}/images/coupon/video/zx2.mp4`,
       `${SERVER_URL}/images/coupon/video/zx3.mp4`
     ];
-    
+
     this.setData({
       videoUrls: videoUrls,
       videosAvailable: true
     });
-    
+
     console.log('视频路径已配置，使用本地服务器：', videoUrls);
     console.log('提示：开发环境需要在微信开发者工具中开启"不校验合法域名"');
   },
@@ -222,7 +232,7 @@ Page({
     if (this.data.videoUrls[0]) availableVideos.push(0);
     if (this.data.videoUrls[1]) availableVideos.push(1);
     if (this.data.videoUrls[2]) availableVideos.push(2);
-    
+
     // 所有可用的咨询内容
     const allItems = [
       // 视频内容（只在视频可用时添加）
@@ -300,7 +310,7 @@ Page({
     // 如果有视频可用，至少包含1个视频和1个文字；否则只选择文字内容
     const minVideos = availableVideos.length > 0 ? 1 : 0;
     const selectedItems = this.randomSelectItems(allItems, 3, 5, minVideos);
-    
+
     this.setData({
       consultationItems: selectedItems
     });
@@ -315,18 +325,18 @@ Page({
   },
 
   // 随机选择内容项
-  randomSelectItems: function(allItems, minCount, maxCount, minVideos) {
+  randomSelectItems: function (allItems, minCount, maxCount, minVideos) {
     minVideos = minVideos || 0;
-    
+
     // 打乱数组
-    var shuffled = allItems.slice().sort(function() {
+    var shuffled = allItems.slice().sort(function () {
       return Math.random() - 0.5;
     });
-    
+
     // 分类视频和文字
     var videos = [];
     var texts = [];
-    
+
     for (var i = 0; i < shuffled.length; i++) {
       if (shuffled[i].type === 'video') {
         videos.push(shuffled[i]);
@@ -334,9 +344,9 @@ Page({
         texts.push(shuffled[i]);
       }
     }
-    
+
     var selected = [];
-    
+
     // 至少添加指定数量的视频（如果有）
     if (minVideos > 0 && videos.length > 0) {
       var videoCount = Math.min(minVideos, videos.length);
@@ -344,12 +354,12 @@ Page({
         selected.push(videos[i]);
       }
     }
-    
+
     // 至少添加1个文字
     if (texts.length > 0) {
       selected.push(texts[0]);
     }
-    
+
     // 随机添加剩余内容，直到达到随机数量
     var remaining = [];
     for (var i = 0; i < shuffled.length; i++) {
@@ -364,19 +374,19 @@ Page({
         remaining.push(shuffled[i]);
       }
     }
-    
+
     var targetCount = Math.floor(Math.random() * (maxCount - minCount + 1)) + minCount;
     var needMore = targetCount - selected.length;
-    
+
     if (needMore > 0 && remaining.length > 0) {
       var additional = remaining.slice(0, needMore);
       for (var k = 0; k < additional.length; k++) {
         selected.push(additional[k]);
       }
     }
-    
+
     // 再次打乱顺序
-    return selected.sort(function() {
+    return selected.sort(function () {
       return Math.random() - 0.5;
     });
   },
@@ -385,13 +395,13 @@ Page({
   onVideoError(e) {
     console.error('视频加载错误:', e.detail);
     const errMsg = e.detail.errMsg || '';
-    
+
     if (errMsg.includes('MEDIA_ERR_SRC_NOT_SUPPORTED')) {
       console.warn('视频格式不支持或路径错误，尝试重新加载');
       // 可以尝试重新加载视频
       this.loadVideos();
     }
-    
+
     wx.showToast({
       title: '视频加载失败',
       icon: 'none',

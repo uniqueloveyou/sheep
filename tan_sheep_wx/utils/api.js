@@ -13,7 +13,7 @@ const API_BASE_URL = getApiBaseUrl()
 function request(url, method = 'GET', data = {}) {
   const fullUrl = API_BASE_URL + url
   console.log(`[API请求] ${method} ${fullUrl}`, data)
-  
+
   return new Promise((resolve, reject) => {
     wx.request({
       url: fullUrl,
@@ -22,7 +22,7 @@ function request(url, method = 'GET', data = {}) {
       header: {
         'Content-Type': 'application/json'
       },
-      success: function(res) {
+      success: function (res) {
         console.log(`[API响应] ${fullUrl}`, res)
         if (res.statusCode === 200) {
           resolve(res.data)
@@ -41,7 +41,7 @@ function request(url, method = 'GET', data = {}) {
           reject(error)
         }
       },
-      fail: function(err) {
+      fail: function (err) {
         console.error('[API请求失败]', fullUrl, err)
         const error = new Error(`网络请求失败: ${err.errMsg || '未知错误'}`)
         reject(error)
@@ -109,22 +109,46 @@ function checkToken(token) {
 }
 
 /**
- * 获取用户信息
+ * 获取用户基础信息
  * @param {string} token 
  */
 function getUserInfo(token) {
-  return request('/api/auth/user_info?token=' + token, 'GET')
+  return request('/api/user/info?token=' + token, 'GET')
 }
 
 /**
- * 更新用户信息
+ * 获取详细用户资料（含简介等）
  * @param {string} token 
- * @param {object} userInfo 
  */
-function updateUserInfo(token, userInfo) {
-  return request('/api/auth/update_user_info', 'POST', {
+function getUserProfile(token) {
+  return request('/api/user/profile?token=' + token, 'GET')
+}
+
+/**
+ * 更新用户详细资料
+ * @param {string} token 
+ * @param {object} data (nickname, gender, mobile, description, birthday)
+ */
+function updateUserInfo(token, data) {
+  // 保持向前兼容旧只传 nickname 的情况
+  let postData = { token: token }
+  if (typeof data === 'string') {
+    postData.nickname = data
+  } else {
+    postData = { ...postData, ...data }
+  }
+  return request('/api/user/profile_update', 'POST', postData)
+}
+
+/**
+ * 申请成为养殖户
+ * @param {string} token 
+ * @param {string} mobile 
+ */
+function applyBreeder(token, mobile) {
+  return request('/api/user/apply_breeder', 'POST', {
     token: token,
-    userInfo: userInfo
+    mobile: mobile
   })
 }
 
@@ -136,7 +160,7 @@ function getCart(token) {
   // 通过请求头传递token（更安全）
   const fullUrl = API_BASE_URL + '/api/cart'
   console.log(`[API请求] GET ${fullUrl}`, { token: token ? '***' : 'missing' })
-  
+
   return new Promise((resolve, reject) => {
     wx.request({
       url: fullUrl,
@@ -146,7 +170,7 @@ function getCart(token) {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer ' + token
       },
-      success: function(res) {
+      success: function (res) {
         console.log(`[API响应] ${fullUrl}`, res)
         if (res.statusCode === 200) {
           resolve(res.data)
@@ -156,7 +180,7 @@ function getCart(token) {
           reject(error)
         }
       },
-      fail: function(err) {
+      fail: function (err) {
         console.error('[API请求失败]', fullUrl, err)
         const error = new Error(`网络请求失败: ${err.errMsg || '未知错误'}`)
         reject(error)
@@ -203,6 +227,32 @@ function updateCartItem(token, cartItemId, quantity) {
   })
 }
 
+/**
+ * 获取头像上传预签名 URL
+ * @param {string} token 
+ * @param {string} fileExt 文件扩展名，如 .jpg
+ * @param {string} contentType MIME 类型
+ */
+function getAvatarUploadUrl(token, fileExt, contentType) {
+  return request('/api/user/avatar/upload-url', 'POST', {
+    token: token,
+    file_ext: fileExt || '.jpg',
+    content_type: contentType || 'image/jpeg'
+  })
+}
+
+/**
+ * 确认头像上传完成
+ * @param {string} token 
+ * @param {string} objectKey R2 中的对象 key
+ */
+function confirmAvatarUpload(token, objectKey) {
+  return request('/api/user/avatar/confirm', 'POST', {
+    token: token,
+    object_key: objectKey
+  })
+}
+
 module.exports = {
   request,
   login,
@@ -212,10 +262,13 @@ module.exports = {
   checkToken,
   getUserInfo,
   updateUserInfo,
+  getUserProfile,
+  applyBreeder,
   getCart,
   addToCart,
   removeFromCart,
   updateCartItem,
+  getAvatarUploadUrl,
+  confirmAvatarUpload,
   API_BASE_URL
 }
-

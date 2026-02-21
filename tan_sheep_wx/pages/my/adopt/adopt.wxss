@@ -31,4 +31,8 @@
     background-color: #ff4d4f;
     color: white;
 }
-  
+
+page {
+    /* 防止 tabBar 遮挡底部内容 */
+    padding-bottom: 120rpx;
+}

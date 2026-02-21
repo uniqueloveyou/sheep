@@ -6,6 +6,7 @@
         "pages/cart/checkout",
         "pages/my/index",
         "pages/my/youhui/youhui",
+        "pages/my/info",
         "pages/my/info-menu/info-menu",
         "pages/my/info/info",
         "pages/my/adopt/adopt",
@@ -122,27 +123,26 @@
         "navigationBarBackgroundColor": "#238E23"
     },
     "tabBar": {
+        "custom": true,
         "color": "#999",
         "selectedColor": "#FF5700",
         "backgroundColor": "#fafafa",
         "list": [
             {
                 "pagePath": "pages/index/index",
-                "text": "首页",
-                "iconPath": "/icons/_home.png",
-                "selectedIconPath": "/icons/home.png"
+                "text": "首页"
+            },
+            {
+                "pagePath": "pages/my/adopt/adopt",
+                "text": "我的羊"
             },
             {
                 "pagePath": "pages/cart/index",
-                "text": "购物车",
-                "iconPath": "/icons/_cart.png",
-                "selectedIconPath": "/icons/cart.png"
+                "text": "购物车"
             },
             {
                 "pagePath": "pages/my/index",
-                "text": "我的",
-                "iconPath": "/icons/_my.png",
-                "selectedIconPath": "/icons/my.png"
+                "text": "我的"
             }
         ]
     },

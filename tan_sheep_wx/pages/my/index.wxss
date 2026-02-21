@@ -2,7 +2,7 @@
 .my-page {
   min-height: 100vh;
   background: linear-gradient(180deg, #238E23 0%, #f5f5f5 30%);
-  padding-bottom: 40rpx;
+  padding-bottom: 140rpx; /* 防止 tabBar 遮挡 */
 }
 
 /* 头部区域 */
@@ -317,4 +317,15 @@
 .nick-input:focus {
   border-color: #238E23;
   background: #fff;
+}
+
+/* 退出登录 */
+.logout-section {
+  margin: 40rpx 32rpx 60rpx;
+}
+
+.logout-btn {
+  color: #e74c3c !important;
+  border-color: #e74c3c !important;
+  font-size: 32rpx !important;
 }

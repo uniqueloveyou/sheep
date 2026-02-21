@@ -83,7 +83,7 @@
     <view class="menu-group">
       <view class="menu-title">我的服务</view>
       <view class="menu-list">
-        <view class="menu-item" wx:for="{{serviceMenus}}" wx:key="index" bindtap="handleItemTap" data-url="{{item.url}}">
+        <view class="menu-item" wx:for="{{serviceMenus}}" wx:key="index" bindtap="handleItemTap" data-url="{{item.url}}" data-text="{{item.text}}">
           <view class="menu-icon-wrapper">
             <image class="menu-icon" src="{{item.icon}}" mode="aspectFit"></image>
           </view>
@@ -98,7 +98,7 @@
     <view class="menu-group">
       <view class="menu-title">其他功能</view>
       <view class="menu-list">
-        <view class="menu-item" wx:for="{{otherMenus}}" wx:key="index" bindtap="handleItemTap" data-url="{{item.url}}">
+        <view class="menu-item" wx:for="{{otherMenus}}" wx:key="index" bindtap="handleItemTap" data-url="{{item.url}}" data-text="{{item.text}}">
           <view class="menu-icon-wrapper">
             <van-icon name="{{item.icon}}" size="48rpx" color="{{item.color}}"></van-icon>
           </view>
@@ -109,19 +109,62 @@
       </view>
     </view>
   </view>
+
+  <!-- 退出登录按钮（仅已登录时显示） -->
+  <view wx:if="{{ apiUserInfoMap }}" class="logout-section">
+    <van-button type="default" block round custom-class="logout-btn" bind:click="onLogout">
+      退出登录
+    </van-button>
+  </view>
 </view>
 
 <!-- 编辑昵称弹窗 -->
 <van-dialog
+  use-slot
   show="{{ nickShow }}"
-  title="编辑昵称"
+  title="修改昵称"
   show-cancel-button
   confirm-button-text="保存"
   cancel-button-text="取消"
   bind:confirm="saveNick"
   bind:cancel="cancelEditNick"
+  custom-style="border-radius: 24rpx;"
 >
   <view class="nick-input-wrapper">
-    <input class="nick-input" type="text" placeholder="请输入昵称" value="{{ newNick }}" bindinput="onNickInput" maxlength="20" />
+    <input 
+      class="nick-input" 
+      type="nickname" 
+      placeholder="请输入或获取微信昵称" 
+      value="{{ newNick }}" 
+      bindinput="onNickInput" 
+      bindblur="onNickBlur"
+      maxlength="20" 
+      confirm-type="done"
+      always-embed="true"
+    />
+  </view>
+</van-dialog>
+
+<!-- 申请养殖户弹窗 -->
+<van-dialog
+  use-slot
+  show="{{ applyBreederShow }}"
+  title="申请成为养殖户"
+  show-cancel-button
+  confirm-button-text="提交申请"
+  cancel-button-text="取消"
+  bind:confirm="submitApplyBreeder"
+  bind:cancel="cancelApplyBreeder"
+  custom-style="border-radius: 24rpx;"
+>
+  <view class="nick-input-wrapper">
+    <input 
+      class="nick-input" 
+      type="number" 
+      placeholder="请输入联系手机号" 
+      value="{{ applyMobile }}" 
+      bindinput="onApplyMobileInput" 
+      maxlength="11" 
+    />
   </view>
 </van-dialog>

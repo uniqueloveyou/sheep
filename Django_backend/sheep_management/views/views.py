@@ -7,7 +7,7 @@ import json
 import re
 from datetime import datetime, date
 from django.utils import timezone
-from ..models import User, Sheep, VaccinationHistory, Breeder, GrowthRecord, FeedingRecord, CartItem, PromotionActivity, Coupon
+from ..models import User, Sheep, VaccinationHistory, GrowthRecord, FeedingRecord, CartItem, PromotionActivity, Coupon
 from ..utils import generate_token, verify_token
 import requests
 @csrf_exempt
@@ -131,7 +131,7 @@ def api_login(request):
         if user.password != password:
             return JsonResponse({'code': 401, 'msg': '用户名或密码错误', 'data': None}, status=401)
 
-        user.last_login_at = datetime.now()
+        user.last_login = datetime.now()
         user.save()
 
         token = generate_token(user.id, user.username)
@@ -259,8 +259,8 @@ def api_get_vaccine_records(request, sheep_id):
         result = []
         for record in records:
             result.append({
-                'VaccinationID': record.vaccination_id,
-                'VaccineType': record.vaccine_type or record.get_vaccination_id_display(),
+                'VaccinationID': record.vaccine_id,
+                'VaccineType': record.vaccine.name,
                 'VaccinationDate': record.vaccination_date.strftime('%Y-%m-%d'),
                 'ExpiryDate': record.expiry_date.strftime('%Y-%m-%d'),
                 'Dosage': float(record.dosage),
@@ -299,10 +299,10 @@ def api_get_breeders(request, breeder_id=None):
             # ----------------- 获取单个养殖户详情 -----------------
             try:
                 # 直接查询，不再尝试访问 latitude 等不存在的字段
-                breeder = Breeder.objects.get(pk=breeder_id)
+                breeder = User.objects.get(pk=breeder_id, role=1)
 
                 # 获取关联的羊只列表
-                sheep_list = Sheep.objects.filter(breeder=breeder)
+                sheep_list = Sheep.objects.filter(owner=breeder)
                 actual_sheep_count = sheep_list.count()
 
                 # 统计羊只性别分布
@@ -340,14 +340,14 @@ def api_get_breeders(request, breeder_id=None):
 
                 result = {
                     'id': breeder.id,
-                    'name': breeder.name,
-                    'gender': breeder.gender,
-                    'phone': breeder.phone,
-                    'sheep_count': breeder.sheep_count,
+                    'name': breeder.nickname or breeder.username,
+                    'gender': breeder.get_gender_display() if breeder.gender is not None else '',
+                    'phone': breeder.mobile or '',
+                    'sheep_count': actual_sheep_count,
                     'actual_sheep_count': actual_sheep_count,
-                    'sheep_id': breeder.sheep_id,
-                    'female_count': breeder.female_count,
-                    'male_count': breeder.male_count,
+                    'sheep_id': str(breeder.id),
+                    'female_count': actual_female_count,
+                    'male_count': actual_male_count,
                     'actual_female_count': actual_female_count,
                     'actual_male_count': actual_male_count,
                     'icon_url': f'/images/farmer/people/p{breeder.id % 10 + 1}.png',
@@ -369,13 +369,13 @@ def api_get_breeders(request, breeder_id=None):
                     'description': f'专业养殖户，拥有{actual_sheep_count}只优质滩羊，养殖经验丰富。'
                 }
                 return JsonResponse(result, status=200)
-            except Breeder.DoesNotExist:
+            except User.DoesNotExist:
                 return JsonResponse({'code': 404, 'msg': '养殖户不存在', 'data': None}, status=404)
         else:
             # ----------------- 获取养殖户列表 -----------------
             try:
                 # 简单直接查询所有，不加 defer
-                breeders = Breeder.objects.all()
+                breeders = User.objects.filter(role=1)
                 breeder_count = breeders.count()
                 print(f'[API] 成功查询到 {breeder_count} 个养殖户')
 
@@ -384,12 +384,12 @@ def api_get_breeders(request, breeder_id=None):
 
                 for breeder in breeders:
                     try:
-                        actual_sheep_count = Sheep.objects.filter(breeder=breeder).count()
+                        actual_sheep_count = Sheep.objects.filter(owner=breeder).count()
 
                         # 统计健康羊只
                         try:
                             healthy_count = Sheep.objects.filter(
-                                breeder=breeder,
+                                owner=breeder,
                                 vaccination_records__expiry_date__gte=today
                             ).distinct().count()
                         except Exception:
@@ -397,14 +397,14 @@ def api_get_breeders(request, breeder_id=None):
 
                         result.append({
                             'id': breeder.id,
-                            'name': breeder.name,
-                            'gender': breeder.gender,
-                            'phone': breeder.phone,
-                            'sheep_count': breeder.sheep_count,
+                            'name': breeder.nickname or breeder.username,
+                            'gender': breeder.get_gender_display() if breeder.gender is not None else '',
+                            'phone': breeder.mobile or '',
+                            'sheep_count': Sheep.objects.filter(owner=breeder).count(),
                             'actual_sheep_count': actual_sheep_count,
-                            'sheep_id': breeder.sheep_id,
-                            'female_count': breeder.female_count,
-                            'male_count': breeder.male_count,
+                            'sheep_id': str(breeder.id),
+                            'female_count': Sheep.objects.filter(owner=breeder, gender=0).count(),
+                            'male_count': Sheep.objects.filter(owner=breeder, gender=1).count(),
                             'icon_url': f'/images/farmer/people/p{breeder.id % 10 + 1}.png',
                             'healthy_count': healthy_count,
                             'rating': 4.5,
@@ -497,32 +497,34 @@ def api_search_goods(request):
                     'weight': float(sheep.weight),
                     'height': float(sheep.height),
                     'length': float(sheep.length),
-                    'breeder_id': sheep.breeder.id if sheep.breeder else None,
-                    'breeder_name': sheep.breeder.name if sheep.breeder else None
+                    'breeder_id': sheep.owner_id if sheep.owner_id else None,
+                    'breeder_name': sheep.owner.nickname or sheep.owner.username if sheep.owner else None
                 })
         except Exception as e:
             print(f'搜索羊只时出错: {str(e)}')
         
         # 2. 搜索养殖户
         try:
-            breeders = Breeder.objects.filter(
-                Q(name__icontains=keyword) |
-                Q(phone__icontains=keyword) |
-                Q(sheep_id__icontains=keyword)
+            breeders = User.objects.filter(
+                role=1
+            ).filter(
+                Q(nickname__icontains=keyword) |
+                Q(mobile__icontains=keyword) |
+                Q(username__icontains=keyword)
             )[:10]
             
             for breeder in breeders:
                 result.append({
                     'type': 'breeder',
                     'id': breeder.id,
-                    'name': breeder.name,
-                    'title': f'养殖户: {breeder.name}',
-                    'description': f'联系电话: {breeder.phone}, 羊只总数: {breeder.sheep_count}只',
+                    'name': breeder.nickname or breeder.username,
+                    'title': f'养殖户: {breeder.nickname or breeder.username}',
+                    'description': f'联系电话: {breeder.mobile or ""}, 羊只总数: {Sheep.objects.filter(owner=breeder).count()}只',
                     'price': 0,
                     'image': '/images/icons/function/f8.png',
-                    'phone': breeder.phone,
-                    'sheep_count': breeder.sheep_count,
-                    'gender': breeder.gender
+                    'phone': breeder.mobile or '',
+                    'sheep_count': Sheep.objects.filter(owner=breeder).count(),
+                    'gender': breeder.get_gender_display() if breeder.gender is not None else ''
                 })
         except Exception as e:
             print(f'搜索养殖户时出错: {str(e)}')
@@ -646,8 +648,8 @@ def api_get_sheep_with_growth(request, sheep_id):
             for record in vaccination_records:
                 vaccination_data.append({
                     'id': record.id,
-                    'vaccination_id': record.vaccination_id,
-                    'vaccine_type': record.vaccine_type or (record.get_vaccination_id_display() if hasattr(record, 'get_vaccination_id_display') else ''),
+                    'vaccination_id': record.vaccine_id,
+                    'vaccine_type': record.vaccine.name,
                     'vaccination_date': record.vaccination_date.strftime('%Y-%m-%d') if record.vaccination_date else '',
                     'expiry_date': record.expiry_date.strftime('%Y-%m-%d') if record.expiry_date else '',
                     'dosage': float(record.dosage) if record.dosage is not None else 0.0,
@@ -773,7 +775,7 @@ def api_login_by_phone(request):
                     mobile=pure_phone,
                     openid=openid,
                     nickname=f"用户{pure_phone[-4:]}",
-                    last_login_at=datetime.now()
+                    last_login=datetime.now()
                 )
             except Exception as create_error:
                 # 如果因为openid唯一性冲突创建失败，尝试再次查找
@@ -786,7 +788,7 @@ def api_login_by_phone(request):
                 user.openid = openid
             if pure_phone:
                 user.mobile = pure_phone
-            user.last_login_at = datetime.now()
+            user.last_login = datetime.now()
             user.save()
 
         # 5. 返回 Token 和用户信息
@@ -863,7 +865,7 @@ def api_login_wx(request):
                     openid=openid,
                     unionid=unionid or None,
                     nickname=f"微信用户{openid[-4:]}",
-                    last_login_at=datetime.now()
+                    last_login=datetime.now()
                 )
             except Exception as create_error:
                 # 如果因为openid唯一性冲突创建失败，尝试再次查找
@@ -874,7 +876,7 @@ def api_login_wx(request):
             # 更新现有用户信息
             if unionid and not user.unionid:
                 user.unionid = unionid
-            user.last_login_at = datetime.now()
+            user.last_login = datetime.now()
             user.save()
 
         # 3. 返回 Token 和用户信息

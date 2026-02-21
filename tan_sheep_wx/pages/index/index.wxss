@@ -181,3 +181,8 @@ video {
     font-size: 24rpx;
     color: #999;
 }
+
+page {
+    /* 防止 tabBar 遮挡底部内容 */
+    padding-bottom: 120rpx;
+}
