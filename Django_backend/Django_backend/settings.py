@@ -151,3 +151,18 @@ R2_ACCESS_KEY_ID = '258fadb6983f5bbb316d248e9ecf767c'        # R2 API Token 的 
 R2_SECRET_ACCESS_KEY = '36728826ba79e351a73374accca82c1885ba1c58666e502bcbccab7a444f2c47'    # R2 API Token 的 Secret Access Key
 R2_BUCKET_NAME = 'avatar-bucket'          # 存储桶名称
 R2_PUBLIC_URL = 'https://avatar.youzilite.us.kg'           # 公开访问域名，例如 https://assets.example.com
+
+# 覆盖默认的 Media 文件存储以使用 Cloudflare R2 (通过 django-storages S3Boto3 接口)
+AWS_ACCESS_KEY_ID = R2_ACCESS_KEY_ID
+AWS_SECRET_ACCESS_KEY = R2_SECRET_ACCESS_KEY
+AWS_STORAGE_BUCKET_NAME = R2_BUCKET_NAME
+AWS_S3_ENDPOINT_URL = f"https://{R2_ACCOUNT_ID}.r2.cloudflarestorage.com"
+AWS_S3_CUSTOM_DOMAIN = R2_PUBLIC_URL.replace('https://', '').replace('http://', '').rstrip('/')
+AWS_S3_OBJECT_PARAMETERS = {
+    'CacheControl': 'max-age=86400',
+}
+AWS_DEFAULT_ACL = None         # R2 默认不支持 ACL
+AWS_S3_FILE_OVERWRITE = False  # 同名文件不覆盖会加上后缀
+
+DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+# 注意: 设置 DEFAULT_FILE_STORAGE 后，之后在 Django Admin 上传的任何 ImageField / FileField 都会直传到 R2。

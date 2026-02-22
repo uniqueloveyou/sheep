@@ -59,7 +59,7 @@ Page({
   viewSheepDetail: function (e) {
     const sheepId = e.currentTarget.dataset.sheepId;
     wx.navigateTo({
-      url: `/pages/adopt/customize/customize?id=${sheepId}`
+      url: `/pages/my/sheep-detail/index?id=${sheepId}`
     });
   },
 

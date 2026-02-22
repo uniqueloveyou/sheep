@@ -1,0 +1,310 @@
+page {
+  background-color: #f7f8fa;
+  padding-bottom: 200rpx;
+}
+
+.container {
+  padding: 0;
+}
+
+/* 加载动画 */
+.loading-wrap {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 50vh;
+  color: #999;
+  font-size: 28rpx;
+}
+.spin-icon {
+  margin-bottom: 20rpx;
+  animation: rotate 2s linear infinite;
+}
+@keyframes rotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* 头部卡片 */
+.header-card {
+  position: relative;
+  padding: 40rpx 32rpx;
+  background: #fff;
+  border-bottom-left-radius: 40rpx;
+  border-bottom-right-radius: 40rpx;
+  box-shadow: 0 4rpx 16rpx rgba(0,0,0,0.04);
+  margin-bottom: 30rpx;
+}
+
+.card-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 160rpx;
+  background: linear-gradient(135deg, #FF9B44, #FF5700);
+  border-bottom-left-radius: 40rpx;
+  border-bottom-right-radius: 40rpx;
+  z-index: 0;
+}
+
+.sheep-profile {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  background: #fff;
+  padding: 30rpx;
+  border-radius: 24rpx;
+  box-shadow: 0 8rpx 24rpx rgba(255,87,0,0.1);
+}
+
+.sheep-avatar {
+  width: 140rpx;
+  height: 140rpx;
+  border-radius: 16rpx;
+  margin-right: 24rpx;
+  background: #f5f5f5;
+  border: 4rpx solid #fff;
+}
+
+.profile-info {
+  flex: 1;
+}
+
+.sheep-title {
+  font-size: 34rpx;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 12rpx;
+  display: block;
+}
+
+.id-tag {
+  display: inline-flex;
+  align-items: center;
+  font-size: 24rpx;
+  color: #666;
+  background: #f5f5f5;
+  padding: 4rpx 16rpx;
+  border-radius: 20rpx;
+}
+
+.id-tag van-icon {
+  margin-right: 6rpx;
+}
+
+.status-badge {
+  position: absolute;
+  top: -20rpx;
+  right: -20rpx;
+  background: #e6f6eb;
+  color: #2b9939;
+  font-size: 22rpx;
+  font-weight: bold;
+  padding: 8rpx 16rpx;
+  border-radius: 20rpx;
+  border: 4rpx solid #fff;
+}
+
+/* 基础数据面板 */
+.data-panel {
+  display: flex;
+  justify-content: space-around;
+  background: #fff;
+  margin: 0 32rpx 40rpx;
+  padding: 32rpx 0;
+  border-radius: 24rpx;
+  box-shadow: 0 4rpx 12rpx rgba(0,0,0,0.02);
+}
+
+.data-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.data-val {
+  font-size: 40rpx;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 8rpx;
+}
+
+.data-unit {
+  font-size: 24rpx;
+  font-weight: normal;
+  color: #999;
+  margin-left: 4rpx;
+}
+
+.data-label {
+  font-size: 24rpx;
+  color: #999;
+}
+
+/* 列表容器 */
+.section {
+  margin: 0 32rpx 40rpx;
+}
+
+.section-title {
+  font-size: 30rpx;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 24rpx;
+  display: flex;
+  align-items: center;
+}
+
+.section-title van-icon {
+  margin-right: 12rpx;
+}
+
+.custom-cell-group {
+  box-shadow: 0 4rpx 12rpx rgba(0,0,0,0.02) !important;
+  border-radius: 16rpx !important;
+  overflow: hidden;
+}
+
+/* 身份标识（二维码） */
+.qr-code-box {
+  background: #fff;
+  border-radius: 16rpx;
+  padding: 40rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-shadow: 0 4rpx 12rpx rgba(0,0,0,0.02);
+}
+
+.qr-code-img {
+  width: 240rpx;
+  height: 240rpx;
+  margin-bottom: 20rpx;
+}
+
+.qr-code-hint {
+  font-size: 24rpx;
+  color: #999;
+}
+
+/* 时间轴 (疫苗记录) */
+.vaccine-list {
+  background: #fff;
+  border-radius: 16rpx;
+  padding: 32rpx 32rpx 10rpx;
+  box-shadow: 0 4rpx 12rpx rgba(0,0,0,0.02);
+}
+
+.empty-list {
+  background: #fff;
+  border-radius: 16rpx;
+  padding: 60rpx 0;
+  text-align: center;
+  color: #999;
+  font-size: 26rpx;
+}
+
+.timeline-item {
+  position: relative;
+  padding-left: 40rpx;
+  padding-bottom: 30rpx;
+}
+
+.timeline-item::before {
+  content: '';
+  position: absolute;
+  left: 10rpx;
+  top: 10rpx;
+  bottom: 0;
+  width: 2rpx;
+  background-color: #eee;
+}
+
+.timeline-item:last-child::before {
+  display: none;
+}
+
+.timeline-dot {
+  position: absolute;
+  left: 0;
+  top: 10rpx;
+  width: 22rpx;
+  height: 22rpx;
+  border-radius: 50%;
+  background-color: #1989fa;
+  border: 4rpx solid #e8f3fe;
+}
+
+.timeline-content {
+  background: #fdfdfd;
+  border: 1rpx solid #f0f0f0;
+  padding: 20rpx;
+  border-radius: 12rpx;
+}
+
+.timeline-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10rpx;
+}
+
+.v-type {
+  font-size: 28rpx;
+  font-weight: bold;
+  color: #333;
+}
+
+.v-date {
+  font-size: 24rpx;
+  color: #999;
+}
+
+.v-desc {
+  font-size: 24rpx;
+  color: #666;
+  display: block;
+}
+
+/* 底部操作区 */
+.action-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 140rpx;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 32rpx;
+  box-shadow: 0 -4rpx 16rpx rgba(0,0,0,0.05);
+  box-sizing: border-box;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.action-btn {
+  flex: 1;
+  height: 80rpx;
+  line-height: 80rpx;
+  font-size: 28rpx;
+  font-weight: bold;
+  border-radius: 40rpx;
+  margin: 0 12rpx;
+}
+
+.outline-btn {
+  background: #fff;
+  color: #FF5700;
+  border: 2rpx solid #FF5700;
+}
+
+.primary-btn {
+  background: linear-gradient(90deg, #FF7B00, #FF5700);
+  color: #fff;
+  border: none;
+  box-shadow: 0 4rpx 12rpx rgba(255,87,0,0.3);
+}

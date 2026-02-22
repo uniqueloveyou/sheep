@@ -11,6 +11,7 @@
         "pages/my/info-menu/info-menu",
         "pages/my/info/info",
         "pages/my/adopt/adopt",
+        "pages/my/sheep-detail/index",
         "pages/search/index",
         "pages/category/index",
         "pages/goodsdetail/goodsdetail",

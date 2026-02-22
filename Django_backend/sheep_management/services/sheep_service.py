@@ -94,7 +94,7 @@ class SheepService:
             raise SheepError('缺少羊只ID参数')
 
         try:
-            sheep = Sheep.objects.get(pk=sheep_id)
+            sheep = Sheep.objects.select_related('owner').get(pk=sheep_id)
         except Sheep.DoesNotExist:
             raise SheepError('羊只不存在', code=404, http_status=404)
 
@@ -104,7 +104,13 @@ class SheepService:
             'weight': float(sheep.weight),
             'height': float(sheep.height),
             'length': float(sheep.length),
+            'birth_date': sheep.birth_date.strftime('%Y-%m-%d') if sheep.birth_date else '',
             'price': float(sheep.price),
+            'ear_tag': sheep.ear_tag or '',
+            'qr_code': sheep.qr_code.url if sheep.qr_code else '',
+            'farm_name': sheep.farm_name or '宁夏盐池滩羊核心产区',  # 如果真实农场没填给个默认
+            'breeder_name': sheep.owner.nickname or sheep.owner.username if sheep.owner else '官方牧场',
+            'image': sheep.image.url if sheep.image else '',
         }
 
     @staticmethod

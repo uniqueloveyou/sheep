@@ -12,6 +12,9 @@ class Sheep(models.Model):
     weight = models.FloatField(verbose_name='体重（kg）')
     height = models.FloatField(verbose_name='身高（cm）')
     length = models.FloatField(verbose_name='体长（cm）')
+    birth_date = models.DateField(null=True, blank=True, verbose_name='出生日期')
+    farm_name = models.CharField(max_length=200, null=True, blank=True, verbose_name='农场名称')
+    image = models.ImageField(upload_to='sheep_images/', null=True, blank=True, verbose_name='羊只照片')
     owner = models.ForeignKey(
         'User',                            # 跨文件引用 User 模型 (用字符串避免循环引用)
         on_delete=models.CASCADE,          # 如果这个养殖户被删了，他的羊也跟着删掉
