@@ -55,10 +55,10 @@ def api_user_info(request):
 @csrf_exempt
 @require_http_methods(["GET"])
 def api_get_profile(request):
-    """获取用户详细资料（含生日/简介等） GET /api/user/profile?token=xxx"""
+    """获取用户详细资料 GET /api/user/profile?token=xxx"""
     try:
         token = _get_token(request)
-        result = UserService.get_full_profile(token)
+        result = UserService.get_user_info(token)
         return JsonResponse({'code': 0, 'msg': 'ok', 'data': result})
     except UserError as e:
         return _error_response(e)

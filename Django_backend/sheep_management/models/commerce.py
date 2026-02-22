@@ -148,3 +148,46 @@ class UserCoupon(models.Model):
 
     def __str__(self):
         return f"{self.user} - {self.coupon} - {self.get_status_display()}"
+
+
+class Order(models.Model):
+    """订单主表"""
+    STATUS_CHOICES = [
+        ('pending', '待支付'),
+        ('paid', '已支付/认养中'),
+        ('completed', '已完成'),
+        ('cancelled', '已取消'),
+    ]
+
+    user = models.ForeignKey('User', on_delete=models.CASCADE, related_name='orders', verbose_name='认养用户')
+    order_no = models.CharField(max_length=50, unique=True, verbose_name='订单编号')
+    total_amount = models.DecimalField(max_digits=10, decimal_places=2, verbose_name='订单总金额')
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending', verbose_name='订单状态')
+
+    # 以后如果你要接微信支付，这里还可以加上 transaction_id(微信流水号)
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='创建时间')
+    pay_time = models.DateTimeField(null=True, blank=True, verbose_name='支付时间')
+
+    class Meta:
+        db_table = 'orders'
+        verbose_name = '订单'
+        verbose_name_plural = '订单'
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"订单号:{self.order_no} - {self.get_status_display()}"
+
+
+class OrderItem(models.Model):
+    """订单明细表（记录这个订单买下了哪几只羊）"""
+    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='items', verbose_name='所属订单')
+    sheep = models.ForeignKey('Sheep', on_delete=models.CASCADE, related_name='order_items', verbose_name='认养的羊只')
+    price = models.DecimalField(max_digits=10, decimal_places=2, verbose_name='买入单价')
+
+    class Meta:
+        db_table = 'order_items'
+        verbose_name = '订单明细'
+        verbose_name_plural = '订单明细'
+
+    def __str__(self):
+        return f"{self.order.order_no} - {self.sheep}"

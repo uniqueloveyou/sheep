@@ -151,6 +151,18 @@ Page({
     }
   },
 
+  onDescInput(e) {
+    this.setData({ description: e.detail.value });
+  },
+
+  onDescBlur(e) {
+    this.setData({ description: e.detail.value });
+  },
+
+  bindBirthdayChange(e) {
+    this.setData({ birthday: e.detail.value });
+  },
+
   bindPickerChange(e) {
     const idx = parseInt(e.detail.value, 10);
     this.setData({
@@ -161,13 +173,15 @@ Page({
 
   async saveProfile() {
     const token = wx.getStorageSync('token');
-    const { nickname, genderIndex } = this.data;
+    const { nickname, genderIndex, description, birthday } = this.data;
 
     wx.showLoading({ title: '保存中' });
     try {
       const res = await API.updateUserInfo(token, {
         nickname: nickname,
-        gender: genderIndex
+        gender: genderIndex,
+        description: description,
+        birthday: birthday
       });
 
       if (res.code !== 0) throw new Error(res.msg || '保存失败');

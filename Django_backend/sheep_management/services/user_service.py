@@ -56,15 +56,9 @@ class UserService:
 
     @staticmethod
     def get_user_info(token):
-        """获取当前用户信息（基础），用于通用展示"""
+        """获取当前用户信息（完整），用于通用展示和个人资料编辑页"""
         user = UserService.get_user_by_token(token)
         return UserService._build_profile(user)
-
-    @staticmethod
-    def get_full_profile(token):
-        """获取当前用户完整资料，用于个人资料编辑页"""
-        user = UserService.get_user_by_token(token)
-        return UserService._build_full_profile(user)
 
     # ========================
     #  头像上传（R2 Presigned URL）
@@ -205,9 +199,25 @@ class UserService:
                 raise UserError('手机号格式不正确')
             user.mobile = mobile or None
 
+        if description is not None:
+            if len(description) > 200:
+                raise UserError('个人简介不能超过200个字符')
+            user.description = description
+
+        if birthday is not None:
+            # 支持空字符串清空生日
+            if birthday == '':
+                user.birthday = None
+            else:
+                from datetime import datetime
+                try:
+                    user.birthday = datetime.strptime(birthday, '%Y-%m-%d').date()
+                except (ValueError, TypeError):
+                    raise UserError('生日格式不正确，请使用 YYYY-MM-DD')
+
         user.save()
-            
-        return UserService._build_full_profile(user)
+
+        return UserService._build_profile(user)
 
     @staticmethod
     def apply_breeder(token, mobile):
@@ -232,30 +242,15 @@ class UserService:
 
     @staticmethod
     def _build_profile(user):
-        """构建用户基础资料"""
+        """构建用户完整资料（统一返回所有字段）"""
         return {
             'id': user.id,
             'role': user.role,
             'is_verified': user.is_verified,
             'username': user.username or '',
             'nickname': user.nickname or '',
-            'mobile': user.mobile or '',
-            'avatar_url': user.avatar_url or '',
-            'gender': user.gender or 0,
-        }
-
-    @staticmethod
-    def _build_full_profile(user):
-        """构建用户完整资料（包含简介和生日等可选字段），用于个人资料编辑页"""
-        # 为了防止在没有执行 makemigrations 的环境下报错，这里使用 getattr 容错提取
-        return {
-            'id': user.id,
-            'role': user.role,
-            'is_verified': user.is_verified,
-            'username': user.username or '',
-            'nickname': user.nickname or '',
-            'description': getattr(user, 'description', ''),
-            'birthday': user.birthday.strftime('%Y-%m-%d') if getattr(user, 'birthday', None) else '',
+            'description': user.description or '',
+            'birthday': user.birthday.strftime('%Y-%m-%d') if user.birthday else '',
             'mobile': user.mobile or '',
             'avatar_url': user.avatar_url or '',
             'gender': user.gender or 0,

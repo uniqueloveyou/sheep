@@ -2,6 +2,7 @@ from django.urls import path
 from . import views  # 传统视图 + 其余 API（后续逐步迁移）
 from .api import auth_api  # 认证 API（已重构）
 from .api import user_api  # 用户 API
+from .api import sheep_api  # 羊只 API（已重构）
 
 urlpatterns = [
     # ==========================
@@ -39,15 +40,15 @@ urlpatterns = [
     # ==========================
     path('', views.index, name='index'),
 
-    # 羊只API
-    path('api/sheep/search', views.api_search_sheep, name='api_search_sheep'),
-    path('search_sheep', views.api_search_sheep, name='search_sheep_compat'),
-    path('api/sheep/<int:sheep_id>', views.api_get_sheep_by_id, name='api_get_sheep_by_id'),
-    path('search_sheep_by_id', views.api_get_sheep_by_id, name='search_sheep_by_id_compat'),
+    # 羊只API（已迁移到 api/sheep_api.py）
+    path('api/sheep/search', sheep_api.api_search_sheep, name='api_search_sheep'),
+    path('search_sheep', sheep_api.api_search_sheep, name='search_sheep_compat'),
+    path('api/sheep/<int:sheep_id>', sheep_api.api_get_sheep_by_id, name='api_get_sheep_by_id'),
+    path('search_sheep_by_id', sheep_api.api_get_sheep_by_id, name='search_sheep_by_id_compat'),
 
-    # 疫苗记录API
-    path('api/vaccine/records/<int:sheep_id>', views.api_get_vaccine_records, name='api_get_vaccine_records'),
-    path('vaccine_records/<int:sheep_id>', views.api_get_vaccine_records, name='vaccine_records_compat'),
+    # 疫苗记录API（已迁移到 api/sheep_api.py）
+    path('api/vaccine/records/<int:sheep_id>', sheep_api.api_get_vaccine_records, name='api_get_vaccine_records'),
+    path('vaccine_records/<int:sheep_id>', sheep_api.api_get_vaccine_records, name='vaccine_records_compat'),
 
     # 养殖户API
     path('api/breeders', views.api_get_breeders, name='api_get_breeders'),
@@ -58,12 +59,12 @@ urlpatterns = [
     # 商品搜索
     path('search_goods', views.api_search_goods, name='api_search_goods'),
 
-    # 生长记录
-    path('api/growth/sheep/<int:sheep_id>', views.api_get_sheep_with_growth, name='api_get_sheep_with_growth'),
+    # 生长记录（已迁移到 api/sheep_api.py）
+    path('api/growth/sheep/<int:sheep_id>', sheep_api.api_get_sheep_with_growth, name='api_get_sheep_with_growth'),
 
     # 智能问答
     path('api/qa/ask', views.api_qa_ask, name='api_qa_ask'),
     
-    # 溯源查询（通过耳标编号）
-    path('api/sheep/trace', views.api_get_sheep_by_ear_tag, name='api_get_sheep_by_ear_tag'),
+    # 溯源查询（已迁移到 api/sheep_api.py）
+    path('api/sheep/trace', sheep_api.api_get_sheep_by_ear_tag, name='api_get_sheep_by_ear_tag'),
 ]

@@ -24,6 +24,8 @@ class User(AbstractUser):
     avatar_url = models.CharField(max_length=500, null=True, blank=True, verbose_name='头像URL')
     mobile = models.CharField(max_length=20, null=True, blank=True, verbose_name='手机号')
     gender = models.IntegerField(choices=GENDER_CHOICES, null=True, blank=True, verbose_name='性别')
+    description = models.CharField(max_length=200, null=True, blank=True, verbose_name='个人简介')
+    birthday = models.DateField(null=True, blank=True, verbose_name='生日')
     country = models.CharField(max_length=50, null=True, blank=True, verbose_name='国家')
     province = models.CharField(max_length=50, null=True, blank=True, verbose_name='省份')
     city = models.CharField(max_length=50, null=True, blank=True, verbose_name='城市')

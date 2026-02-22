@@ -1,6 +1,6 @@
 from .sheep import Sheep, GrowthRecord, FeedingRecord, VaccineType, VaccinationHistory
 from .user import User
-from .commerce import CartItem, PromotionActivity, Coupon, UserCoupon
+from .commerce import CartItem, PromotionActivity, Coupon, UserCoupon, Order, OrderItem
 
 __all__ = [
     'Sheep',
@@ -13,4 +13,6 @@ __all__ = [
     'PromotionActivity',
     'Coupon',
     'UserCoupon',
+    'Order',
+    'OrderItem',
 ]

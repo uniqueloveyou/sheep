@@ -22,16 +22,18 @@
     </view>
   </view>
 
-  <!-- 个人简介（暂未开放） -->
+  <!-- 个人简介 -->
   <view class="card">
     <view class="card-header">个人简介</view>
-    <view class="desc-area disabled-area">
+    <view class="desc-area">
       <textarea 
-        class="desc-input disabled-text" 
-        value="{{ description || '暂不可用' }}" 
-        disabled="true"
+        class="desc-input" 
+        value="{{ description }}" 
+        bindinput="onDescInput"
+        bindblur="onDescBlur"
+        placeholder="请输入个人简介" 
         placeholder-class="placeholder"
-        maxlength="100"
+        maxlength="200"
       ></textarea>
     </view>
   </view>
@@ -40,13 +42,15 @@
   <view class="card">
     <view class="card-header">基本信息</view>
     
-    <!-- 生日预留（暂无接口，置灰不可用） -->
-    <view class="list-item disabled-item">
-      <view class="item-label">生日：</view>
-      <view class="item-value disabled-text">
-        暂不开放
+    <!-- 生日 -->
+    <picker mode="date" value="{{ birthday }}" bindchange="bindBirthdayChange" end="2026-12-31">
+      <view class="list-item" hover-class="item-hover">
+        <view class="item-label">生日：</view>
+        <view class="item-value {{ birthday ? '' : 'placeholder' }}">
+          {{ birthday || '请选择生日' }}
+        </view>
       </view>
-    </view>
+    </picker>
 
     <picker bindchange="bindPickerChange" value="{{ genderIndex }}" range="{{genderArray}}">
       <view class="list-item" hover-class="item-hover">
