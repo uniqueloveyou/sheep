@@ -4,7 +4,9 @@ const API = require('../../utils/api.js');
 Page({
     data: {
         cartItems: [],
-        totalPrice: 0
+        totalPrice: 0,
+        showPaymentSheet: false,
+        userBalance: '0.00'
     },
 
     onShow: function () {
@@ -145,14 +147,52 @@ Page({
             return;
         }
 
+        // 结算前获取一下最新余额
+        wx.showLoading({ title: '获取数据中...' });
+        API.getUserInfo(token)
+            .then(res => {
+                wx.hideLoading();
+                const balance = res.data && res.data.balance !== undefined ? res.data.balance : 0;
+                that.setData({
+                    userBalance: Number(balance).toFixed(2),
+                    showPaymentSheet: true
+                });
+            })
+            .catch(err => {
+                wx.hideLoading();
+                wx.showToast({ title: '获取余额失败', icon: 'none' });
+            });
+    },
+
+    onClosePaymentSheet: function () {
+        this.setData({ showPaymentSheet: false });
+    },
+
+    onSelectPayment: function (e) {
+        const method = e.currentTarget.dataset.method; // 'balance' or 'wechat'
+        const that = this;
+        const token = wx.getStorageSync('token');
+
+        // 微信支付暂时不下单
+        if (method === 'wechat') {
+            wx.showModal({
+                title: '微信支付',
+                content: '暂未开通微信真实支付。',
+                showCancel: false
+            });
+            return;
+        }
+
+        // 二次确认
         wx.showModal({
-            title: '确认结算',
-            content: '总价 ¥' + that.data.totalPrice + '，确认结算吗？',
+            title: '确认付款',
+            content: `总价 ¥${that.data.totalPrice}，扣除余额，确认支付吗？`,
             success: function (res) {
                 if (res.confirm) {
-                    wx.showLoading({ title: '结算中...', mask: true });
+                    that.setData({ showPaymentSheet: false });
+                    wx.showLoading({ title: '处理中...', mask: true });
 
-                    API.checkout(token)
+                    API.checkout(token, method)
                         .then((res) => {
                             wx.hideLoading();
                             console.log('[结算] API返回:', res);
@@ -160,12 +200,12 @@ Page({
                             if (res.code === 0) {
                                 that.setData({ cartItems: [], totalPrice: 0 });
                                 wx.showToast({
-                                    title: '结算成功！',
+                                    title: '支付成功！',
                                     icon: 'success',
                                     duration: 2000
                                 });
                             } else {
-                                wx.showToast({ title: res.msg || '结算失败', icon: 'none' });
+                                wx.showToast({ title: res.msg || '余额不足或结算失败', icon: 'none', duration: 3000 });
                             }
                         })
                         .catch((error) => {

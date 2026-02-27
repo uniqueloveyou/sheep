@@ -149,6 +149,8 @@ def api_checkout(request):
     """
     购物车结算
     POST /api/cart/checkout  → 将购物车商品打包为订单
+    可选参数:
+    { "token": "...", "payment_method": "balance" } (默认 "balance")
     """
     if request.method != 'POST':
         return JsonResponse({'code': 405, 'msg': '不支持的请求方法', 'data': None}, status=405)
@@ -156,7 +158,8 @@ def api_checkout(request):
     try:
         data = json.loads(request.body)
         token = data.get('token', '') or _get_token(request)
-        result = CommerceService.checkout(token)
+        payment_method = data.get('payment_method', 'balance')
+        result = CommerceService.checkout(token, payment_method=payment_method)
         return JsonResponse({'code': 0, 'msg': '结算成功', 'data': result})
     except CommerceError as e:
         return _error_response(e)

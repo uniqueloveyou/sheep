@@ -161,10 +161,19 @@ Page({
 
           wx.setStorageSync('apiUserInfoMap', userInfoMap);
 
+          // 真实获取余额和累计消费
+          var realBalance = info.balance !== undefined ? parseFloat(info.balance).toFixed(2) : '0.00';
+          var realConsumed = info.total_consumed !== undefined ? parseFloat(info.total_consumed).toFixed(2) : '0.00';
+
+          wx.setStorageSync('balance', realBalance);
+          wx.setStorageSync('freeze', realConsumed);
+
           this.setData({
             apiUserInfoMap: userInfoMap,
             userinfo: userInfoMap.base,
-            nick: userInfoMap.base.nick
+            nick: userInfoMap.base.nick,
+            balance: realBalance,
+            freeze: realConsumed
           });
         }
       } catch (e) {

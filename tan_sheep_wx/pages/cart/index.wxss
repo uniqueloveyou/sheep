@@ -228,8 +228,17 @@ page {
 }
 
 .checkout-hover {
-    opacity: 0.9;
-    transform: scale(0.98);
+  background: #e64e00;
+  transform: scale(0.98);
+}
+
+/* 支付选项面板样式 */
+.payment-options {
+  padding: 30rpx 0 60rpx 0;
+}
+.custom-icon {
+  margin-left: 10rpx;
+  color: #999;
 }
 
 /* ===== 空购物车状态 ===== */

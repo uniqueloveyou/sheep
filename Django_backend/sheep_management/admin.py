@@ -62,7 +62,7 @@ class VaccinationHistoryAdmin(admin.ModelAdmin):
 
 @admin.register(User)
 class UserAdmin(admin.ModelAdmin):
-    list_display = ['id', 'username', 'nickname', 'openid', 'mobile', 'role', 'is_verified', 'created_at']
+    list_display = ['id', 'username', 'nickname', 'openid', 'mobile', 'balance', 'role', 'is_verified', 'created_at']
     list_filter = ['gender', 'role', 'is_verified', 'created_at']
     search_fields = ['username', 'nickname', 'openid', 'mobile']
     readonly_fields = ['created_at', 'updated_at']
@@ -70,6 +70,9 @@ class UserAdmin(admin.ModelAdmin):
     fieldsets = (
         ('基本信息', {
             'fields': ('username', 'password', 'nickname', 'mobile', 'gender')
+        }),
+        ('财务信息', {
+            'fields': ('balance',)
         }),
         ('角色权限', {
             'fields': ('role', 'is_verified', 'is_staff', 'is_superuser', 'is_active')

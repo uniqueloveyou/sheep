@@ -256,9 +256,10 @@ function confirmAvatarUpload(token, objectKey) {
 /**
  * 购物车结算（生成订单）
  * @param {string} token 
+ * @param {string} paymentMethod 支付方式（'balance' 或 'wechat'）
  */
-function checkout(token) {
-  return request('/api/cart/checkout', 'POST', { token: token })
+function checkout(token, paymentMethod = 'balance') {
+  return request('/api/cart/checkout', 'POST', { token: token, payment_method: paymentMethod })
 }
 
 /**

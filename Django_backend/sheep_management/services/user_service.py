@@ -243,6 +243,15 @@ class UserService:
     @staticmethod
     def _build_profile(user):
         """构建用户完整资料（统一返回所有字段）"""
+        from ..models import Order
+        from django.db.models import Sum
+
+        # 计算累计消费 (只要状态为 paid 或 completed)
+        total_consumed = Order.objects.filter(
+            user=user, 
+            status__in=['paid', 'completed']
+        ).aggregate(total=Sum('total_amount'))['total'] or 0
+
         return {
             'id': user.id,
             'role': user.role,
@@ -254,4 +263,6 @@ class UserService:
             'mobile': user.mobile or '',
             'avatar_url': user.avatar_url or '',
             'gender': user.gender or 0,
+            'balance': float(user.balance),
+            'total_consumed': float(total_consumed)
         }

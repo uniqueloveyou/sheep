@@ -174,10 +174,11 @@ class CommerceService:
     # ========================
 
     @staticmethod
-    def checkout(token):
+    def checkout(token, payment_method='balance'):
         """
         购物车结算：将购物车所有商品打包为一笔订单，清空购物车
         :param token: 用户 JWT token
+        :param payment_method: 支付方式 'balance' 或 'wechat'
         :return: dict 订单信息
         """
         user = CommerceService._resolve_user(token)
@@ -192,16 +193,34 @@ class CommerceService:
         for item in cart_items:
             total_amount += item.price * item.quantity
 
+        # 处理支付逻辑
+        if payment_method == 'balance':
+            if user.balance < total_amount:
+                raise CommerceError('余额不足，请充值或选择其他支付方式')
+            
+            # 扣除余额
+            user.balance -= total_amount
+            user.save(update_fields=['balance'])
+            
+            order_status = 'paid'
+            pay_time = timezone.now()
+        elif payment_method == 'wechat':
+            # 微信支付暂时不扣款，标记为 pending
+            order_status = 'pending'
+            pay_time = None
+        else:
+            raise CommerceError('不支持的支付方式')
+
         # 生成订单编号
         order_no = f"ORD-{uuid.uuid4().hex[:12].upper()}"
 
-        # 创建订单（目前没有真实支付，直接标记为已支付）
+        # 创建订单
         order = Order.objects.create(
             user=user,
             order_no=order_no,
             total_amount=total_amount,
-            status='paid',
-            pay_time=timezone.now(),
+            status=order_status,
+            pay_time=pay_time,
         )
 
         # 创建订单明细
