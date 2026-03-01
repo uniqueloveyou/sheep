@@ -1,4 +1,16 @@
+import random
+import string
+from datetime import datetime
 from django.db import models
+
+
+def generate_ear_tag(owner_id):
+    """生成耳标编号：TY + 养殖户ID(3位) + 年月日时分秒(12位) + 2位随机大写字母或数字"""
+    prefix = 'TY'
+    owner_part = str(owner_id).zfill(3)
+    time_part = datetime.now().strftime('%y%m%d%H%M%S')  # 如 260301143045
+    random_part = ''.join(random.choices(string.ascii_uppercase + string.digits, k=2))
+    return f'{prefix}{owner_part}{time_part}{random_part}'
 
 
 class Sheep(models.Model):
@@ -7,14 +19,6 @@ class Sheep(models.Model):
         (0, '母'),
         (1, '公'),
     ]
-    BREED_CHOICES = [
-        ('滩羊', '滩羊'),
-        ('小尾寒羊', '小尾寒羊'),
-        ('杜泊羊', '杜泊羊'),
-        ('萨福克羊', '萨福克羊'),
-        ('特克塞尔羊', '特克塞尔羊'),
-        ('其他', '其他'),
-    ]
     HEALTH_STATUS_CHOICES = [
         ('健康', '健康'),
         ('良好', '良好'),
@@ -22,18 +26,15 @@ class Sheep(models.Model):
         ('需关注', '需关注'),
         ('生病', '生病'),
     ]
-    ear_tag = models.CharField(max_length=50, null=True, blank=True, verbose_name='耳标编号')
+    ear_tag = models.CharField(max_length=50, unique=True, blank=True, default='', verbose_name='耳标编号')
     gender = models.IntegerField(choices=GENDER_CHOICES, verbose_name='性别')
-    breed = models.CharField(max_length=50, choices=BREED_CHOICES, default='滩羊', verbose_name='品种')
     health_status = models.CharField(max_length=20, choices=HEALTH_STATUS_CHOICES, default='健康', verbose_name='健康状况')
-    batch_no = models.CharField(max_length=50, null=True, blank=True, verbose_name='批次号')
     weight = models.FloatField(verbose_name='体重（kg）')
     height = models.FloatField(verbose_name='身高（cm）')
     length = models.FloatField(verbose_name='体长（cm）')
     birth_date = models.DateField(null=True, blank=True, verbose_name='出生日期')
     farm_name = models.CharField(max_length=200, null=True, blank=True, verbose_name='农场名称')
     image = models.ImageField(upload_to='sheep_images/', null=True, blank=True, verbose_name='羊只照片')
-    video = models.FileField(upload_to='sheep_videos/', null=True, blank=True, verbose_name='羊只视频')
     owner = models.ForeignKey(
         'User',                            # 跨文件引用 User 模型 (用字符串避免循环引用)
         on_delete=models.CASCADE,          # 如果这个养殖户被删了，他的羊也跟着删掉
@@ -52,6 +53,8 @@ class Sheep(models.Model):
         return f"羊只#{self.id} - {self.get_gender_display()} - {self.weight}kg"
 
     def save(self, *args, **kwargs):
+        if not self.ear_tag:
+            self.ear_tag = generate_ear_tag(self.owner_id)
         super().save(*args, **kwargs)
 
 

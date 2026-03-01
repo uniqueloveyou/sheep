@@ -147,9 +147,8 @@ def api_create_sheep(request):
         
         # 处理文件上传
         image = request.FILES.get('image')
-        video = request.FILES.get('video')
         
-        result = SheepService.create_sheep(user, data, image, video)
+        result = SheepService.create_sheep(user, data, image)
         return JsonResponse({'code': 0, 'msg': '创建成功', 'data': result}, status=200)
     except SheepError as e:
         return _error_response(e)
@@ -189,9 +188,8 @@ def api_update_sheep(request, sheep_id):
         
         # 处理文件上传
         image = request.FILES.get('image')
-        video = request.FILES.get('video')
         
-        result = SheepService.update_sheep(sheep_id, user, data, image, video)
+        result = SheepService.update_sheep(sheep_id, user, data, image)
         return JsonResponse({'code': 0, 'msg': '更新成功', 'data': result}, status=200)
     except SheepError as e:
         return _error_response(e)

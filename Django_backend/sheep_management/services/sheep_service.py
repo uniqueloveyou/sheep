@@ -111,7 +111,6 @@ class SheepService:
             'farm_name': sheep.farm_name or '宁夏盐池滩羊核心产区',  # 如果真实农场没填给个默认
             'breeder_name': sheep.owner.nickname or sheep.owner.username if sheep.owner else '官方牧场',
             'image': sheep.image.url if sheep.image else '',
-            'video': sheep.video.url if sheep.video else '',
         }
 
     @staticmethod
@@ -252,13 +251,12 @@ class SheepService:
         return result
 
     @staticmethod
-    def create_sheep(owner, data, image=None, video=None):
+    def create_sheep(owner, data, image=None):
         """
         创建羊只
         :param owner: 养殖户用户对象
         :param data: 羊只数据
         :param image: 羊只照片
-        :param video: 羊只视频
         :return: dict
         """
         required_fields = ['gender', 'weight', 'height', 'length']
@@ -268,9 +266,7 @@ class SheepService:
 
         try:
             sheep = Sheep.objects.create(
-                ear_tag=data.get('ear_tag'),
                 gender=int(data['gender']),
-                breed=data.get('breed', '滩羊'),
                 health_status=data.get('health_status', '健康'),
                 weight=float(data['weight']),
                 height=float(data['height']),
@@ -283,23 +279,20 @@ class SheepService:
 
             if image:
                 sheep.image = image
-            if video:
-                sheep.video = video
-            sheep.save()
+                sheep.save()
 
             return SheepService.get_sheep_by_id(sheep.id)
         except Exception as e:
             raise SheepError(f'创建羊只失败: {str(e)}')
 
     @staticmethod
-    def update_sheep(sheep_id, owner, data, image=None, video=None):
+    def update_sheep(sheep_id, owner, data, image=None):
         """
         更新羊只信息
         :param sheep_id: 羊只ID
         :param owner: 养殖户用户对象
         :param data: 羊只数据
         :param image: 羊只照片
-        :param video: 羊只视频
         :return: dict
         """
         try:
@@ -312,7 +305,7 @@ class SheepService:
             raise SheepError('无权修改其他养殖户的羊只', code=403, http_status=403)
 
         # 更新字段
-        update_fields = ['ear_tag', 'gender', 'breed', 'health_status', 'weight', 'height', 'length', 'birth_date', 'farm_name', 'price']
+        update_fields = ['ear_tag', 'gender', 'health_status', 'weight', 'height', 'length', 'birth_date', 'farm_name', 'price']
         for field in update_fields:
             if field in data:
                 if field in ['gender', 'weight', 'height', 'length', 'price']:
@@ -322,8 +315,6 @@ class SheepService:
 
         if image:
             sheep.image = image
-        if video:
-            sheep.video = video
 
         sheep.save()
         return SheepService.get_sheep_by_id(sheep.id)

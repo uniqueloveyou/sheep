@@ -49,7 +49,6 @@
                     <th>编号</th>
                     <th>耳标</th>
                     <th>性别</th>
-                    <th>品种</th>
                     <th>健康状况</th>
                     <th>体重</th>
                     <th>操作</th>
@@ -61,7 +60,6 @@
                     <td>{{ sheep.id }}</td>
                     <td>{{ sheep.ear_tag|default:'无' }}</td>
                     <td>{{ sheep.get_gender_display }}</td>
-                    <td>{{ sheep.breed }}</td>
                     <td>
                         <span style="padding: 2px 6px; border-radius: 10px; background: {% if sheep.health_status == '健康' %}#27ae60{% elif sheep.health_status == '良好' %}#2ecc71{% elif sheep.health_status == '一般' %}#f39c12{% elif sheep.health_status == '需关注' %}#e67e22{% else %}#e74c3c{% endif %}; color: white; font-size: 12px;">
                             {{ sheep.health_status }}

@@ -11,10 +11,8 @@ def sheep_list(request):
     """羊只列表 - 带多条件筛选"""
     # 获取筛选参数
     search = request.GET.get('search', '')
-    breed = request.GET.get('breed', '')
     health_status = request.GET.get('health_status', '')
     gender = request.GET.get('gender', '')
-    batch_no = request.GET.get('batch_no', '')
     
     # 基础查询 - 只显示当前用户的羊只
     sheep_list = Sheep.objects.filter(owner=request.user)
@@ -25,10 +23,6 @@ def sheep_list(request):
             Q(id__icontains=search) | Q(ear_tag__icontains=search)
         )
     
-    # 按品种筛选
-    if breed:
-        sheep_list = sheep_list.filter(breed=breed)
-    
     # 按健康状态筛选
     if health_status:
         sheep_list = sheep_list.filter(health_status=health_status)
@@ -37,29 +31,17 @@ def sheep_list(request):
     if gender:
         sheep_list = sheep_list.filter(gender=int(gender))
     
-    # 按批次筛选
-    if batch_no:
-        sheep_list = sheep_list.filter(batch_no=batch_no)
-    
     # 获取筛选选项
-    breed_choices = Sheep.BREED_CHOICES
     health_choices = Sheep.HEALTH_STATUS_CHOICES
     gender_choices = Sheep.GENDER_CHOICES
-    
-    # 获取当前用户的所有批次号（去重）
-    batch_list = Sheep.objects.filter(owner=request.user).exclude(batch_no__isnull=True).exclude(batch_no='').values_list('batch_no', flat=True).distinct()
     
     context = {
         'sheep_list': sheep_list,
         'search': search,
-        'breed': breed,
         'health_status': health_status,
         'gender': gender,
-        'batch_no': batch_no,
-        'breed_choices': breed_choices,
         'health_choices': health_choices,
         'gender_choices': gender_choices,
-        'batch_list': batch_list,
     }
     return render(request, 'sheep_management/sheep/list.html', context)
 
@@ -171,10 +153,7 @@ def sheep_create(request):
     """创建羊只"""
     if request.method == 'POST':
         sheep = Sheep.objects.create(
-            ear_tag=request.POST.get('ear_tag') or None,
-            batch_no=request.POST.get('batch_no') or None,
             gender=int(request.POST.get('gender')),
-            breed=request.POST.get('breed', '滩羊'),
             health_status=request.POST.get('health_status', '健康'),
             weight=float(request.POST.get('weight')),
             height=float(request.POST.get('height')),
@@ -186,7 +165,6 @@ def sheep_create(request):
         return redirect('sheep_detail', pk=sheep.pk)
     context = {
         'title': '创建羊只',
-        'breed_choices': Sheep.BREED_CHOICES,
         'health_choices': Sheep.HEALTH_STATUS_CHOICES,
     }
     return render(request, 'sheep_management/sheep/form.html', context)
@@ -196,10 +174,7 @@ def sheep_edit(request, pk):
     """编辑羊只"""
     sheep = get_object_or_404(Sheep, pk=pk)
     if request.method == 'POST':
-        sheep.ear_tag = request.POST.get('ear_tag') or None
-        sheep.batch_no = request.POST.get('batch_no') or None
         sheep.gender = int(request.POST.get('gender'))
-        sheep.breed = request.POST.get('breed', '滩羊')
         sheep.health_status = request.POST.get('health_status', '健康')
         sheep.weight = float(request.POST.get('weight'))
         sheep.height = float(request.POST.get('height'))
@@ -211,7 +186,6 @@ def sheep_edit(request, pk):
     context = {
         'sheep': sheep,
         'title': '编辑羊只',
-        'breed_choices': Sheep.BREED_CHOICES,
         'health_choices': Sheep.HEALTH_STATUS_CHOICES,
     }
     return render(request, 'sheep_management/sheep/form.html', context)

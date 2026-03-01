@@ -27,8 +27,8 @@
                 <tr>
                     <th>性别</th>
                     <td>{{ sheep.get_gender_display }}</td>
-                    <th>品种</th>
-                    <td>{{ sheep.breed }}</td>
+                    <th>出生日期</th>
+                    <td>{{ sheep.birth_date|date:'Y-m-d'|default:'未设置' }}</td>
                 </tr>
                 <tr>
                     <th>健康状态</th>
@@ -37,8 +37,8 @@
                             {{ sheep.health_status }}
                         </span>
                     </td>
-                    <th>出生日期</th>
-                    <td>{{ sheep.birth_date|date:'Y-m-d'|default:'未设置' }}</td>
+                    <th>农场名称</th>
+                    <td>{{ sheep.farm_name|default:'未设置' }}</td>
                 </tr>
                 <tr>
                     <th>体重</th>
@@ -310,7 +310,7 @@
                             <div class="timeline-title">羊只建档</div>
                             <div class="timeline-desc">
                                 羊只 #{{ sheep.id }} 建档入库<br>
-                                性别：{{ sheep.get_gender_display }} | 品种：{{ sheep.breed }}
+                                性别：{{ sheep.get_gender_display }} | 体重：{{ sheep.weight }}kg
                             </div>
                         </div>
                     </div>

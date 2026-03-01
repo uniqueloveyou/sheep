@@ -109,7 +109,7 @@ class RAGService:
             context = "【羊只基本信息】\n"
             for sheep in sheep_list:
                 context += f"- 耳标: {sheep.ear_tag or '无'}, 性别: {sheep.get_gender_display()}, "
-                context += f"品种: {sheep.breed}, 体重: {sheep.weight}kg, "
+                context += f"体重: {sheep.weight}kg, "
                 context += f"身高: {sheep.height}cm, 体长: {sheep.length}cm, "
                 context += f"健康状况: {sheep.health_status}\n"
             
