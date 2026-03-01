@@ -21,12 +21,23 @@ Page({
                 wx.hideLoading();
                 console.log('返回的数据:', res);
                 const breeder = res;
+                const baseUrl = API.API_BASE_URL;
+                let avatarUrl = breeder.avatar_url || breeder.iconUrl || breeder.icon_url || '';
+                if (avatarUrl && !avatarUrl.startsWith('http://') && !avatarUrl.startsWith('https://')) {
+                    avatarUrl = baseUrl + avatarUrl;
+                }
+                if (!avatarUrl) avatarUrl = '/images/icons/function/f8.png';
+
+                // 从本地存储读取关注状态
+                const followList = wx.getStorageSync('followedBreeders') || [];
+                const isFollowed = followList.some(item => item.id === breeder.id);
+
                 that.setData({
                     currentBreeder: {
                         ...breeder,
-                        iconUrl: breeder.iconUrl || breeder.icon_url || '/images/icons/function/f8.png'
+                        avatarUrl: avatarUrl
                     },
-                    isFollowed: breeder.isFollowed || false
+                    isFollowed: isFollowed
                 });
             })
             .catch(function(error) {
@@ -86,38 +97,40 @@ Page({
     // 切换关注状态
     toggleFollow: function() {
         var that = this;
-        // 反转关注状态
         const newFollowedState = !this.data.isFollowed;
+        const breeder = this.data.currentBreeder;
 
-        // 发送请求更新后端关注状态（如果后端支持）
-        
-        API.request('/api/breeders/follow', 'POST', {
-            breederId: that.data.currentBreeder.id,
-            follow: newFollowedState,
-        })
-        .then(function(res) {
-            // 更新界面状态
-            that.setData({
-                isFollowed: newFollowedState
-            });
-            wx.showToast({
-                title: newFollowedState ? '已关注' : '已取消关注',
-                icon: 'success',
-                duration: 1500
-            });
-        })
-        .catch(function(error) {
-            console.error('关注请求失败', error);
-            // 即使后端不支持，也更新本地状态
-            that.setData({
-                isFollowed: newFollowedState
-            });
-            wx.showToast({
-                title: newFollowedState ? '已关注' : '已取消关注',
-                icon: 'success',
-                duration: 1500
-            });
+        // 更新本地存储
+        let list = wx.getStorageSync('followedBreeders') || [];
+        if (newFollowedState) {
+            // 关注：添加到列表（防重复）
+            const exists = list.some(item => item.id === breeder.id);
+            if (!exists) {
+                list.unshift({
+                    id: breeder.id,
+                    name: breeder.name,
+                    avatarUrl: breeder.avatarUrl || '',
+                    sheep_count: breeder.sheep_count || breeder.actual_sheep_count || 0
+                });
+            }
+        } else {
+            // 取消关注：从列表移除
+            list = list.filter(item => item.id !== breeder.id);
+        }
+        wx.setStorageSync('followedBreeders', list);
+
+        that.setData({ isFollowed: newFollowedState });
+        wx.showToast({
+            title: newFollowedState ? '已关注' : '已取消关注',
+            icon: 'success',
+            duration: 1500
         });
+
+        // 尝试同步到后端（不影响本地逻辑）
+        API.request('/api/breeders/follow', 'POST', {
+            breederId: breeder.id,
+            follow: newFollowedState,
+        }).catch(() => {});
     },
     
     // 图片加载失败处理

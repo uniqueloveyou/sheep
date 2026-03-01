@@ -1,0 +1,97 @@
+/* pages/my/follows/index.wxss */
+page {
+  background: #f7f8fa;
+  min-height: 100vh;
+}
+
+.page {
+  padding: 24rpx;
+}
+
+/* 空状态 */
+.empty-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 120rpx;
+}
+
+.empty-img {
+  width: 200rpx;
+  height: 200rpx;
+  opacity: 0.4;
+  margin-bottom: 30rpx;
+}
+
+.empty-title {
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 16rpx;
+}
+
+.empty-hint {
+  font-size: 26rpx;
+  color: #999;
+}
+
+/* 关注列表 */
+.follow-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20rpx;
+}
+
+.follow-card {
+  display: flex;
+  align-items: center;
+  background: #fff;
+  border-radius: 16rpx;
+  padding: 24rpx;
+  box-shadow: 0 2rpx 12rpx rgba(0,0,0,0.05);
+}
+
+.avatar-wrap {
+  width: 96rpx;
+  height: 96rpx;
+  border-radius: 50%;
+  overflow: hidden;
+  flex-shrink: 0;
+  margin-right: 24rpx;
+  border: 2rpx solid #eee;
+}
+
+.avatar {
+  width: 100%;
+  height: 100%;
+}
+
+.info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8rpx;
+}
+
+.name {
+  font-size: 30rpx;
+  font-weight: bold;
+  color: #333;
+}
+
+.meta {
+  font-size: 24rpx;
+  color: #999;
+}
+
+.unfollow-btn {
+  border: 2rpx solid #238E23;
+  border-radius: 30rpx;
+  padding: 8rpx 28rpx;
+  flex-shrink: 0;
+}
+
+.unfollow-text {
+  font-size: 24rpx;
+  color: #238E23;
+}

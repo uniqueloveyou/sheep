@@ -42,6 +42,15 @@ Page({
         badge: ''
       },
       {
+        text: '我的关注',
+        icon: 'like-o',
+        bgColor: '#FFF3E0',
+        iconColor: '#FF9800',
+        url: '/pages/my/follows/index',
+        type: 'follows',
+        badge: ''
+      },
+      {
         text: '智能问答',
         icon: 'service-o',
         bgColor: '#E0F7FA',

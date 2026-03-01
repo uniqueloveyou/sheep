@@ -89,15 +89,14 @@ def user_update(request, pk):
         user.is_verified = (request.POST.get('is_verified') == 'on')
         user.description = request.POST.get('description', '').strip() or None
 
-        # 处理头像上传（存入 R2，保存公开 URL）
+        # 处理头像上传（走 settings.DEFAULT_FILE_STORAGE，R2 或本地均可）
         avatar_file = request.FILES.get('avatar')
         if avatar_file:
-            from storages.backends.s3boto3 import S3Boto3Storage
-            from django.conf import settings
-            storage = S3Boto3Storage()
+            from django.core.files.storage import default_storage
             filename = f'avatars/user_{user.pk}_{avatar_file.name}'
-            saved_name = storage.save(filename, avatar_file)
-            user.avatar_url = f'https://{settings.AWS_S3_CUSTOM_DOMAIN}/{saved_name}'
+            saved_name = default_storage.save(filename, avatar_file)
+            # 直接用 storage 自己的 url 方法，本地/R2 都正确
+            user.avatar_url = default_storage.url(saved_name)
 
         if new_password:
             user.set_password(new_password)

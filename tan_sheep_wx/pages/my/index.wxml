@@ -17,9 +17,6 @@
     <view wx:else class="header-logged-in">
       <button class="avatar-btn" open-type="chooseAvatar" bind:chooseavatar="onChooseAvatar">
         <image class="avatar-img" src="{{ apiUserInfoMap.base.avatarUrl || '/pages/my/images/user.png' }}" mode="aspectFill"></image>
-        <view class="avatar-badge">
-          <van-icon name="photo-o" size="28rpx" color="#fff"></van-icon>
-        </view>
       </button>
       <view class="user-details">
         <view class="nickname-row">

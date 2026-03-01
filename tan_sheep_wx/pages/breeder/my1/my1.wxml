@@ -1,11 +1,10 @@
 <view class="container" wx:if="{{currentBreeder}}">
     <!-- 头像和基本信息 -->
     <view class="header-card">
-        <image class="breeder-avatar" src="{{currentBreeder.iconUrl || currentBreeder.icon_url}}" mode="aspectFill"></image>
+        <image class="breeder-avatar" src="{{currentBreeder.avatarUrl}}" mode="aspectFill"></image>
         <view class="header-info">
             <view class="name-row">
                 <text class="breeder-name">{{currentBreeder.name}}</text>
-                <text class="breeder-rating" wx:if="{{currentBreeder.rating}}">⭐ {{currentBreeder.rating}}</text>
             </view>
             <text class="breeder-gender">{{currentBreeder.gender}}</text>
             <view class="breeder-meta">
