@@ -14,6 +14,15 @@
         <form method="get" style="display: flex; gap: 15px; flex-wrap: wrap; align-items: center;">
             <input type="text" name="search" placeholder="搜索ID或耳标号..." value="{{ search }}" style="width: 200px;">
             
+            {% if is_admin %}
+            <select name="owner">
+                <option value="">全部养殖户</option>
+                {% for b in breeders %}
+                <option value="{{ b.id }}" {% if owner_filter == b.id|stringformat:"i" %}selected{% endif %}>{{ b.nickname|default:b.username }} (ID:{{ b.id }})</option>
+                {% endfor %}
+            </select>
+            {% endif %}
+            
             <select name="health_status">
                 <option value="">全部健康状态</option>
                 {% for value, label in health_choices %}
@@ -41,7 +50,7 @@
                 <th>性别</th>
                 <th>健康状态</th>
                 <th>体重(kg)</th>
-                <th>身高(cm)</th>
+                {% if is_admin %}<th>所属养殖户</th>{% endif %}
                 <th>操作</th>
             </tr>
         </thead>
@@ -57,15 +66,15 @@
                     </span>
                 </td>
                 <td>{{ sheep.weight }}</td>
-                <td>{{ sheep.height }}</td>
+                {% if is_admin %}<td>{{ sheep.owner.nickname|default:sheep.owner.username }}</td>{% endif %}
                 <td>
-                    <a href="{% url 'sheep_detail' sheep.pk %}" class="btn" style="padding: 5px 10px; font-size: 12px;">查看档案</a>
+                    <a href="{% url 'sheep_detail' sheep.pk %}" class="btn" style="padding: 5px 10px; font-size: 12px;">查看</a>
                     <a href="{% url 'sheep_edit' sheep.pk %}" class="btn" style="padding: 5px 10px; font-size: 12px; background: #f39c12;">编辑</a>
                 </td>
             </tr>
             {% empty %}
             <tr>
-                <td colspan="7" style="text-align: center; padding: 40px;">
+                <td colspan="{% if is_admin %}7{% else %}6{% endif %}" style="text-align: center; padding: 40px;">
                     <div style="color: #999;">
                         <div style="font-size: 48px; margin-bottom: 10px;">🐑</div>
                         <div>暂无羊只数据</div>

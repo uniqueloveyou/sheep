@@ -145,6 +145,9 @@
         <div class="coupon-validity">
             有效期：{{ coupon.valid_from|date:"Y-m-d H:i" }} ~ {{ coupon.valid_until|date:"Y-m-d H:i" }}
         </div>
+        <div class="coupon-validity" style="margin-top:6px;">
+            所属养殖户：{{ coupon.owner.nickname|default:coupon.owner.username }} (ID:{{ coupon.owner.id }})
+        </div>
     </div>
 </div>
 

@@ -4,24 +4,35 @@ from django.contrib import messages
 from django.db.models import Q
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
-from ..models import Sheep, GrowthRecord, FeedingRecord, VaccinationHistory, VaccineType, EnvironmentAlert
+from ..models import Sheep, GrowthRecord, FeedingRecord, VaccinationHistory, VaccineType, EnvironmentAlert, User
+from ..permissions import ROLE_ADMIN, ROLE_BREEDER
 
 
 def sheep_list(request):
     """羊只列表 - 带多条件筛选"""
+    is_admin = request.user.role == ROLE_ADMIN
+    
     # 获取筛选参数
     search = request.GET.get('search', '')
     health_status = request.GET.get('health_status', '')
     gender = request.GET.get('gender', '')
+    owner_filter = request.GET.get('owner', '')
     
-    # 基础查询 - 只显示当前用户的羊只
-    sheep_list = Sheep.objects.filter(owner=request.user)
+    # 基础查询 - 管理员看全部，养殖户只看自己的
+    if is_admin:
+        sheep_list = Sheep.objects.select_related('owner').all()
+    else:
+        sheep_list = Sheep.objects.filter(owner=request.user)
     
     # 搜索ID或耳标号
     if search:
         sheep_list = sheep_list.filter(
             Q(id__icontains=search) | Q(ear_tag__icontains=search)
         )
+    
+    # 管理员按养殖户筛选
+    if is_admin and owner_filter:
+        sheep_list = sheep_list.filter(owner_id=int(owner_filter))
     
     # 按健康状态筛选
     if health_status:
@@ -35,13 +46,21 @@ def sheep_list(request):
     health_choices = Sheep.HEALTH_STATUS_CHOICES
     gender_choices = Sheep.GENDER_CHOICES
     
+    # 管理员需要养殖户列表（用于筛选和创建）
+    breeders = []
+    if is_admin:
+        breeders = User.objects.filter(role=ROLE_BREEDER, is_verified=True).order_by('id')
+    
     context = {
         'sheep_list': sheep_list,
         'search': search,
         'health_status': health_status,
         'gender': gender,
+        'owner_filter': owner_filter,
         'health_choices': health_choices,
         'gender_choices': gender_choices,
+        'is_admin': is_admin,
+        'breeders': breeders,
     }
     return render(request, 'sheep_management/sheep/list.html', context)
 
@@ -49,6 +68,13 @@ def sheep_list(request):
 def sheep_detail(request, pk):
     """羊只详情"""
     sheep = get_object_or_404(Sheep, pk=pk)
+    is_admin = request.user.role == ROLE_ADMIN
+    
+    # 权限检查：养殖户只能看自己的羊
+    if not is_admin and sheep.owner != request.user:
+        messages.error(request, '无权查看该羊只信息')
+        return redirect('sheep_list')
+    
     growth_records = sheep.growth_records.all().order_by('-record_date')
     feeding_records = sheep.feeding_records.all().order_by('-start_date')
     vaccination_records = sheep.vaccination_records.all().order_by('-vaccination_date')
@@ -60,6 +86,7 @@ def sheep_detail(request, pk):
         'feeding_records': feeding_records,
         'vaccination_records': vaccination_records,
         'vaccines': vaccines,
+        'is_admin': is_admin,
     }
     return render(request, 'sheep_management/sheep/detail.html', context)
 
@@ -151,7 +178,19 @@ def sheep_delete_vaccination(request, pk, record_id):
 @login_required
 def sheep_create(request):
     """创建羊只"""
+    is_admin = request.user.role == ROLE_ADMIN
+    
     if request.method == 'POST':
+        # 确定所属养殖户
+        if is_admin:
+            owner_id = request.POST.get('owner')
+            if not owner_id:
+                messages.error(request, '请选择所属养殖户')
+                return redirect('sheep_create')
+            owner = get_object_or_404(User, pk=int(owner_id), role=ROLE_BREEDER)
+        else:
+            owner = request.user
+        
         sheep = Sheep.objects.create(
             gender=int(request.POST.get('gender')),
             health_status=request.POST.get('health_status', '健康'),
@@ -159,13 +198,21 @@ def sheep_create(request):
             height=float(request.POST.get('height')),
             length=float(request.POST.get('length')),
             birth_date=request.POST.get('birth_date') or None,
-            owner=request.user,
+            owner=owner,
         )
-        messages.success(request, '羊只创建成功！')
+        messages.success(request, f'羊只创建成功！耳标号：{sheep.ear_tag}')
         return redirect('sheep_detail', pk=sheep.pk)
+    
+    # 管理员需要养殖户列表
+    breeders = []
+    if is_admin:
+        breeders = User.objects.filter(role=ROLE_BREEDER, is_verified=True).order_by('id')
+    
     context = {
         'title': '创建羊只',
         'health_choices': Sheep.HEALTH_STATUS_CHOICES,
+        'is_admin': is_admin,
+        'breeders': breeders,
     }
     return render(request, 'sheep_management/sheep/form.html', context)
 
@@ -173,7 +220,20 @@ def sheep_create(request):
 def sheep_edit(request, pk):
     """编辑羊只"""
     sheep = get_object_or_404(Sheep, pk=pk)
+    is_admin = request.user.role == ROLE_ADMIN
+    
+    # 权限检查：养殖户只能编辑自己的羊
+    if not is_admin and sheep.owner != request.user:
+        messages.error(request, '无权编辑该羊只信息')
+        return redirect('sheep_list')
+    
     if request.method == 'POST':
+        # 管理员可以转移羊只归属
+        if is_admin:
+            new_owner_id = request.POST.get('owner')
+            if new_owner_id:
+                sheep.owner = get_object_or_404(User, pk=int(new_owner_id), role=ROLE_BREEDER)
+        
         sheep.gender = int(request.POST.get('gender'))
         sheep.health_status = request.POST.get('health_status', '健康')
         sheep.weight = float(request.POST.get('weight'))
@@ -183,10 +243,18 @@ def sheep_edit(request, pk):
         sheep.save()
         messages.success(request, '羊只信息更新成功！')
         return redirect('sheep_detail', pk=sheep.pk)
+    
+    # 管理员需要养殖户列表
+    breeders = []
+    if is_admin:
+        breeders = User.objects.filter(role=ROLE_BREEDER, is_verified=True).order_by('id')
+    
     context = {
         'sheep': sheep,
         'title': '编辑羊只',
         'health_choices': Sheep.HEALTH_STATUS_CHOICES,
+        'is_admin': is_admin,
+        'breeders': breeders,
     }
     return render(request, 'sheep_management/sheep/form.html', context)
 
@@ -194,6 +262,13 @@ def sheep_edit(request, pk):
 def sheep_delete(request, pk):
     """删除羊只"""
     sheep = get_object_or_404(Sheep, pk=pk)
+    is_admin = request.user.role == ROLE_ADMIN
+    
+    # 权限检查：养殖户只能删除自己的羊
+    if not is_admin and sheep.owner != request.user:
+        messages.error(request, '无权删除该羊只')
+        return redirect('sheep_list')
+    
     if request.method == 'POST':
         sheep.delete()
         messages.success(request, '羊只删除成功！')

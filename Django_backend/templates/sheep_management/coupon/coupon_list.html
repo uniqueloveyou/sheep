@@ -177,6 +177,14 @@
 <div class="toolbar">
     <div class="toolbar-left">
         <form method="get" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+            {% if is_admin %}
+            <select name="owner" class="filter-select" onchange="this.form.submit()">
+                <option value="">全部养殖户</option>
+                {% for b in breeders %}
+                <option value="{{ b.id }}" {% if owner_filter == b.id|stringformat:"i" %}selected{% endif %}>{{ b.nickname|default:b.username }} (ID:{{ b.id }})</option>
+                {% endfor %}
+            </select>
+            {% endif %}
             <select name="status" class="filter-select" onchange="this.form.submit()">
                 <option value="">全部状态</option>
                 <option value="active" {% if status_filter == 'active' %}selected{% endif %}>可用</option>
@@ -208,6 +216,7 @@
                 <th>类型</th>
                 <th>优惠</th>
                 <th>最低消费</th>
+                {% if is_admin %}<th>所属养殖户</th>{% endif %}
                 <th>状态</th>
                 <th>有效期</th>
                 <th>领取/总量</th>
@@ -238,6 +247,7 @@
                     {% endif %}
                 </td>
                 <td>¥{{ coupon.min_purchase_amount }}</td>
+                {% if is_admin %}<td>{{ coupon.owner.nickname|default:coupon.owner.username }}</td>{% endif %}
                 <td>
                     {% if coupon.status == 'active' %}
                         <span class="badge badge-active">可用</span>

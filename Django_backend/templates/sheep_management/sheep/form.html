@@ -13,6 +13,24 @@
                 <span style="font-size:12px;color:#999;">系统自动生成，不可修改</span>
             </div>
             {% endif %}
+            
+            {% if is_admin %}
+            <div class="form-group">
+                <label>所属养殖户 *</label>
+                <select name="owner" required>
+                    <option value="">请选择养殖户</option>
+                    {% for b in breeders %}
+                    <option value="{{ b.id }}" {% if sheep and sheep.owner_id == b.id %}selected{% endif %}>
+                        {{ b.nickname|default:b.username }} (ID:{{ b.id }}{% if b.mobile %} / {{ b.mobile }}{% endif %})
+                    </option>
+                    {% endfor %}
+                </select>
+                {% if not sheep %}
+                <span style="font-size:12px;color:#999;">选择要为哪位养殖户添加羊只</span>
+                {% endif %}
+            </div>
+            {% endif %}
+            
             <div class="form-group">
                 <label>性别 *</label>
                 <select name="gender" required>

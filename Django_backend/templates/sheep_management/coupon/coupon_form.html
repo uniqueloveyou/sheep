@@ -129,6 +129,24 @@
                     <input type="text" name="code" value="{{ coupon.code|default:'' }}" placeholder="例如：CPN-ABC123" {% if is_edit %}readonly{% endif %}>
                 </div>
             </div>
+            {% if is_admin %}
+            <div class="form-row">
+                <div class="form-group">
+                    <label>所属养殖户 <span class="required">*</span></label>
+                    <select name="owner" required>
+                        <option value="">请选择养殖户</option>
+                        {% for b in breeders %}
+                        <option value="{{ b.id }}" {% if coupon and coupon.owner_id == b.id %}selected{% endif %}>
+                            {{ b.nickname|default:b.username }} (ID:{{ b.id }}{% if b.mobile %} / {{ b.mobile }}{% endif %})
+                        </option>
+                        {% endfor %}
+                    </select>
+                    {% if not is_edit %}
+                    <span class="hint">选择要为哪位养殖户发布优惠券</span>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
             <div class="form-row">
                 <div class="form-group">
                     <label>优惠券类型 <span class="required">*</span></label>

@@ -108,6 +108,16 @@ class Coupon(models.Model):
     valid_until = models.DateTimeField(verbose_name='失效时间')
 
     description = models.TextField(null=True, blank=True, verbose_name='使用说明')
+    
+    # 所属养殖户
+    owner = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='coupons',
+        limit_choices_to={'role': 1},
+        verbose_name='所属养殖户'
+    )
+    
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='创建时间')
     updated_at = models.DateTimeField(auto_now=True, verbose_name='更新时间')
 
