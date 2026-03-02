@@ -1,7 +1,10 @@
 """养殖户个人中心视图"""
+import json
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
 from ..models import User, Sheep, Order, OrderItem
 
 
@@ -83,3 +86,22 @@ def breeder_profile(request):
     
     context = {'user': user}
     return render(request, 'sheep_management/breeder/profile.html', context)
+
+
+@login_required
+@csrf_exempt
+def breeder_update_location(request):
+    """AJAX 保存养殖户位置坐标"""
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'msg': 'Method not allowed'}, status=405)
+    try:
+        data = json.loads(request.body)
+        lat = data.get('latitude')
+        lng = data.get('longitude')
+        user = request.user
+        user.latitude  = float(lat)  if lat  is not None else None
+        user.longitude = float(lng) if lng is not None else None
+        user.save(update_fields=['latitude', 'longitude'])
+        return JsonResponse({'success': True})
+    except Exception as e:
+        return JsonResponse({'success': False, 'msg': str(e)}, status=400)
