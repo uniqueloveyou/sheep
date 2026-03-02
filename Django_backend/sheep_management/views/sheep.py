@@ -43,12 +43,12 @@ def sheep_list(request):
     if gender:
         sheep_list = sheep_list.filter(gender=int(gender))
 
-    # 批量查询每只羊的领养人（已支付/完成的订单）
+    # 批量查询每只羊的领养人（已支付/配送中/完成的订单）
     sheep_ids = [s.id for s in sheep_list]
     adopter_map = {}
     for oi in OrderItem.objects.filter(
         sheep_id__in=sheep_ids,
-        order__status__in=['paid', 'completed']
+        order__status__in=['paid', 'shipping', 'completed']
     ).select_related('order__user'):
         adopter_map[oi.sheep_id] = oi.order.user
 

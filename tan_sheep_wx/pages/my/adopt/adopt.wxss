@@ -7,6 +7,117 @@ page {
   padding: 24rpx;
 }
 
+/* ===== 分区标题 ===== */
+.section-header {
+  display: flex;
+  align-items: center;
+  margin: 20rpx 4rpx 20rpx;
+}
+.section-dot {
+  width: 12rpx;
+  height: 12rpx;
+  border-radius: 50%;
+  margin-right: 12rpx;
+}
+.dot-green { background-color: #4CAF50; }
+.dot-gray  { background-color: #aaa; }
+.section-title {
+  font-size: 28rpx;
+  font-weight: bold;
+  color: #333;
+  margin-right: 12rpx;
+}
+.section-hint {
+  font-size: 22rpx;
+  color: #aaa;
+}
+.section-count {
+  font-size: 22rpx;
+  color: #aaa;
+  background: #f0f0f0;
+  padding: 2rpx 12rpx;
+  border-radius: 16rpx;
+  margin-left: 6rpx;
+}
+
+/* ===== 折叠区域标题 ===== */
+.other-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #fff;
+  border-radius: 16rpx;
+  padding: 24rpx 28rpx;
+  margin-top: 30rpx;
+  margin-bottom: 0;
+  box-shadow: 0 2rpx 8rpx rgba(0,0,0,0.04);
+}
+.other-header-left {
+  display: flex;
+  align-items: center;
+}
+.collapse-arrow {
+  transition: transform 0.25s;
+}
+.arrow-up {
+  transform: rotate(180deg);
+}
+
+/* ===== 历史记录小卡片 ===== */
+.other-list {
+  background: #fff;
+  border-radius: 0 0 16rpx 16rpx;
+  overflow: hidden;
+  margin-bottom: 16rpx;
+  border-top: 1rpx solid #f5f5f5;
+}
+.other-card {
+  display: flex;
+  padding: 20rpx 28rpx;
+  border-bottom: 1rpx solid #f7f7f7;
+  align-items: center;
+}
+.other-card:last-child { border-bottom: none; }
+.other-avatar {
+  width: 100rpx;
+  height: 100rpx;
+  border-radius: 10rpx;
+  background-color: #f5f5f5;
+  margin-right: 20rpx;
+  flex-shrink: 0;
+}
+.other-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8rpx;
+}
+.other-name {
+  font-size: 28rpx;
+  font-weight: bold;
+  color: #555;
+}
+.other-detail-row {
+  display: flex;
+  align-items: center;
+}
+.order-no-text {
+  font-size: 20rpx;
+  color: #bbb;
+}
+
+/* ===== 状态小徽章（认养中绿色胶囊）===== */
+.status-dot-badge {
+  font-size: 20rpx;
+  padding: 4rpx 14rpx;
+  border-radius: 20rpx;
+  font-weight: bold;
+}
+.badge-green {
+  background-color: #e8f5e9;
+  color: #2e7d32;
+}
+
 /* ===== 页面标题 ===== */
 .page-title {
   display: flex;
@@ -79,6 +190,30 @@ page {
   height: 70rpx;
   line-height: 66rpx;
   font-size: 28rpx;
+}
+
+/* ===== 订单状态徽章 ===== */
+.order-status-badge {
+  font-size: 20rpx;
+  padding: 4rpx 14rpx;
+  border-radius: 20rpx;
+  font-weight: bold;
+}
+.status-paid {
+  background-color: #e8f5e9;
+  color: #2e7d32;
+}
+.status-shipping {
+  background-color: #e3f2fd;
+  color: #1565c0;
+}
+.status-completed {
+  background-color: #f3e5f5;
+  color: #6a1b9a;
+}
+.status-default {
+  background-color: #f5f5f5;
+  color: #757575;
 }
 
 /* ===== 羊只卡片列表 ===== */

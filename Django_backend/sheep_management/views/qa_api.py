@@ -1,4 +1,7 @@
-"""智能问答API接口 - 使用 DeepSeek V3 + RAG检索增强生成"""
+"""
+智能问答 API —— DeepSeek V3 + 直接数据注入
+策略：登录用户的羊只数据直接查库 → 塞进 system prompt → AI 必定能看到
+"""
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
@@ -6,60 +9,181 @@ import json
 import requests
 import logging
 
-from ..services.rag_service import RAGService
+from ..utils import verify_token
+from ..models import Sheep, GrowthRecord, FeedingRecord, VaccinationHistory, OrderItem, User
 
 logger = logging.getLogger(__name__)
 
 # ============================================
-# DeepSeek API 配置（临时配置，生产环境请使用环境变量）
+# DeepSeek API 配置
 # ============================================
-DEEPSEEK_API_KEY = 'sk-db2a7aa8e86647bb88a4bd63627bf879'  # 请替换为你的实际 API Key
-DEEPSEEK_API_BASE = 'https://api.deepseek.com'   # API 基础地址
-DEEPSEEK_MODEL = 'deepseek-chat'                 # 模型名称，如需 v3 可改为 'deepseek-chat-v3'
+DEEPSEEK_API_KEY = 'sk-db2a7aa8e86647bb88a4bd63627bf879'
+DEEPSEEK_API_BASE = 'https://api.deepseek.com'
+DEEPSEEK_MODEL = 'deepseek-chat'
+
+# ============================================
+# 基础系统提示词
+# ============================================
+BASE_SYSTEM_PROMPT = (
+    '你是"滩羊智品助手"，一个专业、友好的滩羊养殖与产品咨询 AI。'
+    '你可以回答关于滩羊养殖技术、营养价值、烹饪方法、生长周期、盐池滩羊特色等问题。'
+    '回答请使用中文，简洁专业，重点突出。'
+)
 
 
+# ============================================
+# 直接查库：构建用户专属数据
+# ============================================
+def _build_user_data_context(user_id):
+    """
+    直接查数据库，把该用户的所有羊只数据拼成一段文字。
+    不走 RAG，不做关键词匹配，简单粗暴但 100% 可靠。
+    """
+    try:
+        user = User.objects.get(id=user_id)
+    except User.DoesNotExist:
+        logger.warning(f'[QA] user_id={user_id} 不存在')
+        return None
+
+    # 只查 paid（认养中，羊仍在农场）的订单
+    paid_items = OrderItem.objects.filter(
+        order__user_id=user_id,
+        order__status='paid'
+    ).values_list('sheep_id', flat=True).distinct()
+    sheep_ids = list(paid_items)
+
+    # 也统计 shipping/completed 数量，告知 AI 有多少已发货/完成
+    other_count = OrderItem.objects.filter(
+        order__user_id=user_id,
+        order__status__in=['shipping', 'completed']
+    ).values_list('sheep_id', flat=True).distinct().count()
+
+    logger.info(f'[QA] 用户 {user.username}(id={user_id}) 认养中IDs={sheep_ids}, 已发货/完成数={other_count}')
+
+    if not sheep_ids and other_count == 0:
+        return (
+            f'当前用户：{user.username}\n'
+            f'领养状态：该用户尚未领养任何滩羊。\n'
+            f'提示：请引导用户前往小程序"定制领养"页面挑选心仪的滩羊。'
+        )
+
+    # ---------- 拼装完整数据卡片 ----------
+    sheep_list = Sheep.objects.filter(id__in=sheep_ids)
+    total = sheep_list.count()
+
+    lines = [f'当前用户：{user.username}，目前有 {total} 只滩羊正在农场认养中。']
+    if other_count > 0:
+        lines.append(f'（另有 {other_count} 只已发货/完成，不在农场，此处不再展示其详情）\n')
+    else:
+        lines.append('')
+
+    for sheep in sheep_list:
+        lines.append(f'===== 羊只 #{sheep.id} =====')
+        lines.append(f'耳标号: {sheep.ear_tag or "无"}')
+        lines.append(f'性别: {sheep.get_gender_display()}')
+        lines.append(f'当前体重: {sheep.weight}kg / 身高: {sheep.height}cm / 体长: {sheep.length}cm')
+        lines.append(f'健康状况: {sheep.health_status}')
+        lines.append(f'出生日期: {sheep.birth_date or "未知"}')
+        lines.append(f'所在农场: {sheep.farm_name or "未知"}')
+
+        # 最近 5 条喂养记录
+        feedings = FeedingRecord.objects.filter(sheep=sheep).order_by('-feed_date')[:5]
+        if feedings:
+            lines.append('最近喂养记录:')
+            for f in feedings:
+                lines.append(f'  {f.feed_date}: {f.feed_type} {f.amount}{f.unit}')
+
+        # 最近 5 条生长记录
+        growths = GrowthRecord.objects.filter(sheep=sheep).order_by('-record_date')[:5]
+        if growths:
+            lines.append('最近生长记录:')
+            for g in growths:
+                lines.append(f'  {g.record_date}: 体重{g.weight}kg, 身高{g.height}cm, 体长{g.length}cm')
+
+        # 最近 5 条疫苗记录
+        vaccines = VaccinationHistory.objects.filter(sheep=sheep).select_related('vaccine').order_by('-vaccination_date')[:5]
+        if vaccines:
+            lines.append('疫苗接种记录:')
+            for v in vaccines:
+                lines.append(f'  {v.vaccination_date}: {v.vaccine.name}')
+
+        lines.append('')  # 空行分隔
+
+    return '\n'.join(lines)
+
+
+# ============================================
+# API 视图
+# ============================================
 @csrf_exempt
 @require_http_methods(["POST"])
 def api_qa_ask(request):
     """
-    智能问答接口 - 使用 DeepSeek V3 + RAG检索增强生成
-    POST /api/qa/ask
-    请求体：
-        {
-            "question": "滩羊的养殖方法"
-        }
-    返回格式：
-        {
-            "code": 0,
-            "msg": "成功",
-            "data": {
-                "answer": "回答内容",
-                "model": "deepseek-v3",
-                "context_used": true
-            }
-        }
+    智能问答接口
+    POST /api/qa/ask  { "question": "...", "token": "..." }
     """
     try:
         data = json.loads(request.body)
         question = data.get('question', '').strip()
-        
+
         if not question:
-            return JsonResponse({
-                'code': 400,
-                'msg': '问题不能为空',
-                'data': None
-            }, status=400)
-        
-        # RAG检索：从数据库获取相关上下文
-        context = RAGService.retrieve_context(question)
-        context_used = context is not None
-        
-        # 构建RAG提示词
-        rag_prompt = RAGService.build_rag_prompt(question, context)
-        
-        # 调用 DeepSeek V3 API
-        answer, error_msg = call_deepseek_api(rag_prompt)
-        
+            return JsonResponse({'code': 400, 'msg': '问题不能为空', 'data': None}, status=400)
+
+        # -------- 1. 识别用户身份 --------
+        user_id = None
+        token = (
+            request.headers.get('Authorization', '').replace('Bearer ', '')
+            or data.get('token', '')
+        )
+        logger.info(f'[QA] 收到问题: "{question}", token长度={len(token) if token else 0}')
+
+        if token:
+            payload = verify_token(token)
+            if payload:
+                user_id = payload.get('user_id')
+                logger.info(f'[QA] token验证成功, user_id={user_id}')
+            else:
+                logger.warning('[QA] token验证失败(可能过期)')
+
+        # uid 做兜底：小程序同时存了 uid，万一 token 过期还能识别用户
+        if not user_id:
+            uid_str = data.get('uid', '')
+            if uid_str:
+                try:
+                    user_id = int(uid_str)
+                    logger.info(f'[QA] 通过uid兜底识别用户, user_id={user_id}')
+                except (ValueError, TypeError):
+                    pass
+
+        # -------- 2. 构建 system prompt --------
+        system_prompt = BASE_SYSTEM_PROMPT
+        has_user_data = False
+
+        if user_id:
+            user_data = _build_user_data_context(user_id)
+            if user_data:
+                has_user_data = True
+                system_prompt += (
+                    '\n\n'
+                    '【重要】以下是当前登录用户的真实养殖档案数据（来自数据库），'
+                    '当用户问到"我的羊""我养了多少""我的羊健康吗"等个人问题时，'
+                    '你必须基于以下数据如实回答，不要说"无法获取个人数据"：\n\n'
+                    + user_data
+                )
+        else:
+            logger.info('[QA] 未识别到用户身份，使用通用模式')
+            # 未登录时，告知 AI 如何应对个人问题
+            system_prompt += (
+                '\n\n【注意】当前用户未登录。'
+                '如果用户询问"我的羊""我养了多少只""我的饲料记录"等个人相关问题，'
+                '请回答："要查询您的专属信息，请先登录小程序（点击底部「我的」页面），登录后我就能告诉您啦！"'
+                '不要说"无法获取"或"数据库中没有"，请用友好的方式引导用户登录。'
+            )
+
+        # -------- 3. 调用 DeepSeek --------
+        logger.info(f'[QA] system_prompt长度={len(system_prompt)}, has_user_data={has_user_data}')
+        answer, error_msg = _call_deepseek(system_prompt, question)
+
         if answer:
             return JsonResponse({
                 'code': 0,
@@ -67,126 +191,86 @@ def api_qa_ask(request):
                 'data': {
                     'answer': answer,
                     'model': 'deepseek-v3',
-                    'context_used': context_used
+                    'context_used': has_user_data,
+                    'debug_user_id': user_id,  # 临时调试字段，确认 user_id 是否被识别
                 }
-            }, status=200)
-        
-        # 如果 DeepSeek API 调用失败，使用本地回答作为备用
-        logger.warning(f'DeepSeek API调用失败: {error_msg}，使用本地回答')
-        answer = get_local_answer(question)
+            })
+
+        # DeepSeek 调用失败 → 本地兜底
+        logger.warning(f'[QA] DeepSeek失败: {error_msg}，使用本地回答')
         return JsonResponse({
             'code': 0,
-            'msg': '成功（使用本地回答）',
+            'msg': '成功（本地回答）',
             'data': {
-                'answer': answer,
+                'answer': get_local_answer(question),
                 'model': 'local',
                 'context_used': False
             }
-        }, status=200)
-        
+        })
+
     except json.JSONDecodeError:
-        return JsonResponse({
-            'code': 400,
-            'msg': '请求数据格式错误',
-            'data': None
-        }, status=400)
+        return JsonResponse({'code': 400, 'msg': '请求数据格式错误', 'data': None}, status=400)
     except Exception as e:
-        logger.error(f'智能问答接口异常: {str(e)}', exc_info=True)
-        # 发生错误时，使用本地回答作为备用
-        question = data.get('question', '') if 'data' in locals() else ''
-        answer = get_local_answer(question)
+        logger.error(f'[QA] 接口异常: {str(e)}', exc_info=True)
         return JsonResponse({
             'code': 0,
-            'msg': '成功（使用本地回答）',
+            'msg': '成功（本地回答）',
             'data': {
-                'answer': answer,
+                'answer': get_local_answer(data.get('question', '') if 'data' in locals() else ''),
                 'model': 'local',
                 'context_used': False
             }
-        }, status=200)
+        })
 
 
-def call_deepseek_api(prompt):
-    """
-    调用 DeepSeek V3 API（支持RAG提示词）
-    返回: (answer, error_msg)
-    """
+# ============================================
+# DeepSeek API 调用（简化版：始终 system + user）
+# ============================================
+def _call_deepseek(system_prompt, question):
+    """调用 DeepSeek，返回 (answer, error_msg)"""
     try:
-        # 使用文件顶部定义的配置常量
-        api_key = DEEPSEEK_API_KEY
-        api_base = DEEPSEEK_API_BASE
-        
-        if not api_key or api_key == 'your_deepseek_api_key_here':
-            return None, '请先在代码中配置 DEEPSEEK_API_KEY'
-        
-        url = f"{api_base}/v1/chat/completions"
-        headers = {
-            'Authorization': f'Bearer {api_key}',
-            'Content-Type': 'application/json'
-        }
-        
-        # 判断是否为RAG提示词
-        if '【检索到的上下文数据】' in prompt:
-            # RAG模式：直接使用完整的RAG提示词
-            data = {
-                'model': DEEPSEEK_MODEL,
-                'messages': [
-                    {'role': 'user', 'content': prompt}
-                ],
-                'temperature': 0.7,
-                'max_tokens': 2000,  # RAG模式需要更多token
-                'stream': False
-            }
-        else:
-            # 普通模式：使用系统提示词
-            system_prompt = """你是一个专业的滩羊养殖和产品咨询助手。请用中文回答用户关于滩羊的问题，包括：
-1. 滩羊的养殖方法和技术
-2. 滩羊肉的营养价值和特点
-3. 如何挑选优质滩羊
-4. 滩羊肉的烹饪方法
-5. 滩羊的生长周期和特点
-6. 盐池滩羊的特色
+        if not DEEPSEEK_API_KEY or DEEPSEEK_API_KEY == 'your_deepseek_api_key_here':
+            return None, '未配置 DEEPSEEK_API_KEY'
 
-请提供专业、准确、友好的回答。回答要简洁明了，重点突出。如果问题不在你的知识范围内，请礼貌地说明。"""
-            
-            data = {
+        resp = requests.post(
+            f'{DEEPSEEK_API_BASE}/v1/chat/completions',
+            headers={
+                'Authorization': f'Bearer {DEEPSEEK_API_KEY}',
+                'Content-Type': 'application/json'
+            },
+            json={
                 'model': DEEPSEEK_MODEL,
                 'messages': [
                     {'role': 'system', 'content': system_prompt},
-                    {'role': 'user', 'content': prompt}
+                    {'role': 'user', 'content': question},
                 ],
                 'temperature': 0.7,
-                'max_tokens': 1500,
-                'stream': False
-            }
-        
-        response = requests.post(url, headers=headers, json=data, timeout=20)
-        
-        if response.status_code == 200:
-            result = response.json()
-            if 'choices' in result and len(result['choices']) > 0:
-                answer = result['choices'][0]['message']['content']
-                return answer, None
-            else:
-                return None, 'API返回格式异常：缺少choices字段'
-        
-        # 处理错误响应
-        error_detail = response.text
+                'max_tokens': 2000,
+                'stream': False,
+            },
+            timeout=30,
+        )
+
+        if resp.status_code == 200:
+            choices = resp.json().get('choices', [])
+            if choices:
+                return choices[0]['message']['content'], None
+            return None, 'API返回无choices'
+
+        detail = resp.text
         try:
-            error_json = response.json()
-            error_detail = error_json.get('error', {}).get('message', error_detail)
-        except:
+            detail = resp.json().get('error', {}).get('message', detail)
+        except Exception:
             pass
-        
-        return None, f'API调用失败 (状态码: {response.status_code}): {error_detail}'
-        
+        return None, f'HTTP {resp.status_code}: {detail}'
+
     except requests.exceptions.Timeout:
         return None, 'API请求超时'
     except requests.exceptions.RequestException as e:
-        return None, f'网络请求异常: {str(e)}'
+        return None, f'网络异常: {e}'
     except Exception as e:
-        logger.error(f'DeepSeek API调用异常: {str(e)}', exc_info=True)
-        return None, f'调用异常: {str(e)}'
+        logger.error(f'[QA] DeepSeek调用异常: {e}', exc_info=True)
+        return None, str(e)
 
 
 def get_local_answer(question):

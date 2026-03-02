@@ -77,9 +77,25 @@ Component({
       }
       
       // 初始化欢迎消息
+      // 根据登录状态显示不同的欢迎语
+      const token = wx.getStorageSync('token') || '';
+      const uid = wx.getStorageSync('uid') || '';
+      const isLoggedIn = !!(token || uid);
+      const userInfo = wx.getStorageSync('userInfo') || {};
+      const userName = userInfo.nickname || userInfo.username || '';
+      
+      let welcomeMsg;
+      if (isLoggedIn && userName) {
+        welcomeMsg = `您好，${userName}！我是滩羊智品助手，可以查询您的专属羊只信息，也能解答养殖、营养、烹饪等问题。请问有什么可以帮您的吗？`;
+      } else if (isLoggedIn) {
+        welcomeMsg = '您好！我是滩羊智品助手，可以查询您的专属羊只信息，也能解答养殖、营养、烹饪等问题。请问有什么可以帮您的吗？';
+      } else {
+        welcomeMsg = '您好！我是滩羊智品助手，可以解答关于滩羊养殖、营养、烹饪等问题。\n\n💡 提示：登录后还可以查询您的专属羊只信息哦！';
+      }
+      
       this.addMessage({
         type: 'bot',
-        content: '您好！我是滩羊智品智能助手，可以为您解答关于滩羊养殖、营养、烹饪等方面的问题。请问有什么可以帮助您的吗？',
+        content: welcomeMsg,
         time: this.getCurrentTime()
       });
     }
@@ -168,6 +184,30 @@ Component({
     getAnswer(question) {
       const that = this;
       const API = require('../../utils/api.js');
+
+      // ---- 检查登录状态 ----
+      const token = wx.getStorageSync('token') || '';
+      const uid = wx.getStorageSync('uid') || '';
+      const userInfo = wx.getStorageSync('userInfo') || {};
+      console.log('[QAChat] ===== 发送请求 =====');
+      console.log('[QAChat] token 前20字符:', token ? token.substring(0, 20) + '...' : '【空】');
+      console.log('[QAChat] uid:', uid, ', 类型:', typeof uid);
+      console.log('[QAChat] userInfo.id:', userInfo.id);
+
+      // 未登录 且 问的是个人问题 → 直接提示登录，不调 API
+      const personalKeywords = ['我的羊', '我养了', '我领养', '我有几只', '我有多少', '我的滩羊', '我的饲料', '我的疫苗', '帮我查', '我的记录'];
+      const isPersonalQuestion = personalKeywords.some(kw => question.includes(kw));
+      if (!token && !uid && isPersonalQuestion) {
+        this.addMessage({
+          type: 'bot',
+          content: '😊 您好！要查询您的专属羊只信息，需要先登录小程序哦。\n\n请点击底部「我的」页面完成登录，登录后就能查看您领养的滩羊数据啦！',
+          time: this.getCurrentTime(),
+          isLoading: false,
+          modelInfo: '（温馨提示）'
+        });
+        this.setData({ isLoading: false });
+        return;
+      }
       
       // 先显示加载状态
       const loadingMessage = {
@@ -178,9 +218,13 @@ Component({
       };
       this.addMessage(loadingMessage);
 
-      // 调用后端大模型API（支持RAG）
+      // 调用后端大模型API
+      // uid 用多重兜底：uid 存储 → userInfo.id → 空
+      const finalUid = uid || userInfo.id || '';
       API.request('/api/qa/ask', 'POST', {
-        question: question
+        question: question,
+        token: token,
+        uid: finalUid
       }).then(function(res) {
         const messages = that.data.messages;
         messages.pop(); // 移除加载消息
@@ -190,6 +234,9 @@ Component({
         
         if (res.code === 0 && res.data && res.data.answer) {
           answer = res.data.answer;
+          
+          // 调试：打印后端识别的 user_id
+          console.log('[QAChat] 后端返回 debug_user_id:', res.data.debug_user_id, ', context_used:', res.data.context_used);
           
           // 添加模型信息
           if (res.data.model) {

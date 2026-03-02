@@ -149,10 +149,10 @@ class CommerceService:
             except Exception:
                 pass
 
-        # 检查是否在订单中（已被购买/领养）
+        # 检查是否在订单中（已被购买/领养，含配送中）
         adopted_order_item = OrderItem.objects.filter(
             sheep=sheep,
-            order__status__in=['paid', 'completed']
+            order__status__in=['paid', 'shipping', 'completed']
         ).select_related('order__user').first()
 
         if adopted_order_item:
@@ -245,10 +245,10 @@ class CommerceService:
         """
         user = CommerceService._resolve_user(token)
 
-        # 查询已支付或已完成的订单明细
+        # 查询已支付/配送中/已完成的订单明细
         order_items = OrderItem.objects.filter(
             order__user=user,
-            order__status__in=['paid', 'completed']
+            order__status__in=['paid', 'shipping', 'completed']
         ).select_related('sheep', 'order').order_by('-order__created_at')
 
         result = []
@@ -258,6 +258,7 @@ class CommerceService:
                 'id': oi.id,
                 'order_no': oi.order.order_no,
                 'order_status': oi.order.get_status_display(),
+                'order_status_key': oi.order.status,  # 原始英文key，供前端样式用
                 'price': float(oi.price),
                 'pay_time': oi.order.pay_time.strftime('%Y-%m-%d %H:%M') if oi.order.pay_time else '',
                 'sheep': {
