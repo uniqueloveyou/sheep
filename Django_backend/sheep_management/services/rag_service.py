@@ -155,7 +155,7 @@ class RAGService:
         
         try:
             # 获取最近的喂养记录
-            feeding_records = FeedingRecord.objects.all().order_by('-start_date')[:10]
+            feeding_records = FeedingRecord.objects.all().order_by('-feed_date')[:10]
             
             if not feeding_records:
                 return None
@@ -163,7 +163,7 @@ class RAGService:
             context = "【喂养记录示例】\n"
             for record in feeding_records:
                 context += f"- 饲料类型: {record.feed_type}, "
-                context += f"开始日期: {record.start_date}, "
+                context += f"喂养日期: {record.feed_date}, "
                 context += f"数量: {record.amount}{record.unit}\n"
             
             return context

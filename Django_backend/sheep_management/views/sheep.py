@@ -90,7 +90,7 @@ def sheep_detail(request, pk):
         return redirect('sheep_list')
     
     growth_records = sheep.growth_records.all().order_by('-record_date')
-    feeding_records = sheep.feeding_records.all().order_by('-start_date')
+    feeding_records = sheep.feeding_records.all().order_by('-feed_date')
     vaccination_records = sheep.vaccination_records.all().order_by('-vaccination_date')
     vaccines = VaccineType.objects.all()
     
@@ -140,8 +140,7 @@ def sheep_add_feeding(request, pk):
         FeedingRecord.objects.create(
             sheep=sheep,
             feed_type=request.POST.get('feed_type'),
-            start_date=request.POST.get('start_date'),
-            end_date=request.POST.get('end_date') or None,
+            feed_date=request.POST.get('feed_date'),
             amount=float(request.POST.get('amount')),
             unit=request.POST.get('unit'),
         )

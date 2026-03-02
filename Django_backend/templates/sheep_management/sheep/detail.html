@@ -168,12 +168,8 @@
                     <input type="text" name="feed_type" required>
                 </div>
                 <div style="flex: 1;">
-                    <label style="font-size: 12px;">开始日期</label>
-                    <input type="date" name="start_date" required>
-                </div>
-                <div style="flex: 1;">
-                    <label style="font-size: 12px;">结束日期</label>
-                    <input type="date" name="end_date">
+                    <label style="font-size: 12px;">喂养日期</label>
+                    <input type="date" name="feed_date" required>
                 </div>
                 <div style="flex: 1;">
                     <label style="font-size: 12px;">数量</label>
@@ -181,7 +177,16 @@
                 </div>
                 <div style="flex: 1;">
                     <label style="font-size: 12px;">单位</label>
-                    <input type="text" name="unit" required>
+                    <select name="unit" required style="width: 100%;">
+                        <option value="kg" selected>kg</option>
+                        <option value="g">g</option>
+                        <option value="捆">捆</option>
+                        <option value="捐">捐</option>
+                        <option value="視">覆</option>
+                        <option value="包">包</option>
+                        <option value="L">L</option>
+                        <option value="mL">mL</option>
+                    </select>
                 </div>
                 <button type="submit" class="btn btn-success" style="padding: 10px 20px;">添加</button>
             </div>
@@ -190,8 +195,7 @@
             <thead>
                 <tr>
                     <th>饲料类型</th>
-                    <th>开始日期</th>
-                    <th>结束日期</th>
+                    <th>喂养日期</th>
                     <th>数量</th>
                     <th>单位</th>
                     <th>操作</th>
@@ -201,8 +205,7 @@
                 {% for record in feeding_records %}
                 <tr>
                     <td>{{ record.feed_type }}</td>
-                    <td>{{ record.start_date|date:'Y-m-d' }}</td>
-                    <td>{{ record.end_date|date:'Y-m-d'|default:"进行中" }}</td>
+                    <td>{{ record.feed_date|date:'Y-m-d' }}</td>
                     <td>{{ record.amount }}</td>
                     <td>{{ record.unit }}</td>
                     <td>
@@ -360,7 +363,7 @@
                     <div class="timeline-item">
                         <div class="timeline-marker" style="background: #f39c12;">🌾</div>
                         <div class="timeline-content">
-                            <div class="timeline-date">{{ record.start_date|date:'Y-m-d' }}</div>
+                            <div class="timeline-date">{{ record.feed_date|date:'Y-m-d' }}</div>
                             <div class="timeline-title">饲料投喂 - {{ record.feed_type }}</div>
                             <div class="timeline-desc">
                                 投喂量：{{ record.amount }}{{ record.unit }}

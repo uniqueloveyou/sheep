@@ -2,49 +2,120 @@
 
 {% block content %}
 <div class="card">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-        <h2>喂养记录列表</h2>
-        <a href="{% url 'feeding_record_create' %}" class="btn">添加记录</a>
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+        <h2>喂养记录</h2>
+        <a href="{% url 'feeding_record_create' %}" class="btn">＋ 添加记录</a>
     </div>
-    
-    <div class="search-box">
-        <form method="get">
-            <input type="number" name="sheep_id" placeholder="筛选羊只ID..." value="{{ sheep_id }}">
-            <button type="submit" class="btn">筛选</button>
-            {% if sheep_id %}<a href="{% url 'feeding_record_list' %}" class="btn" style="background: #95a5a6;">清除</a>{% endif %}
-        </form>
+
+    {% if not sheep_feeding_list %}
+    <div style="text-align: center; padding: 60px 0; color: #999;">
+        <div style="font-size: 48px; margin-bottom: 12px;">🌾</div>
+        <div>暂无喂养记录</div>
     </div>
-    
-    <table>
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>羊只ID</th>
-                <th>饲料类型</th>
-                <th>开始日期</th>
-                <th>结束日期</th>
-                <th>数量</th>
-                <th>单位</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for record in feeding_records %}
-            <tr>
-                <td>{{ record.id }}</td>
-                <td>{{ record.sheep.id }}</td>
-                <td>{{ record.feed_type }}</td>
-                <td>{{ record.start_date }}</td>
-                <td>{{ record.end_date|default:"进行中" }}</td>
-                <td>{{ record.amount }}</td>
-                <td>{{ record.unit }}</td>
-            </tr>
-            {% empty %}
-            <tr>
-                <td colspan="7" style="text-align: center; padding: 40px;">暂无数据</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+    {% endif %}
+
+    {% for item in sheep_feeding_list %}
+    <div style="border: 1px solid #e8e8e8; border-radius: 10px; margin-bottom: 14px; overflow: hidden;">
+        <!-- 折叠头部 -->
+        <div onclick="toggleCollapse('sheep-{{ item.sheep.id }}')"
+             style="display: flex; justify-content: space-between; align-items: center;
+                    padding: 14px 20px; background: #fafafa; cursor: pointer;
+                    user-select: none; transition: background 0.2s;"
+             onmouseover="this.style.background='#f0f4ff'"
+             onmouseout="this.style.background='#fafafa'">
+            <div style="display: flex; align-items: center; gap: 14px;">
+                <span style="font-size: 22px;">🐑</span>
+                <div>
+                    <span style="font-weight: 600; font-size: 15px;">
+                        羊只 #{{ item.sheep.id }}
+                        {% if item.sheep.ear_tag %}
+                        <span style="font-size: 12px; color: #888; font-weight: 400;">（{{ item.sheep.ear_tag }}）</span>
+                        {% endif %}
+                    </span>
+                    {% if is_admin %}
+                    <span style="font-size: 12px; color: #999; margin-left: 10px;">养殖户：{{ item.sheep.owner.username }}</span>
+                    {% endif %}
+                </div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <span style="background: {% if item.count > 0 %}#e8f5e9; color: #2e7d32{% else %}#f5f5f5; color: #999{% endif %};
+                             padding: 3px 10px; border-radius: 20px; font-size: 13px;">
+                    {{ item.count }} 条记录
+                </span>
+                <svg id="arrow-sheep-{{ item.sheep.id }}"
+                     style="width: 18px; height: 18px; fill: #999; transition: transform 0.25s; transform: rotate(0deg);"
+                     viewBox="0 0 24 24">
+                    <path d="M7 10l5 5 5-5z"/>
+                </svg>
+            </div>
+        </div>
+
+        <!-- 折叠内容 -->
+        <div id="sheep-{{ item.sheep.id }}" style="display: none;">
+            {% if item.records %}
+            <table style="width: 100%; border-collapse: collapse;">
+                <thead>
+                    <tr style="background: #f0f4ff; font-size: 13px; color: #555;">
+                        <th style="padding: 10px 20px; text-align: left; font-weight: 600;">饲料类型</th>
+                        <th style="padding: 10px 16px; text-align: left; font-weight: 600;">喂养日期</th>
+                        <th style="padding: 10px 16px; text-align: left; font-weight: 600;">数量</th>
+                        <th style="padding: 10px 16px; text-align: left; font-weight: 600;">单位</th>
+                        <th style="padding: 10px 20px; text-align: center; font-weight: 600;">操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for record in item.records %}
+                    <tr style="border-top: 1px solid #f0f0f0; font-size: 14px;">
+                        <td style="padding: 11px 20px;">
+                            <span style="display: inline-block; background: #fff3e0; color: #e65100;
+                                         padding: 2px 8px; border-radius: 4px; font-size: 13px;">
+                                {{ record.feed_type }}
+                            </span>
+                        </td>
+                        <td style="padding: 11px 16px; color: #555;">{{ record.feed_date|date:'Y-m-d' }}</td>
+                        <td style="padding: 11px 16px; font-weight: 500;">{{ record.amount }}</td>
+                        <td style="padding: 11px 16px; color: #666;">{{ record.unit }}</td>
+                        <td style="padding: 11px 20px; text-align: center;">
+                            <form method="post" action="{% url 'sheep_delete_feeding' item.sheep.pk record.pk %}" style="display: inline;">
+                                {% csrf_token %}
+                                <button type="submit" onclick="return confirm('确定删除这条喂养记录吗？')"
+                                        style="background: #ff5252; color: white; border: none; padding: 4px 12px;
+                                               border-radius: 4px; cursor: pointer; font-size: 12px;">
+                                    删除
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div style="text-align: center; padding: 30px; color: #bbb; font-size: 14px;">
+                🌾 该羊只暂无喂养记录
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endfor %}
 </div>
+
+<script>
+function toggleCollapse(id) {
+    const content = document.getElementById(id);
+    const arrow = document.getElementById('arrow-' + id);
+    if (content.style.display === 'none' || content.style.display === '') {
+        content.style.display = 'block';
+        arrow.style.transform = 'rotate(180deg)';
+    } else {
+        content.style.display = 'none';
+        arrow.style.transform = 'rotate(0deg)';
+    }
+}
+// 默认展开第一个
+document.addEventListener('DOMContentLoaded', function () {
+    const first = document.querySelector('[onclick^="toggleCollapse"]');
+    if (first) first.click();
+});
+</script>
 {% endblock %}
 

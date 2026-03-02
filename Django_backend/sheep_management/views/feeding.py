@@ -1,35 +1,57 @@
 """喂养记录管理视图"""
 from django.shortcuts import render, redirect
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from ..models import Sheep, FeedingRecord
+from ..permissions import ROLE_ADMIN
 
 
+@login_required
 def feeding_record_list(request):
-    """喂养记录列表"""
-    sheep_id = request.GET.get('sheep_id', '')
-    feeding_records = FeedingRecord.objects.all().select_related('sheep')
-    
-    if sheep_id:
-        feeding_records = feeding_records.filter(sheep_id=sheep_id)
-    
-    context = {'feeding_records': feeding_records, 'sheep_id': sheep_id}
+    """喂养记录列表 - 按羊只分组，管理员看全部，养殖户只看自己的羊"""
+    is_admin = request.user.role == ROLE_ADMIN
+
+    if is_admin:
+        sheep_qs = Sheep.objects.all().select_related('owner').order_by('id')
+    else:
+        sheep_qs = Sheep.objects.filter(owner=request.user).order_by('id')
+
+    # 构建按羊只分组的喂养记录
+    sheep_feeding_list = []
+    for sheep in sheep_qs:
+        records = FeedingRecord.objects.filter(sheep=sheep).order_by('-feed_date')
+        sheep_feeding_list.append({
+            'sheep': sheep,
+            'records': records,
+            'count': records.count(),
+        })
+
+    context = {
+        'sheep_feeding_list': sheep_feeding_list,
+        'is_admin': is_admin,
+    }
     return render(request, 'sheep_management/feeding/list.html', context)
 
 
+@login_required
 def feeding_record_create(request):
     """创建喂养记录"""
+    is_admin = request.user.role == ROLE_ADMIN
+
     if request.method == 'POST':
-        feeding_record = FeedingRecord.objects.create(
+        FeedingRecord.objects.create(
             sheep_id=int(request.POST.get('sheep_id')),
             feed_type=request.POST.get('feed_type'),
-            start_date=request.POST.get('start_date'),
-            end_date=request.POST.get('end_date') or None,
+            feed_date=request.POST.get('feed_date'),
             amount=float(request.POST.get('amount')),
             unit=request.POST.get('unit'),
         )
         messages.success(request, '喂养记录创建成功！')
         return redirect('feeding_record_list')
-    
-    sheep_list = Sheep.objects.all()
+
+    if is_admin:
+        sheep_list = Sheep.objects.all().select_related('owner')
+    else:
+        sheep_list = Sheep.objects.filter(owner=request.user)
     return render(request, 'sheep_management/feeding/form.html', {'title': '创建喂养记录', 'sheep_list': sheep_list})
 

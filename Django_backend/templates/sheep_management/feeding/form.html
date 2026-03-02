@@ -19,12 +19,8 @@
             <input type="text" name="feed_type" required placeholder="如：青草、精饲料等">
         </div>
         <div class="form-group">
-            <label>开始日期 *</label>
-            <input type="date" name="start_date" required>
-        </div>
-        <div class="form-group">
-            <label>结束日期</label>
-            <input type="date" name="end_date" placeholder="留空表示进行中">
+            <label>喂养日期 *</label>
+            <input type="date" name="feed_date" required>
         </div>
         <div class="form-group">
             <label>数量 *</label>
@@ -32,7 +28,16 @@
         </div>
         <div class="form-group">
             <label>单位 *</label>
-            <input type="text" name="unit" required placeholder="如：kg、g等" value="kg">
+            <select name="unit" required>
+                <option value="kg" selected>kg（千克）</option>
+                <option value="g">g（克）</option>
+                <option value="捆">捆</option>
+                <option value="捐">捐</option>
+                <option value="覆">覆</option>
+                <option value="包">包</option>
+                <option value="L">L（升）</option>
+                <option value="mL">mL（毫升）</option>
+            </select>
         </div>
         <div style="display: flex; gap: 10px;">
             <button type="submit" class="btn">保存</button>

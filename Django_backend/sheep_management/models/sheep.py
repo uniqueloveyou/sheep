@@ -80,10 +80,10 @@ class FeedingRecord(models.Model):
     """喂养记录表"""
     sheep = models.ForeignKey(Sheep, on_delete=models.CASCADE, related_name='feeding_records', verbose_name='羊只')
     feed_type = models.CharField(max_length=100, verbose_name='饲料类型')
-    start_date = models.DateField(verbose_name='开始日期')
-    end_date = models.DateField(null=True, blank=True, verbose_name='结束日期')
+    feed_date = models.DateField(verbose_name='喂养日期')
     amount = models.FloatField(verbose_name='数量')
     unit = models.CharField(max_length=20, verbose_name='单位')
+    created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True, verbose_name='记录时间')
 
     class Meta:
         db_table = 'feeding_records'

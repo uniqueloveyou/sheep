@@ -643,13 +643,12 @@ def api_get_sheep_with_growth(request, sheep_id):
         # 获取喂养记录
         feeding_data = []
         try:
-            feeding_records = FeedingRecord.objects.filter(sheep=sheep).order_by('-start_date')
+            feeding_records = FeedingRecord.objects.filter(sheep=sheep).order_by('-feed_date')
             for record in feeding_records:
                 feeding_data.append({
                     'id': record.id,
                     'feed_type': record.feed_type or '',
-                    'start_date': record.start_date.strftime('%Y-%m-%d') if record.start_date else '',
-                    'end_date': record.end_date.strftime('%Y-%m-%d') if record.end_date else None,
+                    'feed_date': record.feed_date.strftime('%Y-%m-%d') if record.feed_date else '',
                     'amount': float(record.amount) if record.amount is not None else 0.0,
                     'unit': record.unit or ''
                 })

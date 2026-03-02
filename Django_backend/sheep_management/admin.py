@@ -53,10 +53,10 @@ class GrowthRecordAdmin(admin.ModelAdmin):
 
 @admin.register(FeedingRecord)
 class FeedingRecordAdmin(admin.ModelAdmin):
-    list_display = ['id', 'sheep', 'feed_type', 'start_date', 'end_date', 'amount', 'unit']
-    list_filter = ['feed_type', 'start_date']
+    list_display = ['id', 'sheep', 'feed_type', 'feed_date', 'amount', 'unit', 'created_at']
+    list_filter = ['feed_type', 'feed_date']
     search_fields = ['sheep__id', 'feed_type']
-    date_hierarchy = 'start_date'
+    date_hierarchy = 'feed_date'
     list_per_page = 20
 
 
