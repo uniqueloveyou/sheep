@@ -45,16 +45,6 @@
         <text class="asset-value">¥{{balance}}</text>
         <text class="asset-label">余额</text>
       </view>
-      <view class="asset-divider"></view>
-      <view class="asset-item">
-        <text class="asset-value">{{score}}</text>
-        <text class="asset-label">积分</text>
-      </view>
-      <view class="asset-divider"></view>
-      <view class="asset-item">
-        <text class="asset-value">{{couponCount}}</text>
-        <text class="asset-label">优惠券</text>
-      </view>
     </view>
   </view>
 
