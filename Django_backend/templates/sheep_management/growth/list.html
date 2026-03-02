@@ -1,48 +1,280 @@
 {% extends 'sheep_management/base.html' %}
 
+{% block page_title %}生长记录{% endblock %}
+
 {% block content %}
+<style>
+.growth-sheep-card {
+    border: 1px solid #e8eaf6;
+    border-radius: 10px;
+    margin-bottom: 12px;
+    overflow: hidden;
+    transition: box-shadow 0.2s;
+}
+.growth-sheep-card:hover { box-shadow: 0 2px 12px rgba(91,110,232,0.10); }
+.growth-sheep-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 13px 18px;
+    background: #f7f8ff;
+    cursor: pointer;
+    user-select: none;
+    border-bottom: 1px solid transparent;
+    transition: background 0.15s;
+}
+.growth-sheep-header:hover { background: #eef0ff; }
+.growth-sheep-header.open { background: #eef0ff; border-bottom-color: #e8eaf6; }
+.growth-sheep-header .ear-tag {
+    font-weight: 600;
+    color: #5b6ee8;
+    font-size: 15px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.growth-sheep-header .meta { display: flex; align-items: center; gap: 12px; }
+.badge {
+    display: inline-block;
+    padding: 2px 9px;
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: 500;
+}
+.badge-blue   { background: #eef2ff; color: #5b6ee8; }
+.badge-green  { background: #f0f9eb; color: #27ae60; }
+.badge-orange { background: #fff7f0; color: #e67e22; }
+.badge-gray   { background: #f5f5f5; color: #999; }
+.growth-arrow { font-size: 13px; color: #aaa; transition: transform 0.2s; margin-left: 8px; }
+.growth-arrow.open { transform: rotate(90deg); }
+.growth-body { display: none; padding: 16px 18px 18px; background: #fff; }
+.growth-body.open { display: block; }
+.growth-chart-wrap {
+    position: relative;
+    height: 220px;
+    margin-bottom: 16px;
+}
+.growth-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.growth-table th {
+    text-align: left;
+    color: #888;
+    font-weight: 500;
+    padding: 6px 10px;
+    border-bottom: 1px solid #f0f0f0;
+}
+.growth-table td {
+    padding: 8px 10px;
+    border-bottom: 1px solid #f9f9f9;
+    vertical-align: middle;
+}
+.growth-table tr:last-child td { border-bottom: none; }
+.growth-table tr:hover td { background: #fafbff; }
+.owner-tag {
+    font-size: 12px;
+    color: #888;
+    background: #f0f0f0;
+    border-radius: 8px;
+    padding: 2px 8px;
+    font-weight: 400;
+}
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: #bbb;
+}
+.empty-state .empty-icon { font-size: 48px; margin-bottom: 12px; }
+.empty-state p { font-size: 15px; margin: 0; }
+</style>
+
+<!-- Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
 <div class="card">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-        <h2>生长记录列表</h2>
-        <a href="{% url 'growth_record_create' %}" class="btn">添加记录</a>
+    <!-- 标题栏 -->
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;">
+        <div style="display:flex;align-items:center;gap:12px;">
+            <h2 style="margin:0;">📈 生长记录</h2>
+            {% if sheep_list %}
+            <span class="badge badge-blue">{{ sheep_list|length }} 只羊</span>
+            <span class="badge badge-green">共 {{ total_count }} 条</span>
+            {% endif %}
+            {% if is_admin %}
+            <span class="badge badge-orange">管理员·全部羊只</span>
+            {% endif %}
+        </div>
+        <a href="{% url 'growth_record_create' %}" class="btn">➕ 添加记录</a>
     </div>
-    
-    <div class="search-box">
-        <form method="get">
-            <input type="number" name="sheep_id" placeholder="筛选羊只ID..." value="{{ sheep_id }}">
-            <button type="submit" class="btn">筛选</button>
-            {% if sheep_id %}<a href="{% url 'growth_record_list' %}" class="btn" style="background: #95a5a6;">清除</a>{% endif %}
-        </form>
-    </div>
-    
-    <table>
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>羊只ID</th>
-                <th>记录日期</th>
-                <th>体重(kg)</th>
-                <th>身高(cm)</th>
-                <th>体长(cm)</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for record in growth_records %}
-            <tr>
-                <td>{{ record.id }}</td>
-                <td>{{ record.sheep.id }}</td>
-                <td>{{ record.record_date }}</td>
-                <td>{{ record.weight }}</td>
-                <td>{{ record.height }}</td>
-                <td>{{ record.length }}</td>
-            </tr>
-            {% empty %}
-            <tr>
-                <td colspan="6" style="text-align: center; padding: 40px;">暂无数据</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+
+    {% if sheep_list %}
+        {% for sheep in sheep_list %}
+        <div class="growth-sheep-card">
+            <!-- 可折叠头部 -->
+            <div class="growth-sheep-header" onclick="toggleGrowthCard('growth-body-{{ sheep.id }}', this)">
+                <div class="ear-tag">
+                    <span>🐑</span>
+                    <span>{{ sheep.ear_tag }}</span>
+                    <span style="font-weight:400;color:#666;font-size:13px;">
+                        {{ sheep.get_gender_display }}{% if sheep.birth_date %} · {{ sheep.birth_date }} 出生{% endif %}
+                    </span>
+                    {% if is_admin %}
+                    <span class="owner-tag">{{ sheep.owner.username }}</span>
+                    {% endif %}
+                </div>
+                <div class="meta">
+                    <span class="badge badge-blue">{{ sheep.sorted_growth_records|length }} 条记录</span>
+                    {% with last=sheep.sorted_growth_records|last %}
+                    {% if last %}
+                    <span class="badge badge-green">最新体重 {{ last.weight }} kg</span>
+                    {% endif %}
+                    {% endwith %}
+                    <span class="growth-arrow">▶</span>
+                </div>
+            </div>
+
+            <!-- 折叠内容 -->
+            <div class="growth-body" id="growth-body-{{ sheep.id }}">
+                <!-- 折线图 -->
+                <div class="growth-chart-wrap">
+                    <canvas id="chart-{{ sheep.id }}"></canvas>
+                </div>
+                <!-- 数据表 -->
+                <table class="growth-table">
+                    <thead>
+                        <tr>
+                            <th>记录日期</th>
+                            <th>体重 (kg)</th>
+                            <th>身高 (cm)</th>
+                            <th>体长 (cm)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for r in sheep.sorted_growth_records reversed %}
+                        <tr>
+                            <td>{{ r.record_date }}</td>
+                            <td>{{ r.weight }}</td>
+                            <td>{{ r.height }}</td>
+                            <td>{{ r.length }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="empty-state">
+            <div class="empty-icon">📊</div>
+            <p>暂无生长记录</p>
+        </div>
+    {% endif %}
 </div>
+
+<script>
+// 每只羊的图表数据
+const growthChartData = {
+    {% for sheep in sheep_list %}
+    '{{ sheep.id }}': {
+        labels: [{% for r in sheep.sorted_growth_records %}"{{ r.record_date }}"{% if not forloop.last %},{% endif %}{% endfor %}],
+        weights: [{% for r in sheep.sorted_growth_records %}{{ r.weight }}{% if not forloop.last %},{% endif %}{% endfor %}],
+        heights: [{% for r in sheep.sorted_growth_records %}{{ r.height }}{% if not forloop.last %},{% endif %}{% endfor %}],
+        lengths: [{% for r in sheep.sorted_growth_records %}{{ r.length }}{% if not forloop.last %},{% endif %}{% endfor %}]
+    }{% if not forloop.last %},{% endif %}
+    {% endfor %}
+};
+
+const chartInstances = {};
+
+function toggleGrowthCard(bodyId, headerEl) {
+    const body = document.getElementById(bodyId);
+    const arrow = headerEl.querySelector('.growth-arrow');
+    const isOpen = body.classList.contains('open');
+
+    if (isOpen) {
+        body.classList.remove('open');
+        arrow.classList.remove('open');
+        headerEl.classList.remove('open');
+    } else {
+        body.classList.add('open');
+        arrow.classList.add('open');
+        headerEl.classList.add('open');
+
+        // 首次展开时初始化图表
+        const sheepId = bodyId.replace('growth-body-', '');
+        if (!chartInstances[sheepId] && growthChartData[sheepId]) {
+            initGrowthChart(sheepId);
+        }
+    }
+}
+
+function initGrowthChart(sheepId) {
+    const data = growthChartData[sheepId];
+    const ctx = document.getElementById('chart-' + sheepId).getContext('2d');
+    chartInstances[sheepId] = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: data.labels,
+            datasets: [
+                {
+                    label: '体重 (kg)',
+                    data: data.weights,
+                    borderColor: '#5b6ee8',
+                    backgroundColor: 'rgba(91,110,232,0.08)',
+                    tension: 0.4,
+                    pointBackgroundColor: '#5b6ee8',
+                    pointRadius: 4,
+                    fill: true,
+                },
+                {
+                    label: '身高 (cm)',
+                    data: data.heights,
+                    borderColor: '#27ae60',
+                    backgroundColor: 'transparent',
+                    tension: 0.4,
+                    pointBackgroundColor: '#27ae60',
+                    pointRadius: 4,
+                    fill: false,
+                },
+                {
+                    label: '体长 (cm)',
+                    data: data.lengths,
+                    borderColor: '#e67e22',
+                    backgroundColor: 'transparent',
+                    tension: 0.4,
+                    pointBackgroundColor: '#e67e22',
+                    pointRadius: 4,
+                    fill: false,
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false },
+            plugins: {
+                legend: {
+                    position: 'top',
+                    labels: { boxWidth: 12, padding: 16, font: { size: 12 } }
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(30,30,50,0.88)',
+                    padding: 10,
+                    cornerRadius: 8
+                }
+            },
+            scales: {
+                x: {
+                    grid: { color: '#f0f0f0' },
+                    ticks: { font: { size: 11 }, color: '#999' }
+                },
+                y: {
+                    grid: { color: '#f0f0f0' },
+                    ticks: { font: { size: 11 }, color: '#999' },
+                    beginAtZero: false
+                }
+            }
+        }
+    });
+}
+</script>
 {% endblock %}
 

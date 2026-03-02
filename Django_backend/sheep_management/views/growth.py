@@ -1,18 +1,38 @@
 """生长记录管理视图"""
 from django.shortcuts import render, redirect
 from django.contrib import messages
+from django.db.models import Prefetch
 from ..models import Sheep, GrowthRecord
+from ..permissions import ROLE_ADMIN
 
 
 def growth_record_list(request):
-    """生长记录列表"""
-    sheep_id = request.GET.get('sheep_id', '')
-    growth_records = GrowthRecord.objects.all().select_related('sheep')
-    
-    if sheep_id:
-        growth_records = growth_records.filter(sheep_id=sheep_id)
-    
-    context = {'growth_records': growth_records, 'sheep_id': sheep_id}
+    """生长记录列表 - 按羊只分组展示，带权限过滤"""
+    is_admin = request.user.role == ROLE_ADMIN
+
+    if is_admin:
+        sheep_qs = Sheep.objects.all().select_related('owner').order_by('id')
+    else:
+        sheep_qs = Sheep.objects.filter(owner=request.user).order_by('id')
+
+    # 预取生长记录，按日期升序（方便折线图）
+    sheep_qs = sheep_qs.prefetch_related(
+        Prefetch(
+            'growth_records',
+            queryset=GrowthRecord.objects.order_by('record_date'),
+            to_attr='sorted_growth_records'
+        )
+    )
+
+    # 只展示有生长记录的羊
+    sheep_with_records = [s for s in sheep_qs if s.sorted_growth_records]
+    total_count = sum(len(s.sorted_growth_records) for s in sheep_with_records)
+
+    context = {
+        'sheep_list': sheep_with_records,
+        'total_count': total_count,
+        'is_admin': is_admin,
+    }
     return render(request, 'sheep_management/growth/list.html', context)
 
 
