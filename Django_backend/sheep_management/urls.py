@@ -91,6 +91,14 @@ urlpatterns = [
     # 健康检查
     path('health', views.api_health, name='api_health'),
 
+    # ==========================
+    # 公开溯源页面（H5，无需登录，供扫码跳转）
+    # ==========================
+    path('trace/<int:sheep_id>/', views.sheep_trace_h5, name='sheep_trace_h5'),
+
+    # 公开溯源数据 API（无需登录）
+    path('api/public/trace/<int:sheep_id>', sheep_api.api_public_sheep_trace, name='api_public_sheep_trace'),
+
     # 传统视图路由
     path('sheep/', views.sheep_list, name='sheep_list'),
     path('sheep/<int:pk>/', views.sheep_detail, name='sheep_detail'),

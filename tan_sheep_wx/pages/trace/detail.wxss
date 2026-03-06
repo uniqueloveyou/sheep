@@ -1,189 +1,133 @@
 /* pages/trace/detail.wxss */
-.trace-page {
-  min-height: 100vh;
-  background: #f5f5f5;
-  padding: 20rpx;
-}
+page { background: #f2f5f0; min-height: 100vh; }
 
-/* 加载状态 */
-.loading-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 80vh;
-}
+.trace-page { padding: 0 0 40rpx; }
 
-/* 错误状态 */
-.error-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 80vh;
-  padding: 40rpx;
+/*  加载 / 错误  */
+.loading-wrap, .error-wrap {
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: center; padding: 120rpx 60rpx; gap: 20rpx;
 }
-
-.error-content {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
+.loading-spinner {
+  width: 64rpx; height: 64rpx; border: 6rpx solid #e0e0e0;
+  border-top-color: #1a7a1a; border-radius: 50%;
+  animation: spin 0.9s linear infinite;
 }
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading-text { color: #888; font-size: 26rpx; }
+.err-icon { font-size: 80rpx; }
+.err-msg  { color: #c0392b; font-size: 28rpx; text-align: center; }
 
-.error-title {
-  font-size: 36rpx;
-  font-weight: bold;
-  color: #333;
-  margin-top: 30rpx;
-  margin-bottom: 20rpx;
+/*  品牌头  */
+.brand-bar {
+  background: linear-gradient(135deg, #1a7a1a 0%, #2da82d 100%);
+  padding: 36rpx 40rpx 28rpx;
+  display: flex; flex-direction: column; gap: 6rpx;
 }
+.brand-logo { color: #fff; font-size: 32rpx; font-weight: bold; }
+.brand-sub  { color: rgba(255,255,255,0.8); font-size: 22rpx; }
 
-.error-message {
-  font-size: 28rpx;
-  color: #666;
-  line-height: 1.6;
-  margin-bottom: 40rpx;
-  white-space: pre-line;
+/*  Hero 卡  */
+.hero-card {
+  background: #fff; margin: 24rpx 24rpx 0;
+  border-radius: 20rpx; padding: 28rpx;
+  display: flex; align-items: flex-start; gap: 24rpx;
+  box-shadow: 0 4rpx 16rpx rgba(0,0,0,0.06);
 }
-
-.error-actions {
-  display: flex;
-  gap: 20rpx;
+.sheep-img {
+  width: 160rpx; height: 160rpx; border-radius: 16rpx;
+  object-fit: cover; flex-shrink: 0;
 }
-
-/* 头部卡片 */
-.header-card {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  border-radius: 20rpx;
-  padding: 40rpx;
-  margin-bottom: 20rpx;
-  box-shadow: 0 4rpx 20rpx rgba(102, 126, 234, 0.3);
+.sheep-img-placeholder {
+  width: 160rpx; height: 160rpx; border-radius: 16rpx;
+  background: #f0f7f0; display: flex; align-items: center;
+  justify-content: center; font-size: 72rpx; flex-shrink: 0;
 }
-
-.ear-tag-section {
-  text-align: center;
-  margin-bottom: 30rpx;
+.hero-right { flex: 1; display: flex; flex-direction: column; gap: 10rpx; }
+.ear-tag-label { color: #999; font-size: 22rpx; }
+.ear-tag-val   { color: #1a1a1a; font-size: 36rpx; font-weight: bold; }
+.status-badge  {
+  display: inline-block; padding: 4rpx 16rpx;
+  border-radius: 30rpx; font-size: 22rpx; align-self: flex-start;
 }
+.badge-green  { background: #e8f8e8; color: #1a7a1a; }
+.badge-orange { background: #fff3e0; color: #e67e22; }
+.qr-mini { display: flex; flex-direction: column; align-items: center; gap: 4rpx; margin-top: 6rpx; }
+.qr-thumb { width: 88rpx; height: 88rpx; }
+.qr-hint  { color: #1a7a1a; font-size: 20rpx; }
 
-.ear-tag-section .label {
-  display: block;
-  color: rgba(255, 255, 255, 0.8);
-  font-size: 28rpx;
-  margin-bottom: 15rpx;
+/*  通用 Section 卡  */
+.section-card {
+  background: #fff; margin: 20rpx 24rpx 0;
+  border-radius: 20rpx; padding: 24rpx 28rpx;
+  box-shadow: 0 4rpx 16rpx rgba(0,0,0,0.05);
 }
-
-.ear-tag {
-  display: block;
-  color: #fff;
-  font-size: 48rpx;
-  font-weight: bold;
-  letter-spacing: 2rpx;
+.section-hd {
+  display: flex; align-items: center; gap: 10rpx; margin-bottom: 20rpx;
 }
+.sec-icon  { font-size: 32rpx; }
+.sec-title { color: #1a1a1a; font-size: 30rpx; font-weight: bold; flex: 1; }
+.badge-count { background: #e8f8e8; color: #1a7a1a; font-size: 22rpx; padding: 2rpx 12rpx; border-radius: 20rpx; }
+.toggle-arrow { color: #999; font-size: 24rpx; margin-left: 8rpx; }
 
-/* 二维码区域 */
-.qr-code-section {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  background: rgba(255, 255, 255, 0.15);
-  border-radius: 16rpx;
-  padding: 30rpx;
-  backdrop-filter: blur(10rpx);
-}
-
-.qr-code-image {
-  width: 300rpx;
-  height: 300rpx;
-  background: white;
-  border-radius: 12rpx;
-  padding: 20rpx;
-  margin-bottom: 20rpx;
-}
-
-.qr-tip {
-  color: rgba(255, 255, 255, 0.9);
-  font-size: 24rpx;
-}
-
-/* 信息卡片 */
-.info-card {
-  background: white;
-  border-radius: 20rpx;
-  padding: 30rpx;
-  margin-bottom: 20rpx;
-  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.08);
-}
-
-.card-title {
-  display: flex;
-  align-items: center;
-  font-size: 32rpx;
-  font-weight: bold;
-  color: #333;
-  margin-bottom: 25rpx;
-  padding-bottom: 20rpx;
-  border-bottom: 2rpx solid #f0f0f0;
-}
-
-.card-title text {
-  margin-left: 10rpx;
-}
-
-/* 信息网格 */
+/*  基础档案网格  */
 .info-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 25rpx;
+  display: flex; flex-wrap: wrap; gap: 0;
 }
-
-.info-item {
-  display: flex;
-  flex-direction: column;
-  padding: 20rpx;
-  background: #f8f9fa;
-  border-radius: 12rpx;
+.info-cell {
+  width: 50%; display: flex; flex-direction: column;
+  padding: 12rpx 0; border-bottom: 1rpx solid #f5f5f5;
 }
+.ic-label { color: #999; font-size: 22rpx; margin-bottom: 4rpx; }
+.ic-val   { color: #333; font-size: 28rpx; font-weight: 500; }
+.weight-val { color: #e67e22; }
+.height-val { color: #2980b9; }
+.length-val { color: #8e44ad; }
+.farm-val   { color: #1a7a1a; }
 
-.info-item .label {
+/*  行列表（养殖户） */
+.row-item { display: flex; justify-content: space-between; padding: 14rpx 0; border-bottom: 1rpx solid #f5f5f5; }
+.row-item:last-child { border-bottom: none; }
+.ri-label { color: #999; font-size: 26rpx; }
+.ri-val   { color: #333; font-size: 26rpx; font-weight: 500; }
+
+/*  时间轴（疫苗） */
+.timeline { padding: 4rpx 0; }
+.tl-item  { display: flex; gap: 18rpx; }
+.tl-left  { display: flex; flex-direction: column; align-items: center; flex-shrink: 0; }
+.tl-dot   { width: 20rpx; height: 20rpx; border-radius: 50%; background: #1a7a1a; margin-top: 6rpx; flex-shrink: 0; }
+.tl-line  { width: 2rpx; flex: 1; background: #c8e6c9; min-height: 30rpx; margin: 4rpx 0; }
+.tl-body  { flex: 1; padding-bottom: 28rpx; display: flex; flex-direction: column; gap: 6rpx; }
+.tl-name  { color: #1a1a1a; font-size: 28rpx; font-weight: bold; }
+.tl-date  { color: #666; font-size: 22rpx; }
+.tl-detail{ color: #888; font-size: 22rpx; }
+.tl-notes { color: #1a7a1a; font-size: 22rpx; background: #f0fff0; border-radius: 8rpx; padding: 4rpx 10rpx; }
+
+/*  生长记录表格  */
+.tbl-head, .tbl-row {
+  display: flex; align-items: center; padding: 12rpx 4rpx;
   font-size: 24rpx;
-  color: #999;
-  margin-bottom: 10rpx;
 }
+.tbl-head { background: #f0f7f0; border-radius: 8rpx; margin-bottom: 4rpx; }
+.row-even { background: #fafcfa; }
+.th { color: #1a7a1a; font-weight: bold; }
+.td { color: #444; }
+.th, .td { flex: 1; text-align: center; }
+.c-weight .td, .c-weight { color: #e67e22; }
+.c-height .td, .c-height { color: #2980b9; }
+.c-length .td, .c-length { color: #8e44ad; }
 
-.info-item .value {
-  font-size: 32rpx;
-  color: #333;
-  font-weight: bold;
+/*  喂养记录标签  */
+.feed-tags { display: flex; flex-wrap: wrap; gap: 14rpx; }
+.feed-tag  {
+  background: #f0f7f0; border: 1rpx solid #c8e6c9; border-radius: 12rpx;
+  padding: 10rpx 18rpx; display: flex; flex-direction: column; gap: 4rpx;
 }
+.feed-date { color: #999; font-size: 20rpx; }
+.feed-type { color: #1a7a1a; font-size: 24rpx; font-weight: 500; }
 
-/* 养殖户信息 */
-.breeder-info {
-  display: flex;
-  flex-direction: column;
-  gap: 20rpx;
-}
+/*  空态  */
+.empty-tip { color: #bbb; font-size: 24rpx; text-align: center; padding: 20rpx 0; }
 
-.breeder-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 20rpx;
-  background: #f8f9fa;
-  border-radius: 12rpx;
-}
-
-.breeder-item .label {
-  font-size: 28rpx;
-  color: #666;
-}
-
-.breeder-item .value {
-  font-size: 28rpx;
-  color: #333;
-  font-weight: 500;
-}
-
-/* 底部按钮 */
-.bottom-actions {
-  margin-top: 40rpx;
-  padding-bottom: 40rpx;
-}
+/*  底部留白  */
+.footer-gap { height: 60rpx; }

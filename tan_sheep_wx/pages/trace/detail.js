@@ -1,92 +1,88 @@
 // pages/trace/detail.js
+// 扫码后的溯源详情页：通过 sheep_id 拉取完整生命周期数据
 const API = require('../../utils/api.js');
 
 Page({
     data: {
-        earTag: '',
-        sheepInfo: null,
+        sheepId: null,
+        sheep: null,
         loading: true,
-        error: null
+        error: null,
+        vaccineExpanded: true,
+        growthExpanded: true,
+        feedExpanded: false,
     },
 
     onLoad(options) {
-        const earTag = options.ear_tag;
-        if (earTag) {
-            this.setData({ earTag: earTag });
-            this.fetchSheepInfo(earTag);
+        const sheepId = options.sheep_id || options.id;
+        const earTag  = options.ear_tag;
+        if (sheepId) {
+            this.setData({ sheepId });
+            this.fetchBySheepId(sheepId);
+        } else if (earTag) {
+            this.fetchByEarTag(earTag);
         } else {
-            this.setData({
-                loading: false,
-                error: '缺少耳标编号参数'
-            });
+            this.setData({ loading: false, error: '缺少羊只标识参数' });
         }
     },
 
-    /**
-     * 根据耳标编号查询羊只信息
-     */
-    fetchSheepInfo(earTag) {
-        console.log('[溯源查询] 查询耳标:', earTag);
-
-        wx.showLoading({
-            title: '查询中...',
-            mask: true
-        });
-
-        API.request(`/api/sheep/trace?ear_tag=${encodeURIComponent(earTag)}`, 'GET')
-            .then((res) => {
+    fetchBySheepId(id) {
+        wx.showLoading({ title: '溯源查询中', mask: true });
+        API.request('/api/public/trace/' + id, 'GET')
+            .then(res => {
                 wx.hideLoading();
-                console.log('[溯源查询] 查询成功:', res);
-
-                this.setData({
-                    sheepInfo: res,
-                    loading: false,
-                    error: null
-                });
-            })
-            .catch((error) => {
-                wx.hideLoading();
-                console.error('[溯源查询] 查询失败:', error);
-
-                // 将技术错误转换为用户友好的提示
-                let userMessage = '查询失败，请稍后重试';
-
-                // 根据不同的错误类型给出不同的提示
-                if (error.statusCode === 404) {
-                    userMessage = `未找到耳标编号为 ${earTag} 的羊只\n\n请检查耳标编号是否正确`;
-                } else if (error.statusCode === 400) {
-                    userMessage = '耳标编号格式不正确\n\n请输入正确的耳标编号';
-                } else if (error.statusCode >= 500) {
-                    userMessage = '服务器繁忙，请稍后再试';
-                } else if (error.errMsg) {
-                    if (error.errMsg.indexOf('timeout') !== -1) {
-                        userMessage = '网络请求超时\n\n请检查网络连接后重试';
-                    } else if (error.errMsg.indexOf('fail') !== -1) {
-                        userMessage = '网络连接失败\n\n请检查网络设置';
-                    }
+                if (res.code === 0) {
+                    this.setData({ sheep: res.data, loading: false, error: null });
+                } else {
+                    this.setData({ loading: false, error: res.msg || '查询失败' });
                 }
-
-                this.setData({
-                    loading: false,
-                    error: userMessage
-                });
+            })
+            .catch(err => {
+                wx.hideLoading();
+                this.setData({ loading: false, error: this._fmtError(err) });
             });
     },
 
-    /**
-     * 重新查询
-     */
-    retry() {
-        if (this.data.earTag) {
-            this.setData({ loading: true, error: null });
-            this.fetchSheepInfo(this.data.earTag);
-        }
+    fetchByEarTag(earTag) {
+        wx.showLoading({ title: '溯源查询中', mask: true });
+        API.request('/api/sheep/trace?ear_tag=' + encodeURIComponent(earTag), 'GET')
+            .then(res => {
+                wx.hideLoading();
+                const sheep = (res && res.id) ? res : (res && res.data ? res.data : null);
+                if (sheep && sheep.id) {
+                    this.fetchBySheepId(sheep.id);
+                } else {
+                    this.setData({ loading: false, error: '未找到该羊只信息' });
+                }
+            })
+            .catch(err => {
+                wx.hideLoading();
+                this.setData({ loading: false, error: this._fmtError(err) });
+            });
     },
 
-    /**
-     * 返回上一页
-     */
-    goBack() {
-        wx.navigateBack();
+    toggleSection(e) {
+        const key = e.currentTarget.dataset.key;
+        this.setData({ [key]: !this.data[key] });
+    },
+
+    previewQRCode() {
+        const url = this.data.sheep && this.data.sheep.qr_code;
+        if (url) wx.previewImage({ urls: [url], current: url });
+    },
+
+    retry() {
+        this.setData({ loading: true, error: null });
+        if (this.data.sheepId) this.fetchBySheepId(this.data.sheepId);
+    },
+
+    goBack() { wx.navigateBack(); },
+
+    _fmtError(err) {
+        if (!err) return '查询失败，请稍后重试。';
+        if (err.statusCode === 404) return '未找到该羊只溯源信息，请检查二维码是否正确。';
+        if (err.statusCode >= 500) return '服务器繁忙，请稍后再试。';
+        if (err.errMsg && err.errMsg.indexOf('timeout') !== -1) return '网络请求超时，请检查网络连接。';
+        return '查询失败，请稍后重试。';
     }
 });

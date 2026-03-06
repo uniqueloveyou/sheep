@@ -3,12 +3,20 @@
 所有方法为纯业务逻辑，不依赖任何 HTTP Request/Response 对象。
 通过 raise SheepError 传递错误。
 """
+import io
 import re
 from datetime import date
 
+import qrcode
+from django.conf import settings
+from django.core.files.base import ContentFile
 from django.db.models import Q
 
 from ..models import Sheep, VaccinationHistory, GrowthRecord, FeedingRecord
+
+
+# 溯源页面的服务器基础地址（可在 settings.py 中覆盖）
+TRACE_BASE_URL = getattr(settings, 'TRACE_BASE_URL', 'http://127.0.0.1:8000')
 
 
 class SheepError(Exception):
@@ -280,6 +288,9 @@ class SheepService:
                 sheep.image = image
                 sheep.save()
 
+            # 自动生成溯源二维码
+            SheepService._generate_qr_code(sheep)
+
             return SheepService.get_sheep_by_id(sheep.id)
         except Exception as e:
             raise SheepError(f'创建羊只失败: {str(e)}')
@@ -492,6 +503,36 @@ class SheepService:
     # ========================
     #  私有方法
     # ========================
+
+    @staticmethod
+    def _generate_qr_code(sheep):
+        """
+        为羊只生成溯源二维码，二维码内容为 H5 溯源页面 URL。
+        生成后保存到 sheep.qr_code 字段。
+        """
+        try:
+            trace_url = f"{TRACE_BASE_URL}/trace/{sheep.id}/"
+
+            qr = qrcode.QRCode(
+                version=None,
+                error_correction=qrcode.constants.ERROR_CORRECT_M,
+                box_size=10,
+                border=4,
+            )
+            qr.add_data(trace_url)
+            qr.make(fit=True)
+            img = qr.make_image(fill_color='black', back_color='white')
+
+            buf = io.BytesIO()
+            img.save(buf, format='PNG')
+            buf.seek(0)
+
+            filename = f'qr_sheep_{sheep.id}.png'
+            sheep.qr_code.save(filename, ContentFile(buf.read()), save=True)
+        except Exception as e:
+            # QR 生成失败不影响主流程
+            import logging
+            logging.getLogger(__name__).warning(f'QR 生成失败 sheep_id={sheep.id}: {e}')
 
     @staticmethod
     def _parse_range(range_str):

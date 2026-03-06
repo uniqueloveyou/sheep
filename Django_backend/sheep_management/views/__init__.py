@@ -29,6 +29,7 @@ from .qa_api import api_qa_ask
 from .breeder_dashboard import breeder_dashboard, breeder_profile, breeder_update_location
 from .smart_farm import smart_farm
 from .auth import login_view, logout_view, register_view
+from .trace import sheep_trace_h5
 
 __all__ = [
     'index',
@@ -59,4 +60,5 @@ __all__ = [
     'api_coupons',
     'api_claim_coupon',
     'api_qa_ask',
+    'sheep_trace_h5',
 ]

@@ -1,88 +1,139 @@
 <!--pages/trace/detail.wxml-->
 <view class="trace-page">
+
   <!-- 加载中 -->
-  <view wx:if="{{loading}}" class="loading-container">
-    <van-loading type="spinner" size="50rpx" color="#1989fa">加载中...</van-loading>
+  <view wx:if="{{loading}}" class="loading-wrap">
+    <view class="loading-spinner"></view>
+    <text class="loading-text">溯源查询中</text>
   </view>
 
-  <!-- 错误提示 -->
-  <view wx:elif="{{error}}" class="error-container">
-    <view class="error-content">
-      <van-icon name="info-o" size="80px" color="#ff6b6b" />
-      <text class="error-title">查询失败</text>
-      <text class="error-message">{{error}}</text>
-      <view class="error-actions">
-        <van-button round type="primary" bindtap="retry" icon="replay">重新查询</van-button>
-        <van-button round plain type="default" bindtap="goBack" icon="arrow-left">返回</van-button>
-      </view>
-    </view>
+  <!-- 错误 -->
+  <view wx:elif="{{error}}" class="error-wrap">
+    <text class="err-icon"></text>
+    <text class="err-msg">{{error}}</text>
+    <van-button round type="primary" size="small" bindtap="retry">重新查询</van-button>
   </view>
 
-  <!-- 羊只信息 -->
-  <view wx:else class="sheep-info-container">
-    <!-- 头部卡片 -->
-    <view class="header-card">
-      <view class="ear-tag-section">
-        <text class="label">耳标编号</text>
-        <text class="ear-tag">{{sheepInfo.ear_tag}}</text>
-      </view>
-      
-      <!-- 二维码图片 -->
-      <view wx:if="{{sheepInfo.qr_code}}" class="qr-code-section">
-        <image src="{{sheepInfo.qr_code}}" mode="aspectFit" class="qr-code-image"></image>
-        <text class="qr-tip">扫描二维码查看溯源信息</text>
+  <!-- 溯源详情 -->
+  <block wx:elif="{{sheep}}">
+
+    <!-- 品牌头 -->
+    <view class="brand-bar">
+      <text class="brand-logo"> 滩羊智品  溯源档案</text>
+      <text class="brand-sub">宁夏盐池优质滩羊 可信溯源</text>
+    </view>
+
+    <!-- 耳标 + QR 码 -->
+    <view class="hero-card">
+      <image wx:if="{{sheep.image}}" class="sheep-img" src="{{sheep.image}}" mode="aspectFill"/>
+      <view wx:else class="sheep-img-placeholder"></view>
+      <view class="hero-right">
+        <text class="ear-tag-label">耳标编号</text>
+        <text class="ear-tag-val">{{sheep.ear_tag}}</text>
+        <view class="status-badge {{sheep.health_status === '健康' ? 'badge-green' : 'badge-orange'}}">
+          {{sheep.health_status}}
+        </view>
+        <view wx:if="{{sheep.qr_code}}" class="qr-mini" bindtap="previewQRCode">
+          <image src="{{sheep.qr_code}}" mode="aspectFit" class="qr-thumb"/>
+          <text class="qr-hint">点击放大</text>
+        </view>
       </view>
     </view>
 
-    <!-- 基本信息卡片 -->
-    <view class="info-card">
-      <view class="card-title">
-        <van-icon name="info-o" size="18px" color="#1989fa" />
-        <text>基本信息</text>
-      </view>
-      
+    <!-- 基础档案 -->
+    <view class="section-card">
+      <view class="section-hd"><text class="sec-icon"></text><text class="sec-title">基础档案</text></view>
       <view class="info-grid">
-        <view class="info-item">
-          <text class="label">性别</text>
-          <text class="value">{{sheepInfo.gender}}</text>
-        </view>
-        <view class="info-item">
-          <text class="label">体重</text>
-          <text class="value">{{sheepInfo.weight}} kg</text>
-        </view>
-        <view class="info-item">
-          <text class="label">体高</text>
-          <text class="value">{{sheepInfo.height}} cm</text>
-        </view>
-        <view class="info-item">
-          <text class="label">体长</text>
-          <text class="value">{{sheepInfo.length}} cm</text>
-        </view>
+        <view class="info-cell"><text class="ic-label">性别</text><text class="ic-val">{{sheep.gender}}</text></view>
+        <view class="info-cell"><text class="ic-label">出生日期</text><text class="ic-val">{{sheep.birth_date || ''}}</text></view>
+        <view class="info-cell"><text class="ic-label">体重</text><text class="ic-val weight-val">{{sheep.weight}} kg</text></view>
+        <view class="info-cell"><text class="ic-label">体高</text><text class="ic-val height-val">{{sheep.height}} cm</text></view>
+        <view class="info-cell"><text class="ic-label">体长</text><text class="ic-val length-val">{{sheep.length}} cm</text></view>
+        <view class="info-cell"><text class="ic-label">牧场</text><text class="ic-val farm-val">{{sheep.farm_name}}</text></view>
       </view>
     </view>
 
-    <!-- 养殖户信息卡片 -->
-    <view wx:if="{{sheepInfo.breeder}}" class="info-card">
-      <view class="card-title">
-        <van-icon name="user-o" size="18px" color="#07c160" />
-        <text>养殖户信息</text>
-      </view>
-      
-      <view class="breeder-info">
-        <view class="breeder-item">
-          <text class="label">姓名</text>
-          <text class="value">{{sheepInfo.breeder.name}}</text>
-        </view>
-        <view class="breeder-item">
-          <text class="label">联系电话</text>
-          <text class="value">{{sheepInfo.breeder.phone}}</text>
-        </view>
-      </view>
+    <!-- 养殖户 -->
+    <view class="section-card" wx:if="{{sheep.breeder}}">
+      <view class="section-hd"><text class="sec-icon"></text><text class="sec-title">负责养殖户</text></view>
+      <view class="row-item"><text class="ri-label">姓名</text><text class="ri-val">{{sheep.breeder.name}}</text></view>
+      <view class="row-item" wx:if="{{sheep.breeder.phone}}"><text class="ri-label">电话</text><text class="ri-val">{{sheep.breeder.phone}}</text></view>
     </view>
 
-    <!-- 底部按钮 -->
-    <view class="bottom-actions">
-      <van-button round block type="primary" bindtap="goBack">返回</van-button>
+    <!-- 检疫与健康 -->
+    <view class="section-card">
+      <view class="section-hd" bindtap="toggleSection" data-key="vaccineExpanded">
+        <text class="sec-icon"></text>
+        <text class="sec-title">检疫与健康</text>
+        <text class="badge-count">{{sheep.vaccinations.length}}条</text>
+        <text class="toggle-arrow">{{vaccineExpanded ? '' : ''}}</text>
+      </view>
+      <block wx:if="{{vaccineExpanded}}">
+        <view wx:if="{{sheep.vaccinations.length > 0}}" class="timeline">
+          <view class="tl-item" wx:for="{{sheep.vaccinations}}" wx:key="index">
+            <view class="tl-left">
+              <view class="tl-dot"></view>
+              <view class="tl-line" wx:if="{{index < sheep.vaccinations.length - 1}}"></view>
+            </view>
+            <view class="tl-body">
+              <text class="tl-name">{{item.vaccine_type}}</text>
+              <text class="tl-date">接种：{{item.vaccination_date}}　到期：{{item.expiry_date}}</text>
+              <text class="tl-detail">操作人：{{item.administered_by}}　剂量：{{item.dosage}}ml</text>
+              <text wx:if="{{item.notes}}" class="tl-notes">{{item.notes}}</text>
+            </view>
+          </view>
+        </view>
+        <view wx:else class="empty-tip">暂无接种记录</view>
+      </block>
     </view>
-  </view>
+
+    <!-- 生长记录 -->
+    <view class="section-card">
+      <view class="section-hd" bindtap="toggleSection" data-key="growthExpanded">
+        <text class="sec-icon"></text>
+        <text class="sec-title">近期生长记录</text>
+        <text class="badge-count">{{sheep.growth_records.length}}条</text>
+        <text class="toggle-arrow">{{growthExpanded ? '' : ''}}</text>
+      </view>
+      <block wx:if="{{growthExpanded}}">
+        <view wx:if="{{sheep.growth_records.length > 0}}">
+          <view class="tbl-head">
+            <text class="th">日期</text>
+            <text class="th c-weight">体重(kg)</text>
+            <text class="th c-height">体高(cm)</text>
+            <text class="th c-length">体长(cm)</text>
+          </view>
+          <view class="tbl-row {{index % 2 === 1 ? 'row-even' : ''}}" wx:for="{{sheep.growth_records}}" wx:key="index">
+            <text class="td">{{item.record_date}}</text>
+            <text class="td c-weight weight-val">{{item.weight}}</text>
+            <text class="td c-height height-val">{{item.height}}</text>
+            <text class="td c-length length-val">{{item.length}}</text>
+          </view>
+        </view>
+        <view wx:else class="empty-tip">暂无生长记录</view>
+      </block>
+    </view>
+
+    <!-- 喂养记录 -->
+    <view class="section-card">
+      <view class="section-hd" bindtap="toggleSection" data-key="feedExpanded">
+        <text class="sec-icon"></text>
+        <text class="sec-title">近期喂养记录</text>
+        <text class="badge-count">{{sheep.feeding_records.length}}条</text>
+        <text class="toggle-arrow">{{feedExpanded ? '' : ''}}</text>
+      </view>
+      <block wx:if="{{feedExpanded}}">
+        <view wx:if="{{sheep.feeding_records.length > 0}}" class="feed-tags">
+          <view class="feed-tag" wx:for="{{sheep.feeding_records}}" wx:key="index">
+            <text class="feed-date">{{item.feed_date}}</text>
+            <text class="feed-type">{{item.feed_type}} {{item.amount}}{{item.unit}}</text>
+          </view>
+        </view>
+        <view wx:else class="empty-tip">暂无喂养记录</view>
+      </block>
+    </view>
+
+    <view class="footer-gap"></view>
+  </block>
+
 </view>

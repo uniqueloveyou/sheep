@@ -1,5 +1,5 @@
 {
-    "navigationBarTitleText": "羊只溯源",
+    "navigationBarTitleText": "羊只溯源档案",
     "usingComponents": {
         "van-loading": "/miniprogram_npm/@vant/weapp/loading/index",
         "van-empty": "/miniprogram_npm/@vant/weapp/empty/index",

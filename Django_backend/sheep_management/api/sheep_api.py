@@ -291,6 +291,81 @@ def api_count_sheep(request):
 
 @csrf_exempt
 @require_http_methods(["GET"])
+def api_public_sheep_trace(request, sheep_id):
+    """
+    公开溯源接口（无需登录），供 H5 页面和小程序扫码后调用
+    GET /api/public/trace/<sheep_id>
+    返回该羊只的完整生命周期数据
+    """
+    try:
+        from ..services.sheep_service import SheepService
+        from ..models import Sheep, VaccinationHistory, GrowthRecord, FeedingRecord
+        try:
+            sheep = Sheep.objects.select_related('owner').get(pk=sheep_id)
+        except Sheep.DoesNotExist:
+            return JsonResponse({'code': 404, 'msg': '羊只不存在', 'data': None}, status=404)
+
+        # 基础档案
+        data = {
+            'id': sheep.id,
+            'ear_tag': sheep.ear_tag or '',
+            'gender': sheep.get_gender_display(),
+            'birth_date': sheep.birth_date.strftime('%Y-%m-%d') if sheep.birth_date else '',
+            'farm_name': sheep.farm_name or '宁夏盐池滩羊核心产区',
+            'health_status': sheep.health_status or '健康',
+            'weight': float(sheep.weight),
+            'height': float(sheep.height),
+            'length': float(sheep.length),
+            'image': request.build_absolute_uri(sheep.image.url) if sheep.image else '',
+            'qr_code': request.build_absolute_uri(sheep.qr_code.url) if sheep.qr_code else '',
+            'breeder': {
+                'name': sheep.owner.nickname or sheep.owner.username if sheep.owner else '官方牧场',
+                'phone': sheep.owner.mobile if sheep.owner else '',
+            } if sheep.owner else None,
+        }
+
+        # 疫苗接种记录（时间轴）
+        vaccinations = []
+        for r in VaccinationHistory.objects.filter(sheep=sheep).order_by('-vaccination_date'):
+            vaccinations.append({
+                'vaccine_type': r.vaccine.name,
+                'vaccination_date': r.vaccination_date.strftime('%Y-%m-%d'),
+                'expiry_date': r.expiry_date.strftime('%Y-%m-%d'),
+                'dosage': float(r.dosage),
+                'administered_by': r.administered_by or '',
+                'notes': r.notes or '',
+            })
+        data['vaccinations'] = vaccinations
+
+        # 生长记录（最近 6 条）
+        growth = []
+        for r in GrowthRecord.objects.filter(sheep=sheep).order_by('-record_date')[:6]:
+            growth.append({
+                'record_date': r.record_date.strftime('%Y-%m-%d'),
+                'weight': float(r.weight),
+                'height': float(r.height),
+                'length': float(r.length),
+            })
+        data['growth_records'] = growth
+
+        # 喂养记录（最近 10 条）
+        feeding = []
+        for r in FeedingRecord.objects.filter(sheep=sheep).order_by('-feed_date')[:10]:
+            feeding.append({
+                'feed_date': r.feed_date.strftime('%Y-%m-%d'),
+                'feed_type': r.feed_type or '',
+                'amount': float(r.amount),
+                'unit': r.unit or '',
+            })
+        data['feeding_records'] = feeding
+
+        return JsonResponse({'code': 0, 'msg': 'ok', 'data': data}, status=200)
+    except Exception as e:
+        return JsonResponse({'code': 500, 'msg': str(e), 'data': None}, status=500)
+
+
+@csrf_exempt
+@require_http_methods(["GET"])
 def api_search_sheep_multi(request):
     """
     多选筛选搜索羊只接口（支持体重、体高、体长多选）
