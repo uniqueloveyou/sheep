@@ -242,10 +242,10 @@ class SheepService:
             'length': float(sheep.length),
             'qr_code': qr_code_url,
             'breeder': {
-                'id': sheep.breeder.id if sheep.breeder else None,
-                'name': sheep.breeder.name if sheep.breeder else None,
-                'phone': sheep.breeder.phone if sheep.breeder else None,
-            } if sheep.breeder else None
+                'id': sheep.owner.id if sheep.owner else None,
+                'name': sheep.owner.nickname or sheep.owner.username if sheep.owner else None,
+                'phone': sheep.owner.mobile if sheep.owner else None,
+            } if sheep.owner else None
         }
         return result
 
