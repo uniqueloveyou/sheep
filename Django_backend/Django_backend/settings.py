@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -74,20 +75,43 @@ WSGI_APPLICATION = 'Django_backend.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
-# 云端数据库
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'sheep_xdb',
-        'USER': 'mxlsheep',
-        'PASSWORD': 'xUW8fnh1oylmTrK9',
-        'HOST': 'mysql3.sqlpub.com',
-        'PORT': '3308',
-        'OPTIONS': {
-            'charset': 'utf8mb4',
-        },
+#
+# 切换方式：
+#   - 使用云端数据库（默认）：直接运行 python manage.py runserver
+#   - 使用本地数据库：设置环境变量后运行
+#       Windows PowerShell: $env:USE_LOCAL_DB="1"; python manage.py runserver
+#       Windows CMD:        set USE_LOCAL_DB=1 && python manage.py runserver
+
+if os.environ.get('USE_LOCAL_DB') == '1':
+    # ---- 本地数据库 ----
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.mysql',
+            'NAME': 'sheep_xdb',
+            'USER': 'root',           # 本地 MySQL 用户名，按实际修改
+            'PASSWORD': '123456',           # 本地 MySQL 密码，按实际修改
+            'HOST': '127.0.0.1',
+            'PORT': '3306',
+            'OPTIONS': {
+                'charset': 'utf8mb4',
+            },
+        }
     }
-}
+else:
+    # ---- 云端数据库（默认） ----
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.mysql',
+            'NAME': 'sheep_xdb',
+            'USER': 'mxlsheep',
+            'PASSWORD': 'xUW8fnh1oylmTrK9',
+            'HOST': 'mysql3.sqlpub.com',
+            'PORT': '3308',
+            'OPTIONS': {
+                'charset': 'utf8mb4',
+            },
+        }
+    }
 
 
 # Password validation

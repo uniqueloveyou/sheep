@@ -6,6 +6,8 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 import json
+import random
+import time
 import requests
 import logging
 
@@ -20,6 +22,13 @@ logger = logging.getLogger(__name__)
 DEEPSEEK_API_KEY = 'sk-db2a7aa8e86647bb88a4bd63627bf879'
 DEEPSEEK_API_BASE = 'https://api.deepseek.com'
 DEEPSEEK_MODEL = 'deepseek-chat'
+
+# ============================================
+# Mock 开关（True = 本地模拟，不实际调用 DeepSeek）
+# 用于 JMeter 压测，避免真实 API 调用带来的延迟和费用
+# 切换方式：将下面改为 False → 恢复真实 DeepSeek 调用
+# ============================================
+MOCK_DEEPSEEK = True
 
 # ============================================
 # 基础系统提示词
@@ -227,7 +236,25 @@ def api_qa_ask(request):
 # DeepSeek API 调用（简化版：始终 system + user）
 # ============================================
 def _call_deepseek(system_prompt, question):
-    """调用 DeepSeek，返回 (answer, error_msg)"""
+    """调用 DeepSeek，返回 (answer, error_msg)
+
+    MOCK_DEEPSEEK = True 时：休眠 1.5~2 秒后返回模拟答案，不发起真实 HTTP 请求。
+    MOCK_DEEPSEEK = False 时：走真实 DeepSeek API（生产/真实测试用）。
+    """
+
+    # ---- Mock 分支（压测专用，原始代码完整保留在下方）----
+    if MOCK_DEEPSEEK:
+        sleep_time = random.uniform(1.5, 2.0)  # 模拟 AI 思考延迟 1.5~2 秒
+        logger.info(f'[QA] [MOCK] 模拟 DeepSeek 休眠 {sleep_time:.2f}s')
+        time.sleep(sleep_time)
+        mock_answer = (
+            f'【Mock 回答】您好！您问的是："{question}"。\n'
+            '这是一条模拟回答，用于压测。实际部署时请将 MOCK_DEEPSEEK 改为 False。\n'
+            '滩羊智品助手为您服务，有任何关于滩羊养殖的问题欢迎继续提问！'
+        )
+        return mock_answer, None
+
+    # ---- 真实 DeepSeek API 调用（MOCK_DEEPSEEK = False 时生效）----
     try:
         if not DEEPSEEK_API_KEY or DEEPSEEK_API_KEY == 'your_deepseek_api_key_here':
             return None, '未配置 DEEPSEEK_API_KEY'

@@ -2,7 +2,12 @@
   "compileType": "miniprogram",
   "libVersion": "3.12.0",
   "packOptions": {
-    "ignore": [],
+    "ignore": [
+      {
+        "value": "/minitest",
+        "type": "folder"
+      }
+    ],
     "include": []
   },
   "setting": {
@@ -37,5 +42,6 @@
     "tabSize": 2
   },
   "appid": "wx584a350ed4b974a0",
-  "simulatorPluginLibVersion": {}
+  "simulatorPluginLibVersion": {},
+  "testRoot": "minitest/"
 }
