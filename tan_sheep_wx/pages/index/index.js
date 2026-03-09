@@ -1,16 +1,10 @@
 Page({
   data: {
-    // 使用本地图片路径，避免HTTP协议和服务器依赖问题
+    // 轮播图使用 CDN 地址
     imageUrls: [
-      '/images/banners/A.jpg',
-      '/images/banners/B.jpg',
-      '/images/banners/C.jpg'
-    ],
-    // 备用服务器图片（如果本地图片不存在，可以切换到服务器）
-    serverImageUrls: [
-      'http://localhost:5001/images/banners/A.jpg',
-      'http://localhost:5001/images/banners/B.jpg',
-      'http://localhost:5001/images/banners/C.jpg'
+      'https://avatar.youzilite.us.kg/image/A.jpg',
+      'https://avatar.youzilite.us.kg/image/B.jpg',
+      'https://avatar.youzilite.us.kg/image/C.jpg'
     ],
     // 视频路径（使用临时文件路径）
     videoUrls: [

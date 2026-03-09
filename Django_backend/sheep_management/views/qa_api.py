@@ -28,7 +28,7 @@ DEEPSEEK_MODEL = 'deepseek-chat'
 # 用于 JMeter 压测，避免真实 API 调用带来的延迟和费用
 # 切换方式：将下面改为 False → 恢复真实 DeepSeek 调用
 # ============================================
-MOCK_DEEPSEEK = True
+MOCK_DEEPSEEK = False
 
 # ============================================
 # 基础系统提示词

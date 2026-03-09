@@ -1,6 +1,6 @@
 <view class="container">
     <view class="profile">
-        <image class="avatar" src="/images/farmer/people/p2.png" mode="aspectFill"></image>
+        <image class="avatar" src="../../farmer/people/p2.png" mode="aspectFill"></image>
         <view class="info">
             <view class="row">
                 <text class="label">姓名：</text>

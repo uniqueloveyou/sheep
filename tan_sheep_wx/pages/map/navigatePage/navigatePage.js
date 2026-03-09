@@ -1,5 +1,5 @@
 // pages/map/navigatePage/navigatePage.js
-var QQMapWX = require('../../../utils/qqmap-wx-jssdk.js');
+var QQMapWX = require('../qqmap-wx-jssdk.js');
 
 // 腾讯地图API配置
 // 申请地址：https://lbs.qq.com/dev/console/application/mine
@@ -157,7 +157,7 @@ Page({
     var that = this;
     var start = this.data.startLocation;
     var end = this.data.endLocation;
-    
+
     if (!start || !end) {
       wx.showToast({ title: '请设置起点和终点', icon: 'none' });
       return;

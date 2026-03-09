@@ -171,13 +171,9 @@
         "van-grid-item": "/miniprogram_npm/@vant/weapp/grid-item/index",
         "van-dialog": "/miniprogram_npm/@vant/weapp/dialog/index",
         "van-field": "/miniprogram_npm/@vant/weapp/field/index",
-        "van-switch": "/miniprogram_npm/@vant/weapp/switch/index",
         "van-tabs": "/miniprogram_npm/@vant/weapp/tabs/index",
         "van-tab": "/miniprogram_npm/@vant/weapp/tab/index",
-        "van-empty": "/miniprogram_npm/@vant/weapp/empty/index",
-        "van-info": "/miniprogram_npm/@vant/weapp/info/index",
-        "van-sticky": "/miniprogram_npm/@vant/weapp/sticky/index",
-        "ec-canvas": "/utils/echarts/ec-canvas/ec-canvas"
+        "van-empty": "/miniprogram_npm/@vant/weapp/empty/index"
     },
     "style": "v2",
     "sitemapLocation": "sitemap.json",

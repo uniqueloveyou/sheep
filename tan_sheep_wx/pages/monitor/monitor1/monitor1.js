@@ -1,5 +1,5 @@
 // pages/feature6/monitor1/monitor1.js
-const videoStream = require('../../../utils/videoStream.js');
+const videoStream = require('../../videoStream.js');
 
 Page({
   data: {
