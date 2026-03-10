@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'storages',
     'sheep_management',
 ]
 
@@ -192,5 +193,16 @@ AWS_S3_OBJECT_PARAMETERS = {
 AWS_DEFAULT_ACL = None         # R2 默认不支持 ACL
 AWS_S3_FILE_OVERWRITE = False  # 同名文件不覆盖会加上后缀
 
-DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
-# 注意: 设置 DEFAULT_FILE_STORAGE 后，之后在 Django Admin 上传的任何 ImageField / FileField 都会直传到 R2。
+AWS_S3_REGION_NAME = 'auto'
+AWS_S3_SIGNATURE_VERSION = 's3v4'
+AWS_QUERYSTRING_AUTH = False
+
+# Django 5+ 推荐使用 STORAGES 配置默认文件存储
+STORAGES = {
+    'default': {
+        'BACKEND': 'storages.backends.s3boto3.S3Boto3Storage',
+    },
+    'staticfiles': {
+        'BACKEND': 'django.contrib.staticfiles.storage.StaticFilesStorage',
+    },
+}
