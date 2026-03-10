@@ -1,0 +1,87 @@
+.page {
+  min-height: 100vh;
+  background: #f5f7f8;
+  padding: 24rpx;
+}
+
+.top-card {
+  background: linear-gradient(135deg, #1d6a4f 0%, #2c8e67 100%);
+  border-radius: 18rpx;
+  padding: 24rpx;
+  color: #fff;
+  margin-bottom: 20rpx;
+}
+
+.title {
+  font-size: 34rpx;
+  font-weight: 700;
+}
+
+.desc {
+  margin-top: 8rpx;
+  font-size: 24rpx;
+  opacity: 0.95;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+}
+
+.card {
+  background: #fff;
+  border: 1px solid #d8e5df;
+  border-radius: 16rpx;
+  padding: 20rpx;
+  box-shadow: 0 4rpx 16rpx rgba(17, 49, 35, 0.06);
+}
+
+.card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8rpx;
+}
+
+.name {
+  font-size: 30rpx;
+  color: #1f2f28;
+  font-weight: 700;
+}
+
+.status {
+  font-size: 22rpx;
+  border-radius: 999rpx;
+  padding: 6rpx 16rpx;
+}
+
+.status.online {
+  background: #e7f9ef;
+  color: #1f8a58;
+}
+
+.status.offline {
+  background: #fbecec;
+  color: #c44b4b;
+}
+
+.meta {
+  margin-top: 8rpx;
+  font-size: 24rpx;
+  color: #5f746b;
+}
+
+.arrow {
+  margin-top: 14rpx;
+  color: #3f7e67;
+  font-size: 24rpx;
+}
+
+.loading,
+.empty {
+  text-align: center;
+  margin-top: 80rpx;
+  color: #8a9992;
+  font-size: 26rpx;
+}

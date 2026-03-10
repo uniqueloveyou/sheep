@@ -1,0 +1,102 @@
+.page {
+  min-height: 100vh;
+  background: #f5f7f8;
+  padding: 24rpx;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.name {
+  font-size: 34rpx;
+  font-weight: 700;
+  color: #1f3028;
+}
+
+.status {
+  font-size: 22rpx;
+  padding: 6rpx 16rpx;
+  border-radius: 999rpx;
+}
+
+.status.online {
+  background: #e6f8ef;
+  color: #218953;
+}
+
+.status.offline {
+  background: #fdeaea;
+  color: #b94949;
+}
+
+.meta {
+  margin-top: 10rpx;
+  font-size: 24rpx;
+  color: #6c7d76;
+}
+
+.player-box {
+  position: relative;
+  margin-top: 20rpx;
+  border-radius: 16rpx;
+  overflow: hidden;
+  background: #121716;
+  min-height: 420rpx;
+}
+
+.player {
+  width: 100%;
+  height: 420rpx;
+}
+
+.offline-box {
+  height: 420rpx;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  color: #9ab0a6;
+}
+
+.offline-text {
+  font-size: 32rpx;
+  color: #dbe6e1;
+  margin-bottom: 12rpx;
+}
+
+.offline-sub {
+  font-size: 24rpx;
+}
+
+.loading-mask {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 72rpx;
+  line-height: 72rpx;
+  text-align: center;
+  font-size: 24rpx;
+  color: #d4e3dd;
+  background: rgba(6, 14, 11, 0.45);
+}
+
+.actions {
+  margin-top: 18rpx;
+}
+
+.btn {
+  background: #1f7b58;
+  color: #fff;
+  border-radius: 12rpx;
+}
+
+.hint {
+  margin-top: 18rpx;
+  font-size: 22rpx;
+  color: #73867d;
+  line-height: 1.6;
+}

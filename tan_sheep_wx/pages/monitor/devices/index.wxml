@@ -1,0 +1,33 @@
+<view class="page">
+  <view class="top-card">
+    <view class="title">{{breederName || '监控设备列表'}}</view>
+    <view class="desc">总计 {{devices.length}} 路，在线 {{onlineCount}} 路</view>
+  </view>
+
+  <view class="loading" wx:if="{{loading}}">
+    加载中...
+  </view>
+
+  <view class="list" wx:if="{{!loading}}">
+    <view
+      wx:for="{{devices}}"
+      wx:key="id"
+      class="card"
+      data-id="{{item.id}}"
+      bindtap="goToPlayer"
+    >
+      <view class="card-top">
+        <view class="name">{{item.name}}</view>
+        <view class="status {{item.status === 'online' ? 'online' : 'offline'}}">{{item.statusText}}</view>
+      </view>
+      <view class="meta">编号：{{item.deviceCode || '-'}}</view>
+      <view class="meta">位置：{{item.location}}</view>
+      <view class="meta">更新时间：{{item.updatedAtText}}</view>
+      <view class="arrow">点击查看监控 ></view>
+    </view>
+
+    <view class="empty" wx:if="{{devices.length === 0}}">
+      当前暂无监控设备
+    </view>
+  </view>
+</view>

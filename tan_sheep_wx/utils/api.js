@@ -332,6 +332,27 @@ function claimCoupon(token, couponId) {
   })
 }
 
+/**
+ * 获取可管理的养殖户列表（监控）
+ * @param {string} token
+ */
+function getMonitorBreeders(token) {
+  return request('/api/monitor/breeders?token=' + encodeURIComponent(token), 'GET')
+}
+
+/**
+ * 获取监控设备列表
+ * @param {string} token
+ * @param {number|string} breederId
+ */
+function getMonitorDevices(token, breederId) {
+  let url = '/api/monitor/devices?token=' + encodeURIComponent(token)
+  if (breederId) {
+    url += '&breeder_id=' + encodeURIComponent(breederId)
+  }
+  return request(url, 'GET')
+}
+
 module.exports = {
   request,
   login,
@@ -357,5 +378,7 @@ module.exports = {
   getAvailableCoupons,
   getUserCoupons,
   claimCoupon,
+  getMonitorBreeders,
+  getMonitorDevices,
   API_BASE_URL
 }

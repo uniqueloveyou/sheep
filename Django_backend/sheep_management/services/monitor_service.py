@@ -1,9 +1,9 @@
-"""Monitor device business logic."""
+﻿"""Monitor device business logic."""
 from django.db.models import Count
 
 from ..models import MonitorDevice, User
 
-
+ROLE_NORMAL_USER = 0
 ROLE_BREEDER = 1
 ROLE_ADMIN = 2
 
@@ -60,6 +60,11 @@ class MonitorService:
             raise MonitorError("没有权限访问监控数据", code=403, http_status=403)
 
     @staticmethod
+    def _assert_monitor_viewer(user):
+        if not user or user.role not in (ROLE_NORMAL_USER, ROLE_BREEDER, ROLE_ADMIN):
+            raise MonitorError("没有权限访问监控数据", code=403, http_status=403)
+
+    @staticmethod
     def list_breeders(user):
         MonitorService._assert_admin(user)
 
@@ -72,12 +77,20 @@ class MonitorService:
 
     @staticmethod
     def list_devices(user, breeder_id=None):
-        MonitorService._assert_breeder_or_admin(user)
+        MonitorService._assert_monitor_viewer(user)
 
         if user.role == ROLE_ADMIN:
             owner_id = breeder_id
-        else:
+        elif user.role == ROLE_BREEDER:
             owner_id = user.id
+        else:
+            # Mini program normal users can view breeder monitors by selecting a breeder.
+            if not breeder_id:
+                raise MonitorError("普通用户查看监控时必须传 breeder_id")
+            owner = User.objects.filter(id=breeder_id, role=ROLE_BREEDER).first()
+            if not owner:
+                raise MonitorError("养殖户不存在", code=404, http_status=404)
+            owner_id = owner.id
 
         queryset = MonitorDevice.objects.select_related("owner").all()
         if owner_id:

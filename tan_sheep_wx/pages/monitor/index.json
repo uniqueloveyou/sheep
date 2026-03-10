@@ -1,3 +1,5 @@
 {
+  "navigationBarTitleText": "养殖户列表",
+  "enablePullDownRefresh": true,
   "usingComponents": {}
 }
