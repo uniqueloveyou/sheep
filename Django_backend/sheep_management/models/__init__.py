@@ -1,5 +1,6 @@
 from .sheep import Sheep, GrowthRecord, FeedingRecord, VaccineType, VaccinationHistory, EnvironmentAlert
 from .user import User
+from .monitor import MonitorDevice
 from .commerce import CartItem, PromotionActivity, Coupon, UserCoupon, Order, OrderItem
 from .audit import AuditLog
 from .knowledge import KnowledgeDocument
@@ -12,6 +13,7 @@ __all__ = [
     'VaccinationHistory',
     'EnvironmentAlert',
     'User',
+    'MonitorDevice',
     'CartItem',
     'PromotionActivity',
     'Coupon',

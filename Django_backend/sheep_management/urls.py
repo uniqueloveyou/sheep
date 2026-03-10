@@ -87,6 +87,11 @@ urlpatterns = [
     path('api/sheep/update/<int:sheep_id>', sheep_api.api_update_sheep, name='api_update_sheep'),
     path('api/sheep/delete/<int:sheep_id>', sheep_api.api_delete_sheep, name='api_delete_sheep'),
     path('api/sheep/breeder', sheep_api.api_get_breeder_sheep, name='api_get_breeder_sheep'),
+    path('api/monitor/breeders', views.api_monitor_breeders, name='api_monitor_breeders'),
+    path('api/monitor/devices', views.api_monitor_devices, name='api_monitor_devices'),
+    path('api/monitor/devices/create', views.api_monitor_create, name='api_monitor_create'),
+    path('api/monitor/devices/update/<int:device_id>', views.api_monitor_update, name='api_monitor_update'),
+    path('api/monitor/devices/delete/<int:device_id>', views.api_monitor_delete, name='api_monitor_delete'),
 
     # 健康检查
     path('health', views.api_health, name='api_health'),

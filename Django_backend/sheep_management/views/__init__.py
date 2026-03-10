@@ -27,7 +27,14 @@ from .cart_api import api_cart, api_cart_item
 from .promotion_api import api_promotion_activities, api_promotion_activity_detail, api_coupons, api_claim_coupon
 from .qa_api import api_qa_ask
 from .breeder_dashboard import breeder_dashboard, breeder_profile, breeder_update_location
-from .smart_farm import smart_farm
+from .smart_farm import (
+    smart_farm,
+    api_monitor_breeders,
+    api_monitor_devices,
+    api_monitor_create,
+    api_monitor_update,
+    api_monitor_delete,
+)
 from .auth import login_view, logout_view, register_view
 from .trace import sheep_trace_h5
 
@@ -49,6 +56,11 @@ __all__ = [
     'coupon_list', 'coupon_create', 'coupon_edit', 'coupon_delete', 'coupon_detail',
     'breeder_dashboard', 'breeder_profile', 'breeder_update_location',
     'smart_farm',
+    'api_monitor_breeders',
+    'api_monitor_devices',
+    'api_monitor_create',
+    'api_monitor_update',
+    'api_monitor_delete',
     'login_view', 'logout_view', 'register_view',
     'api_get_breeders',
     'api_search_goods',

@@ -1,377 +1,708 @@
 {% extends 'sheep_management/base.html' %}
 
-{% block title %}视频监控 - 羊只管理系统{% endblock %}
-{% block page_title %}视频监控中心{% endblock %}
+{% block title %}视频监控中心{% endblock %}
+{% block page_title %}智慧牧场视频监控{% endblock %}
 
-{% block content %}
-<!-- 视频监控区 -->
-<div class="card">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-        <h3 style="margin: 0;">📹 实时监控画面</h3>
-        <div style="display: flex; gap: 10px;">
-            <button class="btn" onclick="refreshAllVideos()">🔄 全部刷新</button>
-            <button class="btn" style="background: #27ae60;" onclick="startAllRecord()">⏺️ 开始全部录像</button>
-        </div>
-    </div>
-    
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(450px, 1fr)); gap: 20px;">
-        <!-- 监控画面1 -->
-        <div class="video-container">
-            <div class="video-header">
-                <div style="display: flex; align-items: center; gap: 8px;">
-                    <span class="video-status live">● 直播中</span>
-                    <span>1号羊圈 - 北区</span>
-                </div>
-                <span style="font-size: 12px; opacity: 0.8;">CAM-001</span>
-            </div>
-            <div class="video-placeholder" id="video1">
-                <div class="video-icon">📹</div>
-                <div class="video-text">监控画面加载中...</div>
-                <div class="video-hint">点击下方的播放器可接入RTMP/HLS视频流</div>
-            </div>
-            <div class="video-controls">
-                <button class="video-btn" onclick="refreshVideo(1)">🔄 刷新</button>
-                <button class="video-btn" onclick="fullscreenVideo(1)">⛶ 全屏</button>
-                <button class="video-btn record" id="recordBtn1" onclick="toggleRecord(1)">⏺️ 录像</button>
-                <button class="video-btn" onclick="snapshot(1)">📷 截图</button>
-            </div>
-        </div>
-        
-        <!-- 监控画面2 -->
-        <div class="video-container">
-            <div class="video-header">
-                <div style="display: flex; align-items: center; gap: 8px;">
-                    <span class="video-status live">● 直播中</span>
-                    <span>2号羊圈 - 南区</span>
-                </div>
-                <span style="font-size: 12px; opacity: 0.8;">CAM-002</span>
-            </div>
-            <div class="video-placeholder" id="video2">
-                <div class="video-icon">📹</div>
-                <div class="video-text">监控画面加载中...</div>
-                <div class="video-hint">点击下方的播放器可接入RTMP/HLS视频流</div>
-            </div>
-            <div class="video-controls">
-                <button class="video-btn" onclick="refreshVideo(2)">🔄 刷新</button>
-                <button class="video-btn" onclick="fullscreenVideo(2)">⛶ 全屏</button>
-                <button class="video-btn record" id="recordBtn2" onclick="toggleRecord(2)">⏺️ 录像</button>
-                <button class="video-btn" onclick="snapshot(2)">📷 截图</button>
-            </div>
-        </div>
-        
-        <!-- 监控画面3 -->
-        <div class="video-container">
-            <div class="video-header">
-                <div style="display: flex; align-items: center; gap: 8px;">
-                    <span class="video-status offline">○ 离线</span>
-                    <span>饲料仓库</span>
-                </div>
-                <span style="font-size: 12px; opacity: 0.8;">CAM-003</span>
-            </div>
-            <div class="video-placeholder offline" id="video3">
-                <div class="video-icon">📹</div>
-                <div class="video-text">设备离线</div>
-                <div class="video-hint">请检查摄像头网络连接</div>
-            </div>
-            <div class="video-controls">
-                <button class="video-btn" onclick="refreshVideo(3)">🔄 刷新</button>
-                <button class="video-btn" disabled>⛶ 全屏</button>
-                <button class="video-btn" disabled>⏺️ 录像</button>
-                <button class="video-btn" disabled>📷 截图</button>
-            </div>
-        </div>
-        
-        <!-- 监控画面4 -->
-        <div class="video-container">
-            <div class="video-header">
-                <div style="display: flex; align-items: center; gap: 8px;">
-                    <span class="video-status live">● 直播中</span>
-                    <span>出入口大门</span>
-                </div>
-                <span style="font-size: 12px; opacity: 0.8;">CAM-004</span>
-            </div>
-            <div class="video-placeholder" id="video4">
-                <div class="video-icon">📹</div>
-                <div class="video-text">监控画面加载中...</div>
-                <div class="video-hint">点击下方的播放器可接入RTMP/HLS视频流</div>
-            </div>
-            <div class="video-controls">
-                <button class="video-btn" onclick="refreshVideo(4)">🔄 刷新</button>
-                <button class="video-btn" onclick="fullscreenVideo(4)">⛶ 全屏</button>
-                <button class="video-btn record" id="recordBtn4" onclick="toggleRecord(4)">⏺️ 录像</button>
-                <button class="video-btn" onclick="snapshot(4)">📷 截图</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- 设备列表 -->
-<div class="card">
-    <h3 style="margin-top: 0;">📋 监控设备列表</h3>
-    <table style="margin-top: 15px;">
-        <thead>
-            <tr>
-                <th>设备编号</th>
-                <th>设备名称</th>
-                <th>位置</th>
-                <th>IP地址</th>
-                <th>状态</th>
-                <th>运行时长</th>
-                <th>操作</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td>CAM-001</td>
-                <td>高清摄像头 #1</td>
-                <td>1号羊圈 - 北区</td>
-                <td>192.168.1.101</td>
-                <td><span class="device-status online">● 在线</span></td>
-                <td>15天 3小时</td>
-                <td>
-                    <button class="btn" style="padding: 5px 10px; font-size: 12px;" onclick="viewDevice('CAM-001')">查看</button>
-                </td>
-            </tr>
-            <tr>
-                <td>CAM-002</td>
-                <td>高清摄像头 #2</td>
-                <td>2号羊圈 - 南区</td>
-                <td>192.168.1.102</td>
-                <td><span class="device-status online">● 在线</span></td>
-                <td>15天 3小时</td>
-                <td>
-                    <button class="btn" style="padding: 5px 10px; font-size: 12px;" onclick="viewDevice('CAM-002')">查看</button>
-                </td>
-            </tr>
-            <tr>
-                <td>CAM-003</td>
-                <td>红外摄像头 #3</td>
-                <td>饲料仓库</td>
-                <td>192.168.1.103</td>
-                <td><span class="device-status offline">● 离线</span></td>
-                <td>-</td>
-                <td>
-                    <button class="btn" style="padding: 5px 10px; font-size: 12px; background: #e74c3c;" onclick="reconnectDevice('CAM-003')">重连</button>
-                </td>
-            </tr>
-            <tr>
-                <td>CAM-004</td>
-                <td>高清摄像头 #4</td>
-                <td>出入口大门</td>
-                <td>192.168.1.104</td>
-                <td><span class="device-status online">● 在线</span></td>
-                <td>10天 8小时</td>
-                <td>
-                    <button class="btn" style="padding: 5px 10px; font-size: 12px;" onclick="viewDevice('CAM-004')">查看</button>
-                </td>
-            </tr>
-        </tbody>
-    </table>
-</div>
-
-<!-- 使用说明 -->
-<div class="card" style="background: #e3f2fd; border-left: 4px solid #2196f3;">
-    <h4 style="margin-top: 0; color: #1976d2;">💡 使用说明</h4>
-    <ul style="margin: 10px 0; padding-left: 20px; color: #555;">
-        <li>本页面为视频监控中心，支持接入RTMP/HLS视频流</li>
-        <li>点击"全屏"按钮可放大查看单个监控画面</li>
-        <li>点击"录像"按钮可录制当前画面保存到本地</li>
-        <li>点击"截图"按钮可截取当前画面</li>
-        <li>离线设备可点击"重连"按钮尝试重新连接</li>
-    </ul>
-</div>
-
+{% block extra_css %}
 <style>
-.video-container {
-    background: #1a1a2e;
-    border-radius: 12px;
-    overflow: hidden;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-}
-.video-header {
-    background: #16213e;
-    padding: 12px 15px;
-    color: white;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 14px;
-}
-.video-status {
-    font-size: 12px;
-    font-weight: 500;
-}
-.video-status.live {
-    color: #4ade80;
-}
-.video-status.offline {
-    color: #ef4444;
-}
-.video-placeholder {
-    aspect-ratio: 16/9;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    color: #666;
-    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-    min-height: 250px;
-}
-.video-placeholder.offline {
-    background: #0f0f1a;
-}
-.video-icon {
-    font-size: 48px;
-    margin-bottom: 10px;
-    opacity: 0.5;
-}
-.video-text {
-    font-size: 16px;
-    margin-bottom: 5px;
-    color: #999;
-}
-.video-hint {
-    font-size: 12px;
-    opacity: 0.6;
-    color: #777;
-}
-.video-controls {
-    display: flex;
-    gap: 8px;
-    padding: 12px 15px;
-    background: #16213e;
-}
-.video-btn {
-    flex: 1;
-    padding: 8px 10px;
-    background: rgba(255,255,255,0.1);
-    border: none;
-    border-radius: 6px;
-    color: white;
-    font-size: 12px;
-    cursor: pointer;
-    transition: all 0.3s;
-}
-.video-btn:hover:not(:disabled) {
-    background: rgba(255,255,255,0.2);
-}
-.video-btn:disabled {
-    opacity: 0.3;
-    cursor: not-allowed;
-}
-.video-btn.record {
-    background: rgba(239, 68, 68, 0.2);
-    color: #ef4444;
-}
-.video-btn.record:hover {
-    background: rgba(239, 68, 68, 0.3);
-}
-.video-btn.recording {
-    background: #ef4444;
-    color: white;
-    animation: pulse 1.5s infinite;
-}
-@keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.7; }
-}
-.device-status {
-    font-size: 12px;
-    font-weight: 500;
-}
-.device-status.online {
-    color: #27ae60;
-}
-.device-status.offline {
-    color: #e74c3c;
-}
-</style>
-
-<script>
-// 录像状态
-const recordingStatus = {};
-
-// 刷新单个视频
-function refreshVideo(id) {
-    const videoEl = document.getElementById('video' + id);
-    videoEl.innerHTML = `
-        <div class="video-icon">🔄</div>
-        <div class="video-text">正在刷新...</div>
-    `;
-    
-    setTimeout(() => {
-        videoEl.innerHTML = `
-            <div class="video-icon">📹</div>
-            <div class="video-text">监控画面加载中...</div>
-            <div class="video-hint">点击下方的播放器可接入RTMP/HLS视频流</div>
-        `;
-    }, 1000);
-}
-
-// 刷新全部视频
-function refreshAllVideos() {
-    for (let i = 1; i <= 4; i++) {
-        refreshVideo(i);
+    :root {
+        --brand: #0b6e4f;
+        --brand-soft: #e8f6f1;
+        --ink: #163029;
+        --muted: #6a7f79;
+        --danger: #d14343;
+        --line: #d9e7e2;
     }
-}
-
-// 全屏查看
-function fullscreenVideo(id) {
-    const videoEl = document.getElementById('video' + id);
-    if (videoEl.requestFullscreen) {
-        videoEl.requestFullscreen();
-    } else if (videoEl.webkitRequestFullscreen) {
-        videoEl.webkitRequestFullscreen();
-    } else {
-        alert('正在全屏查看监控画面 ' + id);
+    .monitor-layout {
+        display: grid;
+        gap: 18px;
+        align-items: start;
     }
-}
-
-// 切换录像
-function toggleRecord(id) {
-    const btn = document.getElementById('recordBtn' + id);
-    const isRecording = recordingStatus[id];
-    
-    if (!isRecording) {
-        recordingStatus[id] = true;
-        btn.classList.add('recording');
-        btn.textContent = '⏹️ 停止';
-        alert('开始录制监控画面 ' + id);
-    } else {
-        recordingStatus[id] = false;
-        btn.classList.remove('recording');
-        btn.textContent = '⏺️ 录像';
-        alert('已停止录制监控画面 ' + id + '，视频已保存');
+    .monitor-layout.with-sidebar {
+        grid-template-columns: 280px minmax(0, 1fr);
     }
-}
-
-// 开始全部录像
-function startAllRecord() {
-    for (let i = 1; i <= 4; i++) {
-        const btn = document.getElementById('recordBtn' + i);
-        if (btn && !btn.disabled && !recordingStatus[i]) {
-            toggleRecord(i);
+    .monitor-layout.single {
+        grid-template-columns: minmax(0, 1fr);
+    }
+    .panel {
+        background: #fff;
+        border-radius: 14px;
+        border: 1px solid var(--line);
+        box-shadow: 0 8px 22px rgba(8, 45, 34, 0.06);
+        padding: 16px;
+    }
+    .panel-title {
+        color: var(--ink);
+        font-size: 16px;
+        font-weight: 700;
+        margin-bottom: 12px;
+    }
+    .breeder-list {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        max-height: 72vh;
+        overflow: auto;
+    }
+    .breeder-item {
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        padding: 10px;
+        cursor: pointer;
+        transition: all 0.2s;
+        background: #fff;
+    }
+    .breeder-item:hover {
+        border-color: var(--brand);
+        transform: translateY(-1px);
+    }
+    .breeder-item.active {
+        background: var(--brand-soft);
+        border-color: var(--brand);
+    }
+    .breeder-main {
+        font-weight: 600;
+        color: var(--ink);
+    }
+    .breeder-sub {
+        font-size: 12px;
+        color: var(--muted);
+        margin-top: 4px;
+    }
+    .panel-main {
+        min-width: 0;
+    }
+    .action-bar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: nowrap;
+        margin-bottom: 16px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid var(--line);
+    }
+    .action-left {
+        min-width: 0;
+    }
+    .action-title {
+        margin-bottom: 6px;
+    }
+    .action-right {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-shrink: 0;
+    }
+    .chip {
+        display: inline-flex;
+        align-items: center;
+        background: var(--brand-soft);
+        color: var(--brand);
+        border-radius: 999px;
+        padding: 6px 12px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+    .btn-flat {
+        border: 1px solid var(--line);
+        background: #fff;
+        color: var(--ink);
+        border-radius: 8px;
+        padding: 8px 12px;
+        cursor: pointer;
+    }
+    .btn-flat:hover {
+        border-color: var(--brand);
+        color: var(--brand);
+    }
+    .btn-main {
+        border: 0;
+        background: var(--brand);
+        color: #fff;
+        border-radius: 8px;
+        padding: 8px 14px;
+        cursor: pointer;
+    }
+    .btn-main:hover { filter: brightness(0.95); }
+    .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+        gap: 14px;
+    }
+    .card-monitor {
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        overflow: hidden;
+        background: #fff;
+    }
+    .camera-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 12px;
+        background: #f7fbf9;
+        border-bottom: 1px solid var(--line);
+    }
+    .camera-name {
+        font-weight: 700;
+        color: var(--ink);
+        max-width: 220px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .status-tag {
+        padding: 3px 8px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 700;
+    }
+    .status-online {
+        color: #16794b;
+        background: #e8fff3;
+    }
+    .status-offline {
+        color: #8a2e2e;
+        background: #ffecec;
+    }
+    .stream-wrap {
+        position: relative;
+        background: #10211a;
+    }
+    .stream-player {
+        width: 100%;
+        aspect-ratio: 16/9;
+        display: block;
+        object-fit: cover;
+        background: #0d1c17;
+    }
+    .stream-placeholder {
+        width: 100%;
+        aspect-ratio: 16/9;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #dceae4;
+        font-size: 14px;
+        background: linear-gradient(135deg, #183f32, #0e2a21);
+    }
+    .stream-badge {
+        position: absolute;
+        left: 10px;
+        top: 10px;
+        font-size: 11px;
+        color: #fff;
+        background: rgba(0, 0, 0, 0.5);
+        border: 1px solid rgba(255, 255, 255, 0.25);
+        border-radius: 999px;
+        padding: 3px 8px;
+    }
+    .stream-badge.invalid {
+        background: rgba(155, 47, 47, 0.85);
+        border-color: rgba(255, 186, 186, 0.5);
+    }
+    .camera-info {
+        padding: 10px 12px;
+        font-size: 13px;
+        color: #2d4840;
+        line-height: 1.7;
+    }
+    .camera-actions {
+        display: flex;
+        gap: 8px;
+        padding: 0 12px 12px;
+    }
+    .camera-actions button {
+        flex: 1;
+    }
+    .muted { color: var(--muted); }
+    .empty-box {
+        border: 1px dashed var(--line);
+        border-radius: 12px;
+        text-align: center;
+        color: var(--muted);
+        padding: 42px 20px;
+        background: linear-gradient(180deg, #fff, #f8fcfb);
+    }
+    .modal-mask {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.35);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 1200;
+        padding: 16px;
+    }
+    .modal-mask.show { display: flex; }
+    .modal-card {
+        width: min(560px, 100%);
+        background: #fff;
+        border-radius: 14px;
+        border: 1px solid var(--line);
+        padding: 16px;
+    }
+    .form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+    }
+    .form-grid .full { grid-column: 1 / -1; }
+    .modal-foot {
+        margin-top: 12px;
+        display: flex;
+        justify-content: flex-end;
+        gap: 8px;
+    }
+    .error-text {
+        color: var(--danger);
+        font-size: 12px;
+        margin-top: 6px;
+    }
+    @media (max-width: 1024px) {
+        .monitor-layout.with-sidebar,
+        .monitor-layout.single {
+            grid-template-columns: 1fr;
+        }
+        .action-bar {
+            flex-wrap: wrap;
+            align-items: flex-start;
+        }
+        .action-right {
+            width: 100%;
         }
     }
-}
+</style>
+{% endblock %}
 
-// 截图
-function snapshot(id) {
-    alert('已截取监控画面 ' + id + ' 的截图，图片已保存到相册');
-}
+{% block content %}
+<div class="monitor-layout {% if is_admin %}with-sidebar{% else %}single{% endif %}" id="monitorApp" data-is-admin="{{ is_admin|yesno:'1,0' }}" data-initial-breeder-id="{{ initial_breeder_id }}">
+    {% if is_admin %}
+    <section class="panel">
+        <div class="panel-title">养殖户列表</div>
+        <div class="breeder-list" id="breederList"></div>
+    </section>
+    {% endif %}
 
-// 查看设备详情
-function viewDevice(deviceId) {
-    alert('查看设备 ' + deviceId + ' 的详细信息');
-}
+    <section class="panel panel-main">
+        <div class="action-bar">
+            <div class="action-left">
+                <div class="panel-title action-title">监控视图</div>
+                <div class="muted" id="scopeText">加载中...</div>
+            </div>
+            <div class="action-right">
+                <span class="chip" id="countChip">设备数 0</span>
+                <button class="btn-flat" type="button" id="refreshBtn">刷新</button>
+                <button class="btn-main" type="button" id="createBtn">新增监控</button>
+            </div>
+        </div>
 
-// 重连设备
-function reconnectDevice(deviceId) {
-    alert('正在尝试重新连接设备 ' + deviceId + '...');
-    setTimeout(() => {
-        alert('设备 ' + deviceId + ' 重连成功！');
-        location.reload();
-    }, 2000);
-}
+        <div class="grid" id="deviceGrid"></div>
+        <div class="empty-box" id="emptyBox" style="display:none;">
+            当前暂无监控设备，点击“新增监控”创建第一路监控。
+        </div>
+    </section>
+</div>
+
+<div class="modal-mask" id="deviceModal">
+    <div class="modal-card">
+        <div class="panel-title" id="modalTitle">新增监控</div>
+        <form id="deviceForm">
+            <input type="hidden" id="formId">
+            <div class="form-grid">
+                {% if is_admin %}
+                <div class="full">
+                    <label>所属养殖户</label>
+                    <select id="formOwner" required></select>
+                </div>
+                {% endif %}
+                <div class="full">
+                    <label>设备名称</label>
+                    <input id="formName" required maxlength="100" placeholder="例如：羊舍北区一号位">
+                </div>
+                <div>
+                    <label>设备编号</label>
+                    <input id="formCode" required maxlength="64" placeholder="例如：CAM-101">
+                </div>
+                <div>
+                    <label>状态</label>
+                    <select id="formStatus">
+                        <option value="online">在线</option>
+                        <option value="offline">离线</option>
+                    </select>
+                </div>
+                <div class="full">
+                    <label>流地址</label>
+                    <input id="formUrl" required maxlength="500" placeholder="例如：http://example.com/hls/live.m3u8">
+                </div>
+                <div class="full">
+                    <label>安装位置</label>
+                    <input id="formLocation" maxlength="200" placeholder="例如：二号羊舍入口">
+                </div>
+            </div>
+            <div class="error-text" id="formError"></div>
+            <div class="modal-foot">
+                <button class="btn-flat" type="button" id="cancelBtn">取消</button>
+                <button class="btn-main" type="submit">保存</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(() => {
+    const root = document.getElementById('monitorApp');
+    const isAdmin = root.dataset.isAdmin === '1';
+    const initialBreederId = root.dataset.initialBreederId;
+
+    const breederListEl = document.getElementById('breederList');
+    const scopeTextEl = document.getElementById('scopeText');
+    const countChipEl = document.getElementById('countChip');
+    const deviceGridEl = document.getElementById('deviceGrid');
+    const emptyBoxEl = document.getElementById('emptyBox');
+    const refreshBtn = document.getElementById('refreshBtn');
+    const createBtn = document.getElementById('createBtn');
+
+    const modalEl = document.getElementById('deviceModal');
+    const modalTitleEl = document.getElementById('modalTitle');
+    const formEl = document.getElementById('deviceForm');
+    const formErrorEl = document.getElementById('formError');
+    const cancelBtn = document.getElementById('cancelBtn');
+    const formOwnerEl = isAdmin ? document.getElementById('formOwner') : null;
+
+    const state = {
+        breeders: [],
+        devices: [],
+        selectedBreederId: initialBreederId ? Number(initialBreederId) : null,
+        selectedBreederName: '',
+        editingDevice: null,
+    };
+
+    function getCookie(name) {
+        const cookieStr = document.cookie || '';
+        const cookies = cookieStr.split(';');
+        for (const rawItem of cookies) {
+            const item = rawItem.trim();
+            if (!item) continue;
+            const idx = item.indexOf('=');
+            const key = idx >= 0 ? item.slice(0, idx) : item;
+            if (key === name) {
+                return decodeURIComponent(idx >= 0 ? item.slice(idx + 1) : '');
+            }
+        }
+        return '';
+    }
+
+    function request(url, options = {}) {
+        const requestOptions = { ...options };
+        const method = (requestOptions.method || 'GET').toUpperCase();
+        const headers = new Headers(requestOptions.headers || {});
+
+        if (method !== 'GET' && method !== 'HEAD' && !headers.has('X-CSRFToken')) {
+            const csrfToken = getCookie('csrftoken');
+            if (csrfToken) {
+                headers.set('X-CSRFToken', csrfToken);
+            }
+        }
+
+        requestOptions.headers = headers;
+
+        return fetch(url, requestOptions).then(async (res) => {
+            const contentType = (res.headers.get('content-type') || '').toLowerCase();
+            if (!contentType.includes('application/json')) {
+                const text = await res.text();
+                const msg = text.includes('<!DOCTYPE')
+                    ? '接口返回了 HTML，常见原因：登录失效或 CSRF 校验失败'
+                    : (text || '接口未返回 JSON');
+                throw new Error(msg);
+            }
+
+            const data = await res.json();
+            if (!res.ok || data.code !== 0) {
+                throw new Error(data.msg || '请求失败');
+            }
+            return data.data;
+        });
+    }
+
+    function escapeHtml(input) {
+        return String(input || '')
+            .replaceAll('&', '&amp;')
+            .replaceAll('<', '&lt;')
+            .replaceAll('>', '&gt;')
+            .replaceAll('"', '&quot;')
+            .replaceAll("'", '&#39;');
+    }
+
+    function isValidStreamUrl(url) {
+        if (!url) return false;
+        try {
+            const parsed = new URL(url);
+            return ['http:', 'https:'].includes(parsed.protocol);
+        } catch (e) {
+            return false;
+        }
+    }
+
+    function bindStreamProbe(cardEl, device) {
+        const streamUrl = (device.stream_url || '').trim();
+        const player = cardEl.querySelector('.stream-player');
+        const placeholder = cardEl.querySelector('.stream-placeholder');
+        const badge = cardEl.querySelector('.stream-badge');
+
+        if (!player || !placeholder || !badge) return;
+
+        if (!isValidStreamUrl(streamUrl)) {
+            badge.textContent = '连接无效';
+            badge.classList.add('invalid');
+            placeholder.textContent = '连接无效：请输入 http/https 流地址';
+            return;
+        }
+
+        let finished = false;
+        const markInvalid = () => {
+            if (finished) return;
+            finished = true;
+            badge.textContent = '连接无效';
+            badge.classList.add('invalid');
+            placeholder.style.display = 'flex';
+            placeholder.textContent = '连接无效或流不可播放';
+            player.style.display = 'none';
+        };
+        const markValid = () => {
+            if (finished) return;
+            finished = true;
+            badge.textContent = '连接有效';
+            badge.classList.remove('invalid');
+            placeholder.style.display = 'none';
+            player.style.display = 'block';
+        };
+
+        const timer = setTimeout(markInvalid, 8000);
+        const cleanup = () => clearTimeout(timer);
+        player.addEventListener('loadedmetadata', () => {
+            cleanup();
+            markValid();
+        }, { once: true });
+        player.addEventListener('canplay', () => {
+            cleanup();
+            markValid();
+        }, { once: true });
+        player.addEventListener('error', () => {
+            cleanup();
+            markInvalid();
+        }, { once: true });
+
+        player.src = streamUrl;
+        player.load();
+    }
+
+    function renderBreeders() {
+        if (!isAdmin || !breederListEl) return;
+        breederListEl.innerHTML = '';
+        state.breeders.forEach((b) => {
+            const el = document.createElement('button');
+            el.type = 'button';
+            el.className = `breeder-item ${state.selectedBreederId === b.id ? 'active' : ''}`;
+            el.innerHTML = `
+                <div class="breeder-main">${escapeHtml(b.nickname || b.username || `养殖户#${b.id}`)}</div>
+                <div class="breeder-sub">ID ${b.id} · 监控 ${b.monitor_count} 路</div>
+            `;
+            el.addEventListener('click', async () => {
+                state.selectedBreederId = b.id;
+                state.selectedBreederName = b.nickname || b.username || `养殖户#${b.id}`;
+                renderBreeders();
+                await loadDevices();
+            });
+            breederListEl.appendChild(el);
+        });
+    }
+
+    function renderDevices() {
+        const total = state.devices.length;
+        countChipEl.textContent = `设备数 ${total}`;
+        emptyBoxEl.style.display = total ? 'none' : 'block';
+        deviceGridEl.innerHTML = '';
+
+        state.devices.forEach((device) => {
+            const online = device.status === 'online';
+            const card = document.createElement('article');
+            card.className = 'card-monitor';
+            card.innerHTML = `
+                <div class="camera-head">
+                    <div class="camera-name" title="${escapeHtml(device.name)}">${escapeHtml(device.name)}</div>
+                    <span class="status-tag ${online ? 'status-online' : 'status-offline'}">${online ? '在线' : '离线'}</span>
+                </div>
+                <div class="stream-wrap">
+                    <video class="stream-player" controls muted playsinline preload="metadata" style="display:none;"></video>
+                    <div class="stream-placeholder">连接检测中...</div>
+                    <div class="stream-badge">检测中</div>
+                </div>
+                <div class="camera-info">
+                    <div><strong>设备编号：</strong>${escapeHtml(device.device_code)}</div>
+                    <div><strong>安装位置：</strong>${escapeHtml(device.location || '-')}</div>
+                    <div><strong>更新时间：</strong>${new Date(device.updated_at).toLocaleString()}</div>
+                </div>
+                <div class="camera-actions">
+                    <button class="btn-flat js-edit" type="button">编辑</button>
+                    <button class="btn-flat js-delete" type="button" style="color:#9b2f2f; border-color:#efd0d0;">删除</button>
+                </div>
+            `;
+            card.querySelector('.js-edit').addEventListener('click', () => openModal(device));
+            card.querySelector('.js-delete').addEventListener('click', () => deleteDevice(device));
+            deviceGridEl.appendChild(card);
+            bindStreamProbe(card, device);
+        });
+    }
+
+    function showMessage(msg, isError = false) {
+        window.alert(msg || (isError ? '操作失败' : '操作成功'));
+    }
+
+    async function loadBreeders() {
+        if (!isAdmin) return;
+        const list = await request('/api/monitor/breeders');
+        state.breeders = list || [];
+        if (!state.selectedBreederId && state.breeders.length) {
+            state.selectedBreederId = state.breeders[0].id;
+        }
+        const selected = state.breeders.find((b) => b.id === state.selectedBreederId);
+        state.selectedBreederName = selected ? (selected.nickname || selected.username || `养殖户#${selected.id}`) : '';
+        renderBreeders();
+    }
+
+    async function loadDevices() {
+        const query = isAdmin && state.selectedBreederId ? `?breeder_id=${state.selectedBreederId}` : '';
+        const list = await request(`/api/monitor/devices${query}`);
+        state.devices = list || [];
+        const scopeText = isAdmin
+            ? `当前查看：${state.selectedBreederName || '未选择养殖户'}`
+            : '当前查看：我的监控';
+        scopeTextEl.textContent = scopeText;
+        renderDevices();
+    }
+
+    function renderOwnerOptions(selectedOwnerId = null) {
+        if (!isAdmin || !formOwnerEl) return;
+        const resolvedSelected = selectedOwnerId || state.selectedBreederId;
+        formOwnerEl.innerHTML = '';
+        if (!state.breeders.length) {
+            const emptyOption = document.createElement('option');
+            emptyOption.value = '';
+            emptyOption.textContent = '暂无可选养殖户';
+            formOwnerEl.appendChild(emptyOption);
+            return;
+        }
+        state.breeders.forEach((b) => {
+            const option = document.createElement('option');
+            option.value = String(b.id);
+            option.textContent = `${b.nickname || b.username || `养殖户#${b.id}`}`;
+            if (resolvedSelected && Number(resolvedSelected) === b.id) {
+                option.selected = true;
+            }
+            formOwnerEl.appendChild(option);
+        });
+    }
+
+    function openModal(device = null) {
+        state.editingDevice = device;
+        formErrorEl.textContent = '';
+        modalTitleEl.textContent = device ? '编辑监控' : '新增监控';
+        document.getElementById('formId').value = device ? device.id : '';
+        document.getElementById('formName').value = device ? device.name : '';
+        document.getElementById('formCode').value = device ? device.device_code : '';
+        document.getElementById('formStatus').value = device ? device.status : 'online';
+        document.getElementById('formUrl').value = device ? device.stream_url : '';
+        document.getElementById('formLocation').value = device ? (device.location || '') : '';
+        if (isAdmin && formOwnerEl) {
+            renderOwnerOptions(device ? device.owner_id : state.selectedBreederId);
+        }
+        modalEl.classList.add('show');
+    }
+
+    function closeModal() {
+        modalEl.classList.remove('show');
+        state.editingDevice = null;
+    }
+
+    async function submitForm(ev) {
+        ev.preventDefault();
+        formErrorEl.textContent = '';
+        const payload = {
+            name: document.getElementById('formName').value.trim(),
+            device_code: document.getElementById('formCode').value.trim(),
+            status: document.getElementById('formStatus').value,
+            stream_url: document.getElementById('formUrl').value.trim(),
+            location: document.getElementById('formLocation').value.trim(),
+            is_active: true,
+        };
+        if (isAdmin) {
+            const ownerId = Number(formOwnerEl ? formOwnerEl.value : 0);
+            if (!ownerId) {
+                formErrorEl.textContent = '请选择所属养殖户。';
+                return;
+            }
+            state.selectedBreederId = ownerId;
+            payload.owner_id = ownerId;
+        }
+
+        const isEdit = !!state.editingDevice;
+        const url = isEdit
+            ? `/api/monitor/devices/update/${state.editingDevice.id}`
+            : '/api/monitor/devices/create';
+
+        try {
+            await request(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload),
+            });
+            closeModal();
+            await Promise.all([loadBreeders(), loadDevices()]);
+            showMessage(isEdit ? '监控已更新' : '监控已创建');
+        } catch (err) {
+            formErrorEl.textContent = err.message || '保存失败';
+        }
+    }
+
+    async function deleteDevice(device) {
+        const ok = window.confirm(`确认删除监控「${device.name}」？`);
+        if (!ok) return;
+        try {
+            await request(`/api/monitor/devices/delete/${device.id}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({}),
+            });
+            await Promise.all([loadBreeders(), loadDevices()]);
+            showMessage('监控已删除');
+        } catch (err) {
+            showMessage(err.message, true);
+        }
+    }
+
+    async function bootstrap() {
+        try {
+            await loadBreeders();
+            await loadDevices();
+        } catch (err) {
+            showMessage(err.message, true);
+            scopeTextEl.textContent = '加载失败，请稍后刷新重试';
+        }
+    }
+
+    refreshBtn.addEventListener('click', bootstrap);
+    createBtn.addEventListener('click', () => openModal());
+    cancelBtn.addEventListener('click', closeModal);
+    modalEl.addEventListener('click', (ev) => {
+        if (ev.target === modalEl) closeModal();
+    });
+    formEl.addEventListener('submit', submitForm);
+
+    bootstrap();
+})();
 </script>
 {% endblock %}

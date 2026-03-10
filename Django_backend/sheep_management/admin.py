@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Sheep, GrowthRecord, FeedingRecord, VaccineType, VaccinationHistory, User, CartItem, Order, OrderItem, PromotionActivity, Coupon, UserCoupon
+from .models import Sheep, GrowthRecord, FeedingRecord, VaccineType, VaccinationHistory, User, MonitorDevice, CartItem, Order, OrderItem, PromotionActivity, Coupon, UserCoupon
 from django.utils.html import format_html
 
 
@@ -103,6 +103,15 @@ class UserAdmin(admin.ModelAdmin):
             'fields': ('created_at', 'updated_at')
         }),
     )
+
+
+@admin.register(MonitorDevice)
+class MonitorDeviceAdmin(admin.ModelAdmin):
+    list_display = ['id', 'device_code', 'name', 'owner', 'status', 'is_active', 'last_heartbeat', 'created_at']
+    list_filter = ['status', 'is_active', 'created_at']
+    search_fields = ['device_code', 'name', 'owner__username', 'owner__nickname']
+    readonly_fields = ['created_at', 'updated_at']
+    list_per_page = 20
 
 
 @admin.register(CartItem)
