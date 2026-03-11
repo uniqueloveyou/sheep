@@ -157,6 +157,15 @@ video {
     line-height: 1.8;
     text-align: justify;
 }
+.consultation-text-clickable {
+    cursor: pointer;
+}
+.consultation-more {
+    margin-top: 16rpx;
+    font-size: 24rpx;
+    color: #238E23;
+    font-weight: 600;
+}
 
 /* 标签和日期样式 */
 .consultation-tag {

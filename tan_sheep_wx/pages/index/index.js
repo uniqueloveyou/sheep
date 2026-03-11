@@ -326,6 +326,7 @@ Page({
           id: item.id,
           title: item.title,
           content: item.summary || '',
+          cover: item.cover || '',
           date: (item.published_at || '').slice(0, 10),
           tag: `首页${item.top_slot || (idx + 1)}`
         }));
@@ -336,6 +337,16 @@ Page({
       .catch((err) => {
         console.warn('[首页资讯] 使用本地兜底数据，原因:', err && err.message ? err.message : err);
       });
+  },
+
+  onTapNewsItem(e) {
+    const newsId = e.currentTarget.dataset.id;
+    if (!newsId) {
+      return;
+    }
+    wx.navigateTo({
+      url: `/pages/news/detail/index?id=${newsId}`
+    });
   },
 
   // 更新咨询内容中的视频（当视频加载成功后）

@@ -1,0 +1,11 @@
+<view class="news-detail-page">
+  <view wx:if="{{loading}}" class="state-text">加载中...</view>
+
+  <view wx:else class="news-card">
+    <view class="title">{{news.title}}</view>
+    <view class="meta">{{news.published_at}}</view>
+    <image wx:if="{{news.cover}}" class="cover" src="{{news.cover}}" mode="aspectFill" />
+    <view wx:if="{{news.summary}}" class="summary">{{news.summary}}</view>
+    <view class="content">{{news.content}}</view>
+  </view>
+</view>

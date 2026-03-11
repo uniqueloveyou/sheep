@@ -268,3 +268,38 @@ def api_news_home(request):
         return JsonResponse(
             {"code": 500, "msg": f"服务器错误: {str(e)}", "data": []}, status=500
         )
+
+
+@csrf_exempt
+@require_http_methods(["GET"])
+def api_news_detail(request, news_id):
+    """小程序资讯详情（仅已发布）。"""
+    try:
+        item = News.objects.filter(
+            pk=news_id,
+            status=News.STATUS_PUBLISHED,
+        ).first()
+        if not item:
+            return JsonResponse({"code": 404, "msg": "资讯不存在", "data": None}, status=404)
+
+        return JsonResponse(
+            {
+                "code": 0,
+                "msg": "获取成功",
+                "data": {
+                    "id": item.id,
+                    "title": item.title,
+                    "summary": item.summary,
+                    "cover": item.cover,
+                    "content": item.content,
+                    "published_at": item.published_at.strftime("%Y-%m-%d %H:%M:%S")
+                    if item.published_at
+                    else "",
+                },
+            },
+            status=200,
+        )
+    except Exception as e:
+        return JsonResponse(
+            {"code": 500, "msg": f"服务器错误: {str(e)}", "data": None}, status=500
+        )

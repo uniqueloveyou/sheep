@@ -360,6 +360,14 @@ function getHomeNews() {
   return request('/api/news/home', 'GET')
 }
 
+/**
+ * 获取资讯详情
+ * @param {number|string} newsId
+ */
+function getNewsDetail(newsId) {
+  return request(`/api/news/${newsId}`, 'GET')
+}
+
 module.exports = {
   request,
   login,
@@ -388,5 +396,6 @@ module.exports = {
   getMonitorBreeders,
   getMonitorDevices,
   getHomeNews,
+  getNewsDetail,
   API_BASE_URL
 }

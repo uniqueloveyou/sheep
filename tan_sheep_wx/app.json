@@ -94,6 +94,13 @@
             ]
         },
         {
+            "root": "pages/news",
+            "name": "news",
+            "pages": [
+                "detail/index"
+            ]
+        },
+        {
             "root": "packageOrder",
             "name": "packageOrder",
             "pages": [

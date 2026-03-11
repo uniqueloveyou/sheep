@@ -189,6 +189,7 @@ urlpatterns = [
     path('api/promotions/coupons', views.api_coupons, name='api_coupons'),
     path('api/promotions/coupons/claim', views.api_claim_coupon, name='api_claim_coupon'),
     path('api/news/home', views.api_news_home, name='api_news_home'),
+    path('api/news/<int:news_id>', views.api_news_detail, name='api_news_detail'),
 
     # ==========================
     # 购物车接口（api/commerce_api.py）

@@ -89,13 +89,14 @@
             </view>
             
             <!-- 文字信息类型 -->
-            <view wx:if="{{item.type === 'text'}}" class="consultation-text">
+            <view wx:if="{{item.type === 'text'}}" class="consultation-text consultation-text-clickable" bindtap="onTapNewsItem" data-id="{{item.id}}">
                 <view class="consultation-header">
                     <text class="consultation-tag text-tag">{{item.tag}}</text>
                     <text class="consultation-date">{{item.date}}</text>
                 </view>
                 <view class="consultation-title">{{item.title}}</view>
                 <view class="consultation-content">{{item.content}}</view>
+                <view wx:if="{{item.id}}" class="consultation-more">点击查看详情 ></view>
             </view>
         </view>
     </view>
