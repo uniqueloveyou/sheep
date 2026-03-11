@@ -18,6 +18,7 @@ from .vaccination import vaccination_list, vaccination_create
 from .user import user_list, user_detail, user_create, user_update, user_delete, user_batch_delete
 from .order import order_list, order_detail, order_update_status
 from .coupon import coupon_list, coupon_create, coupon_edit, coupon_delete, coupon_detail
+from .news import news_list, news_create, news_edit, news_delete, news_publish, news_detail
 from .permissions import (
     breeder_audit_list, breeder_audit_detail, breeder_approve, breeder_reject,
     role_user_list, role_user_edit, permission_overview
@@ -55,6 +56,7 @@ __all__ = [
     'breeder_audit_list', 'breeder_audit_detail', 'breeder_approve', 'breeder_reject',
     'role_user_list', 'role_user_edit', 'permission_overview', 'qa_stats',
     'coupon_list', 'coupon_create', 'coupon_edit', 'coupon_delete', 'coupon_detail',
+    'news_list', 'news_create', 'news_edit', 'news_delete', 'news_publish', 'news_detail',
     'breeder_dashboard', 'breeder_profile', 'breeder_update_location',
     'smart_farm',
     'api_monitor_breeders',

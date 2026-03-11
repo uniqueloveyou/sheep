@@ -5,6 +5,7 @@ from .commerce import CartItem, PromotionActivity, Coupon, UserCoupon, Order, Or
 from .audit import AuditLog
 from .knowledge import KnowledgeDocument
 from .qa import QALog
+from .news import News
 
 __all__ = [
     'Sheep',
@@ -24,4 +25,5 @@ __all__ = [
     'AuditLog',
     'KnowledgeDocument',
     'QALog',
+    'News',
 ]

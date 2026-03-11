@@ -1,0 +1,240 @@
+{% extends 'sheep_management/base.html' %}
+
+{% block title %}资讯内容 - 羊只管理后台{% endblock %}
+{% block page_title %}资讯内容{% endblock %}
+
+{% block content %}
+<style>
+    .news-stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 16px;
+        margin-bottom: 20px;
+    }
+    .news-stat-card {
+        background: linear-gradient(135deg, #ffffff 0%, #f9fcff 100%);
+        border: 1px solid #edf1f5;
+        border-radius: 12px;
+        padding: 16px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    }
+    .news-stat-card .value {
+        font-size: 30px;
+        line-height: 1;
+        font-weight: 700;
+        color: #2b7a2b;
+    }
+    .news-stat-card .label {
+        margin-top: 8px;
+        font-size: 13px;
+        color: #7c8797;
+    }
+    .news-stat-card:nth-child(2) .value { color: #1f7fd3; }
+    .news-stat-card:nth-child(3) .value { color: #e49300; }
+
+    .news-toolbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-bottom: 18px;
+    }
+    .news-toolbar form {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+    .filter-select, .search-input {
+        height: 40px;
+        padding: 0 14px;
+        border: 1px solid #d9e0e7;
+        border-radius: 10px;
+        outline: none;
+        background: #fff;
+    }
+    .filter-select:focus, .search-input:focus {
+        border-color: #4c8ef7;
+    }
+    .btn-news-create {
+        display: inline-flex;
+        align-items: center;
+        height: 40px;
+        padding: 0 18px;
+        border-radius: 10px;
+        background: linear-gradient(135deg, #1fa65a 0%, #35bd72 100%);
+        color: #fff;
+        text-decoration: none;
+        font-weight: 600;
+    }
+
+    .news-card-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 16px;
+    }
+    .news-item-card {
+        border: 1px solid #e8edf3;
+        border-radius: 14px;
+        background: #fff;
+        overflow: hidden;
+        box-shadow: 0 3px 10px rgba(0,0,0,.04);
+        transition: transform .15s ease, box-shadow .15s ease;
+    }
+    .news-item-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(19, 52, 107, .10);
+    }
+    .news-cover {
+        width: 100%;
+        height: 170px;
+        object-fit: cover;
+        background: #f0f3f7;
+    }
+    .news-body {
+        padding: 14px;
+    }
+    .news-title {
+        margin: 0 0 10px;
+        font-size: 17px;
+        line-height: 1.4;
+        color: #222;
+        font-weight: 700;
+    }
+    .news-title a {
+        color: inherit;
+        text-decoration: none;
+    }
+    .news-summary {
+        margin: 0;
+        color: #5d6776;
+        font-size: 13px;
+        line-height: 1.6;
+        min-height: 42px;
+    }
+    .news-meta {
+        margin-top: 10px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 8px;
+    }
+    .badge {
+        display: inline-block;
+        font-size: 12px;
+        font-weight: 600;
+        border-radius: 999px;
+        padding: 4px 10px;
+    }
+    .badge-published {
+        color: #147a40;
+        background: #e8f8ef;
+    }
+    .badge-draft {
+        color: #8c6c16;
+        background: #fff4d7;
+    }
+    .news-time {
+        font-size: 12px;
+        color: #8490a3;
+    }
+    .news-actions {
+        margin-top: 12px;
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+    .news-actions a, .news-actions button {
+        border: 0;
+        border-radius: 8px;
+        padding: 6px 12px;
+        font-size: 12px;
+        cursor: pointer;
+        text-decoration: none;
+    }
+    .btn-view { background: #e8f1ff; color: #2365c5; }
+    .btn-publish { background: #e8f8ef; color: #0f7a3d; }
+    .btn-edit { background: #fff2df; color: #c86a00; }
+    .btn-delete { background: #ffe7e7; color: #c23434; }
+    .empty-state {
+        text-align: center;
+        color: #98a3b3;
+        background: #fff;
+        border: 1px dashed #d8dfe8;
+        border-radius: 12px;
+        padding: 50px 16px;
+    }
+</style>
+
+<div class="news-stats">
+    <div class="news-stat-card">
+        <div class="value">{{ stats.total }}</div>
+        <div class="label">资讯总数</div>
+    </div>
+    <div class="news-stat-card">
+        <div class="value">{{ stats.published }}</div>
+        <div class="label">已发布</div>
+    </div>
+    <div class="news-stat-card">
+        <div class="value">{{ stats.draft }}</div>
+        <div class="label">草稿</div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="news-toolbar">
+        <form method="get">
+            <select name="status" class="filter-select" onchange="this.form.submit()">
+                <option value="">全部状态</option>
+                <option value="draft" {% if status_filter == 'draft' %}selected{% endif %}>草稿</option>
+                <option value="published" {% if status_filter == 'published' %}selected{% endif %}>已发布</option>
+            </select>
+            <input type="text" name="search" value="{{ search }}" placeholder="按标题搜索" class="search-input" />
+            <button type="submit" class="btn">搜索</button>
+        </form>
+        <a href="{% url 'news_create' %}" class="btn-news-create">+ 新增资讯</a>
+    </div>
+
+    {% if items %}
+    <div class="news-card-grid">
+        {% for item in items %}
+        <div class="news-item-card">
+            <a href="{% url 'news_detail' item.id %}">
+                <img class="news-cover" src="{{ item.cover }}" alt="{{ item.title }}">
+            </a>
+            <div class="news-body">
+                <h3 class="news-title">
+                    <a href="{% url 'news_detail' item.id %}">{{ item.title }}</a>
+                </h3>
+                <p class="news-summary">{{ item.summary|truncatechars:70 }}</p>
+                <div class="news-meta">
+                    <span class="badge {% if item.status == 'published' %}badge-published{% else %}badge-draft{% endif %}">
+                        {% if item.status == 'published' %}已发布{% else %}草稿{% endif %}
+                    </span>
+                    <span class="news-time">
+                        {% if item.published_at %}{{ item.published_at|date:'Y-m-d H:i' }}{% else %}未发布{% endif %}
+                    </span>
+                </div>
+                <div class="news-actions">
+                    <a class="btn-view" href="{% url 'news_detail' item.id %}">查看</a>
+                    {% if item.status == 'draft' %}
+                    <form method="post" action="{% url 'news_publish' item.id %}" style="margin:0;">
+                        {% csrf_token %}
+                        <button type="submit" class="btn-publish">发布</button>
+                    </form>
+                    {% endif %}
+                    <a class="btn-edit" href="{% url 'news_edit' item.id %}">编辑</a>
+                    <a class="btn-delete" href="{% url 'news_delete' item.id %}">删除</a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+        暂无资讯，点击右上角“新增资讯”开始创建。
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

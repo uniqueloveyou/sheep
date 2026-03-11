@@ -1,0 +1,39 @@
+{% extends 'sheep_management/base.html' %}
+
+{% block title %}{% if is_edit %}编辑{% else %}新增{% endif %}资讯 - 羊只管理后台{% endblock %}
+{% block page_title %}{% if is_edit %}编辑资讯{% else %}新增资讯{% endif %}{% endblock %}
+
+{% block content %}
+<div class="card" style="max-width:900px;">
+    <form method="post">
+        {% csrf_token %}
+        <div class="form-group">
+            <label>标题</label>
+            <input name="title" type="text" value="{{ item.title|default:'' }}" required />
+        </div>
+        <div class="form-group">
+            <label>摘要</label>
+            <input name="summary" type="text" value="{{ item.summary|default:'' }}" required />
+        </div>
+        <div class="form-group">
+            <label>封面图（URL）</label>
+            <input name="cover" type="text" value="{{ item.cover|default:'' }}" required />
+        </div>
+        <div class="form-group">
+            <label>正文</label>
+            <textarea name="content" rows="10" required>{{ item.content|default:'' }}</textarea>
+        </div>
+        <div class="form-group">
+            <label>状态</label>
+            <select name="status">
+                <option value="draft" {% if item.status == 'draft' or not item %}selected{% endif %}>草稿</option>
+                <option value="published" {% if item.status == 'published' %}selected{% endif %}>已发布</option>
+            </select>
+        </div>
+        <div style="display:flex;gap:10px;">
+            <button type="submit" class="btn btn-success">保存</button>
+            <a class="btn" href="{% url 'news_list' %}">返回</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

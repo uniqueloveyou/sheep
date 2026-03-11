@@ -156,6 +156,12 @@ urlpatterns = [
     path('coupons/<int:pk>/edit/', views.coupon_edit, name='coupon_edit'),
     path('coupons/<int:pk>/delete/', views.coupon_delete, name='coupon_delete'),
     path('coupons/<int:pk>/', views.coupon_detail, name='coupon_detail'),
+    path('news/', views.news_list, name='news_list'),
+    path('news/create/', views.news_create, name='news_create'),
+    path('news/<int:pk>/edit/', views.news_edit, name='news_edit'),
+    path('news/<int:pk>/delete/', views.news_delete, name='news_delete'),
+    path('news/<int:pk>/publish/', views.news_publish, name='news_publish'),
+    path('news/<int:pk>/', views.news_detail, name='news_detail'),
     
     # ==========================
     # 权限管理路由（仅管理员）
