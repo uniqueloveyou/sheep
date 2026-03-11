@@ -26,6 +26,16 @@
         color: #8691a2;
         font-size: 13px;
     }
+    .slot-pill {
+        display: inline-block;
+        margin-left: 8px;
+        border-radius: 999px;
+        padding: 4px 10px;
+        font-size: 12px;
+        font-weight: 600;
+        color: #4a3ba0;
+        background: #eee9ff;
+    }
     .status-pill {
         display: inline-block;
         border-radius: 999px;
@@ -73,6 +83,7 @@
                 ID: {{ item.id }} |
                 发布时间:
                 {% if item.published_at %}{{ item.published_at|date:'Y-m-d H:i' }}{% else %}未发布{% endif %}
+                {% if item.top_slot %}<span class="slot-pill">首页第{{ item.top_slot }}条</span>{% endif %}
             </div>
         </div>
         <span class="status-pill {% if item.status == 'published' %}status-published{% else %}status-draft{% endif %}">

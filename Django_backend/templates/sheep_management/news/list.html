@@ -31,6 +31,7 @@
     }
     .news-stat-card:nth-child(2) .value { color: #1f7fd3; }
     .news-stat-card:nth-child(3) .value { color: #e49300; }
+    .news-stat-card:nth-child(4) .value { color: #7b5ac7; }
 
     .news-toolbar {
         display: flex;
@@ -139,6 +140,16 @@
         font-size: 12px;
         color: #8490a3;
     }
+    .slot-badge {
+        display: inline-block;
+        margin-top: 8px;
+        font-size: 12px;
+        color: #4a3ba0;
+        background: #eee9ff;
+        border-radius: 999px;
+        padding: 4px 10px;
+        font-weight: 600;
+    }
     .news-actions {
         margin-top: 12px;
         display: flex;
@@ -155,6 +166,7 @@
     }
     .btn-view { background: #e8f1ff; color: #2365c5; }
     .btn-publish { background: #e8f8ef; color: #0f7a3d; }
+    .btn-slot { background: #efeaff; color: #5639b9; }
     .btn-edit { background: #fff2df; color: #c86a00; }
     .btn-delete { background: #ffe7e7; color: #c23434; }
     .empty-state {
@@ -179,6 +191,10 @@
     <div class="news-stat-card">
         <div class="value">{{ stats.draft }}</div>
         <div class="label">草稿</div>
+    </div>
+    <div class="news-stat-card">
+        <div class="value">{{ stats.top }}</div>
+        <div class="label">首页推荐中</div>
     </div>
 </div>
 
@@ -216,6 +232,9 @@
                         {% if item.published_at %}{{ item.published_at|date:'Y-m-d H:i' }}{% else %}未发布{% endif %}
                     </span>
                 </div>
+                {% if item.top_slot %}
+                <div class="slot-badge">首页第{{ item.top_slot }}条</div>
+                {% endif %}
                 <div class="news-actions">
                     <a class="btn-view" href="{% url 'news_detail' item.id %}">查看</a>
                     {% if item.status == 'draft' %}
@@ -223,6 +242,30 @@
                         {% csrf_token %}
                         <button type="submit" class="btn-publish">发布</button>
                     </form>
+                    {% endif %}
+                    {% if item.status == 'published' %}
+                    <form method="post" action="{% url 'news_set_top_slot' item.id %}" style="margin:0;">
+                        {% csrf_token %}
+                        <input type="hidden" name="slot" value="1" />
+                        <button type="submit" class="btn-slot">设第1条</button>
+                    </form>
+                    <form method="post" action="{% url 'news_set_top_slot' item.id %}" style="margin:0;">
+                        {% csrf_token %}
+                        <input type="hidden" name="slot" value="2" />
+                        <button type="submit" class="btn-slot">设第2条</button>
+                    </form>
+                    <form method="post" action="{% url 'news_set_top_slot' item.id %}" style="margin:0;">
+                        {% csrf_token %}
+                        <input type="hidden" name="slot" value="3" />
+                        <button type="submit" class="btn-slot">设第3条</button>
+                    </form>
+                    {% if item.top_slot %}
+                    <form method="post" action="{% url 'news_set_top_slot' item.id %}" style="margin:0;">
+                        {% csrf_token %}
+                        <input type="hidden" name="slot" value="clear" />
+                        <button type="submit" class="btn-slot" style="background:#f2f4f7;color:#576071;">取消推荐</button>
+                    </form>
+                    {% endif %}
                     {% endif %}
                     <a class="btn-edit" href="{% url 'news_edit' item.id %}">编辑</a>
                     <a class="btn-delete" href="{% url 'news_delete' item.id %}">删除</a>

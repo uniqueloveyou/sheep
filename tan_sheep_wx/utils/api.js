@@ -353,6 +353,13 @@ function getMonitorDevices(token, breederId) {
   return request(url, 'GET')
 }
 
+/**
+ * 获取首页资讯（固定3条）
+ */
+function getHomeNews() {
+  return request('/api/news/home', 'GET')
+}
+
 module.exports = {
   request,
   login,
@@ -380,5 +387,6 @@ module.exports = {
   claimCoupon,
   getMonitorBreeders,
   getMonitorDevices,
+  getHomeNews,
   API_BASE_URL
 }

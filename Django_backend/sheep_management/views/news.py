@@ -1,9 +1,25 @@
 from django.contrib import messages
+from django.db.models import Case, IntegerField, Value, When
+from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_http_methods
 
 from ..models import News
 from ..permissions import admin_required
+
+
+def _with_slot_order(queryset):
+    return queryset.annotate(
+        slot_order=Case(
+            When(top_slot=1, then=Value(1)),
+            When(top_slot=2, then=Value(2)),
+            When(top_slot=3, then=Value(3)),
+            default=Value(99),
+            output_field=IntegerField(),
+        )
+    ).order_by("slot_order", "-published_at", "-id")
 
 
 @admin_required
@@ -17,13 +33,14 @@ def news_list(request):
     if search:
         items = items.filter(title__icontains=search)
 
-    items = items.order_by("-published_at", "-id")
+    items = _with_slot_order(items)
     context = {
         "items": items,
         "stats": {
             "total": items.count(),
             "published": items.filter(status=News.STATUS_PUBLISHED).count(),
             "draft": items.filter(status=News.STATUS_DRAFT).count(),
+            "top": items.exclude(top_slot__isnull=True).count(),
         },
         "status_filter": status_filter,
         "search": search,
@@ -39,6 +56,7 @@ def news_create(request):
         cover = request.POST.get("cover", "").strip()
         content = request.POST.get("content", "").strip()
         status = request.POST.get("status", News.STATUS_DRAFT)
+        top_slot = request.POST.get("top_slot", "").strip()
 
         if not title or not summary or not cover or not content:
             messages.error(request, "标题、摘要、封面图和正文均为必填")
@@ -47,6 +65,10 @@ def news_create(request):
         if status not in (News.STATUS_DRAFT, News.STATUS_PUBLISHED):
             status = News.STATUS_DRAFT
 
+        parsed_top_slot = None
+        if top_slot in ("1", "2", "3") and status == News.STATUS_PUBLISHED:
+            parsed_top_slot = int(top_slot)
+
         item = News(
             title=title,
             summary=summary,
@@ -54,8 +76,11 @@ def news_create(request):
             content=content,
             status=status,
             published_at=timezone.now() if status == News.STATUS_PUBLISHED else None,
+            top_slot=parsed_top_slot,
         )
         item.save()
+        if parsed_top_slot:
+            News.objects.filter(top_slot=parsed_top_slot).exclude(pk=item.pk).update(top_slot=None)
         messages.success(request, "资讯创建成功")
         return redirect("news_list")
 
@@ -79,6 +104,7 @@ def news_edit(request, pk):
         cover = request.POST.get("cover", "").strip()
         content = request.POST.get("content", "").strip()
         status = request.POST.get("status", News.STATUS_DRAFT)
+        top_slot = request.POST.get("top_slot", "").strip()
 
         if not title or not summary or not cover or not content:
             messages.error(request, "标题、摘要、封面图和正文均为必填")
@@ -97,8 +123,15 @@ def news_edit(request, pk):
             item.published_at = timezone.now()
         if status == News.STATUS_DRAFT:
             item.published_at = None
+            item.top_slot = None
+        elif top_slot in ("1", "2", "3"):
+            item.top_slot = int(top_slot)
+        else:
+            item.top_slot = None
 
         item.save()
+        if item.top_slot:
+            News.objects.filter(top_slot=item.top_slot).exclude(pk=item.pk).update(top_slot=None)
         messages.success(request, "资讯更新成功")
         return redirect("news_list")
 
@@ -143,9 +176,40 @@ def news_publish(request, pk):
         return redirect("news_list")
 
     item.status = News.STATUS_PUBLISHED
-    item.published_at = timezone.now()
+    if not item.published_at:
+        item.published_at = timezone.now()
     item.save(update_fields=["status", "published_at"])
     messages.success(request, f"资讯《{item.title}》发布成功")
+    return redirect("news_list")
+
+
+@admin_required
+def news_set_top_slot(request, pk):
+    item = get_object_or_404(News, pk=pk)
+
+    if request.method != "POST":
+        return redirect("news_list")
+
+    slot = request.POST.get("slot", "").strip()
+    if slot == "clear":
+        item.top_slot = None
+        item.save(update_fields=["top_slot"])
+        messages.success(request, f"资讯《{item.title}》已取消首页推荐位")
+        return redirect("news_list")
+
+    if slot not in ("1", "2", "3"):
+        messages.error(request, "推荐位参数无效")
+        return redirect("news_list")
+
+    if item.status != News.STATUS_PUBLISHED:
+        messages.error(request, "仅已发布资讯可设置首页推荐位")
+        return redirect("news_list")
+
+    target_slot = int(slot)
+    News.objects.filter(top_slot=target_slot).exclude(pk=item.pk).update(top_slot=None)
+    item.top_slot = target_slot
+    item.save(update_fields=["top_slot"])
+    messages.success(request, f"资讯《{item.title}》已设为首页第{target_slot}条")
     return redirect("news_list")
 
 
@@ -159,3 +223,48 @@ def news_detail(request, pk):
             "item": item,
         },
     )
+
+
+@csrf_exempt
+@require_http_methods(["GET"])
+def api_news_home(request):
+    """
+    小程序首页资讯：固定返回3条
+    优先 top_slot=1/2/3，缺位时用最新已发布资讯补齐。
+    """
+    try:
+        published_qs = News.objects.filter(status=News.STATUS_PUBLISHED)
+        slot_items = list(
+            published_qs.filter(top_slot__in=[1, 2, 3]).order_by("top_slot")
+        )
+
+        used_ids = {n.id for n in slot_items}
+        if len(slot_items) < 3:
+            fillers = list(
+                published_qs.exclude(id__in=used_ids).order_by("-published_at", "-id")[
+                    : 3 - len(slot_items)
+                ]
+            )
+            slot_items.extend(fillers)
+
+        result = []
+        for idx, item in enumerate(slot_items[:3], start=1):
+            result.append(
+                {
+                    "id": item.id,
+                    "title": item.title,
+                    "summary": item.summary,
+                    "cover": item.cover,
+                    "content": item.content,
+                    "published_at": item.published_at.strftime("%Y-%m-%d %H:%M:%S")
+                    if item.published_at
+                    else "",
+                    "top_slot": item.top_slot or idx,
+                }
+            )
+
+        return JsonResponse({"code": 0, "msg": "获取成功", "data": result}, status=200)
+    except Exception as e:
+        return JsonResponse(
+            {"code": 500, "msg": f"服务器错误: {str(e)}", "data": []}, status=500
+        )

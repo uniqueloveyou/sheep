@@ -161,6 +161,7 @@ urlpatterns = [
     path('news/<int:pk>/edit/', views.news_edit, name='news_edit'),
     path('news/<int:pk>/delete/', views.news_delete, name='news_delete'),
     path('news/<int:pk>/publish/', views.news_publish, name='news_publish'),
+    path('news/<int:pk>/set-top-slot/', views.news_set_top_slot, name='news_set_top_slot'),
     path('news/<int:pk>/', views.news_detail, name='news_detail'),
     
     # ==========================
@@ -187,6 +188,7 @@ urlpatterns = [
     path('api/promotions/activities/<int:activity_id>', views.api_promotion_activity_detail, name='api_promotion_activity_detail'),
     path('api/promotions/coupons', views.api_coupons, name='api_coupons'),
     path('api/promotions/coupons/claim', views.api_claim_coupon, name='api_claim_coupon'),
+    path('api/news/home', views.api_news_home, name='api_news_home'),
 
     # ==========================
     # 购物车接口（api/commerce_api.py）

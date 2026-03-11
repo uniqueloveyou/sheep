@@ -1,3 +1,5 @@
+const API = require('../../utils/api.js');
+
 Page({
   data: {
     // 轮播图使用 CDN 地址
@@ -40,6 +42,8 @@ Page({
     this.checkImages();
     // 先初始化咨询内容（使用文字内容）
     this.initConsultationItems();
+    // 再尝试加载后台配置的首页资讯（固定3条）
+    this.loadHomeNews();
     // 然后加载视频文件（如果视频可用，会在加载完成后更新）
     this.loadVideos();
   },
@@ -308,6 +312,30 @@ Page({
     this.setData({
       consultationItems: selectedItems
     });
+  },
+
+  // 读取后台配置的首页资讯（固定3条）
+  loadHomeNews() {
+    API.getHomeNews()
+      .then((res) => {
+        if (!res || res.code !== 0 || !Array.isArray(res.data) || res.data.length === 0) {
+          return;
+        }
+        const newsItems = res.data.slice(0, 3).map((item, idx) => ({
+          type: 'text',
+          id: item.id,
+          title: item.title,
+          content: item.summary || '',
+          date: (item.published_at || '').slice(0, 10),
+          tag: `首页${item.top_slot || (idx + 1)}`
+        }));
+        this.setData({
+          consultationItems: newsItems
+        });
+      })
+      .catch((err) => {
+        console.warn('[首页资讯] 使用本地兜底数据，原因:', err && err.message ? err.message : err);
+      });
   },
 
   // 更新咨询内容中的视频（当视频加载成功后）
