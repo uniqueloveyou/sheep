@@ -28,6 +28,7 @@ from .news import (
     news_detail,
     api_news_home,
     api_news_detail,
+    api_news_list,
 )
 from .permissions import (
     breeder_audit_list, breeder_audit_detail, breeder_approve, breeder_reject,
@@ -69,6 +70,7 @@ __all__ = [
     'news_list', 'news_create', 'news_edit', 'news_delete', 'news_publish',
     'news_set_top_slot', 'news_detail', 'api_news_home',
     'api_news_detail',
+    'api_news_list',
     'breeder_dashboard', 'breeder_profile', 'breeder_update_location',
     'smart_farm',
     'api_monitor_breeders',

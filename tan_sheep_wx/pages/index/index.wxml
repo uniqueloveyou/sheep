@@ -100,6 +100,9 @@
             </view>
         </view>
     </view>
+    <view class="more-news-wrap">
+        <view class="more-news-btn" bindtap="goMoreNews">更多资讯 ></view>
+    </view>
     <view bindtap="getLocalPath">{{localPath}}</view>
     
     <!-- 智能问答悬浮窗 -->

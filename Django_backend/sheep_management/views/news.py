@@ -303,3 +303,60 @@ def api_news_detail(request, news_id):
         return JsonResponse(
             {"code": 500, "msg": f"服务器错误: {str(e)}", "data": None}, status=500
         )
+
+
+@csrf_exempt
+@require_http_methods(["GET"])
+def api_news_list(request):
+    """小程序资讯列表（已发布）。"""
+    try:
+        page = int(request.GET.get("page", 1))
+        page_size = int(request.GET.get("page_size", 10))
+        if page < 1:
+            page = 1
+        if page_size < 1:
+            page_size = 10
+        if page_size > 50:
+            page_size = 50
+
+        queryset = _with_slot_order(
+            News.objects.filter(status=News.STATUS_PUBLISHED)
+        )
+        total = queryset.count()
+        start = (page - 1) * page_size
+        end = start + page_size
+        rows = queryset[start:end]
+
+        result = []
+        for item in rows:
+            result.append(
+                {
+                    "id": item.id,
+                    "title": item.title,
+                    "summary": item.summary,
+                    "cover": item.cover,
+                    "published_at": item.published_at.strftime("%Y-%m-%d %H:%M:%S")
+                    if item.published_at
+                    else "",
+                    "top_slot": item.top_slot,
+                }
+            )
+
+        return JsonResponse(
+            {
+                "code": 0,
+                "msg": "获取成功",
+                "data": {
+                    "list": result,
+                    "page": page,
+                    "page_size": page_size,
+                    "total": total,
+                    "has_more": end < total,
+                },
+            },
+            status=200,
+        )
+    except Exception as e:
+        return JsonResponse(
+            {"code": 500, "msg": f"服务器错误: {str(e)}", "data": None}, status=500
+        )

@@ -97,6 +97,7 @@
             "root": "pages/news",
             "name": "news",
             "pages": [
+                "list/index",
                 "detail/index"
             ]
         },

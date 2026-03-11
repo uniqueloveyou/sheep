@@ -349,6 +349,12 @@ Page({
     });
   },
 
+  goMoreNews() {
+    wx.navigateTo({
+      url: '/pages/news/list/index'
+    });
+  },
+
   // 更新咨询内容中的视频（当视频加载成功后）
   updateConsultationVideos() {
     const items = this.data.consultationItems;

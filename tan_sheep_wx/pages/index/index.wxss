@@ -166,6 +166,18 @@ video {
     color: #238E23;
     font-weight: 600;
 }
+.more-news-wrap {
+    padding: 0 20rpx 10rpx;
+}
+.more-news-btn {
+    text-align: center;
+    background: #eef6ff;
+    color: #2b5db6;
+    border-radius: 12rpx;
+    padding: 20rpx 0;
+    font-size: 28rpx;
+    font-weight: 600;
+}
 
 /* 标签和日期样式 */
 .consultation-tag {

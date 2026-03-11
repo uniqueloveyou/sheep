@@ -368,6 +368,15 @@ function getNewsDetail(newsId) {
   return request(`/api/news/${newsId}`, 'GET')
 }
 
+/**
+ * 获取资讯列表
+ * @param {number} page
+ * @param {number} pageSize
+ */
+function getNewsList(page = 1, pageSize = 10) {
+  return request(`/api/news/list?page=${page}&page_size=${pageSize}`, 'GET')
+}
+
 module.exports = {
   request,
   login,
@@ -397,5 +406,6 @@ module.exports = {
   getMonitorDevices,
   getHomeNews,
   getNewsDetail,
+  getNewsList,
   API_BASE_URL
 }

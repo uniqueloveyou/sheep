@@ -1,0 +1,24 @@
+<view class="news-list-page">
+  <view wx:if="{{!list.length && !loading}}" class="empty">暂无资讯</view>
+
+  <view
+    class="news-item"
+    wx:for="{{list}}"
+    wx:key="id"
+    data-id="{{item.id}}"
+    bindtap="onTapItem"
+  >
+    <image wx:if="{{item.cover}}" class="cover" src="{{item.cover}}" mode="aspectFill" />
+    <view class="body">
+      <view class="title">{{item.title}}</view>
+      <view class="summary">{{item.summary}}</view>
+      <view class="meta-row">
+        <view wx:if="{{item.topSlot}}" class="slot">首页第{{item.topSlot}}条</view>
+        <view class="date">{{item.publishedAt}}</view>
+      </view>
+    </view>
+  </view>
+
+  <view wx:if="{{loading}}" class="state">加载中...</view>
+  <view wx:elif="{{!hasMore && list.length}}" class="state">没有更多了</view>
+</view>
