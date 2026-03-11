@@ -12,9 +12,57 @@ import requests
 import logging
 
 from ..utils import verify_token
-from ..models import Sheep, GrowthRecord, FeedingRecord, VaccinationHistory, OrderItem, User
+from ..models import Sheep, GrowthRecord, FeedingRecord, VaccinationHistory, OrderItem, User, QALog
 
 logger = logging.getLogger(__name__)
+PERSONAL_QUESTION_KEYWORDS = [
+    '我的', '我家', '我养', '我领养', '我的羊', '我的订单', '我的监控',
+    '体重', '生长', '喂养', '饲料', '免疫', '疫苗', '耳标', '健康',
+]
+
+
+def _classify_question_type(question):
+    q = (question or '').strip().lower()
+    if not q:
+        return 'general'
+    if any(keyword in q for keyword in PERSONAL_QUESTION_KEYWORDS):
+        return 'personal'
+    return 'general'
+
+
+def _safe_log_qa(
+    *,
+    user_id,
+    question,
+    question_type,
+    answer,
+    success,
+    fallback_used,
+    response_time_ms,
+    source_type,
+    error_message='',
+):
+    try:
+        user = None
+        user_role = None
+        if user_id:
+            user = User.objects.filter(id=user_id).only('id', 'role').first()
+            user_role = user.role if user else None
+
+        QALog.objects.create(
+            user=user,
+            user_role=user_role,
+            question=(question or '')[:5000],
+            question_type=question_type or 'general',
+            answer=(answer or '')[:10000],
+            success=success,
+            fallback_used=fallback_used,
+            response_time_ms=max(0, int(response_time_ms or 0)),
+            source_type=source_type or 'general',
+            error_message=(error_message or '')[:500],
+        )
+    except Exception as log_error:
+        logger.warning(f'[QA] 写入日志失败: {log_error}')
 
 # ============================================
 # DeepSeek API 配置
@@ -131,15 +179,41 @@ def api_qa_ask(request):
     智能问答接口
     POST /api/qa/ask  { "question": "...", "token": "..." }
     """
+    start_time = time.time()
+    user_id = None
+    question = ''
+    question_type = 'general'
+    source_type = 'general'
+    answer = ''
+    success = False
+    fallback_used = False
+    error_message = ''
+
+    def build_response(payload, status=200):
+        response_time_ms = int((time.time() - start_time) * 1000)
+        _safe_log_qa(
+            user_id=user_id,
+            question=question,
+            question_type=question_type,
+            answer=answer,
+            success=success,
+            fallback_used=fallback_used,
+            response_time_ms=response_time_ms,
+            source_type=source_type,
+            error_message=error_message,
+        )
+        return JsonResponse(payload, status=status)
+
     try:
         data = json.loads(request.body)
         question = data.get('question', '').strip()
+        question_type = _classify_question_type(question)
 
         if not question:
-            return JsonResponse({'code': 400, 'msg': '问题不能为空', 'data': None}, status=400)
+            error_message = '问题不能为空'
+            return build_response({'code': 400, 'msg': '问题不能为空', 'data': None}, status=400)
 
         # -------- 1. 识别用户身份 --------
-        user_id = None
         token = (
             request.headers.get('Authorization', '').replace('Bearer ', '')
             or data.get('token', '')
@@ -172,6 +246,7 @@ def api_qa_ask(request):
             user_data = _build_user_data_context(user_id)
             if user_data:
                 has_user_data = True
+                source_type = 'user_data'
                 system_prompt += (
                     '\n\n'
                     '【重要】以下是当前登录用户的真实养殖档案数据（来自数据库），'
@@ -181,7 +256,6 @@ def api_qa_ask(request):
                 )
         else:
             logger.info('[QA] 未识别到用户身份，使用通用模式')
-            # 未登录时，告知 AI 如何应对个人问题
             system_prompt += (
                 '\n\n【注意】当前用户未登录。'
                 '如果用户询问"我的羊""我养了多少只""我的饲料记录"等个人相关问题，'
@@ -191,43 +265,53 @@ def api_qa_ask(request):
 
         # -------- 3. 调用 DeepSeek --------
         logger.info(f'[QA] system_prompt长度={len(system_prompt)}, has_user_data={has_user_data}')
-        answer, error_msg = _call_deepseek(system_prompt, question)
+        llm_answer, llm_error_msg = _call_deepseek(system_prompt, question)
 
-        if answer:
-            return JsonResponse({
+        if llm_answer:
+            answer = llm_answer
+            success = True
+            return build_response({
                 'code': 0,
                 'msg': '成功',
                 'data': {
                     'answer': answer,
                     'model': 'deepseek-v3',
                     'context_used': has_user_data,
-                    'debug_user_id': user_id,  # 临时调试字段，确认 user_id 是否被识别
+                    'debug_user_id': user_id,
                 }
             })
 
-        # DeepSeek 调用失败 → 本地兜底
-        logger.warning(f'[QA] DeepSeek失败: {error_msg}，使用本地回答')
-        return JsonResponse({
+        logger.warning(f'[QA] DeepSeek失败: {llm_error_msg}，使用本地回答')
+        answer = get_local_answer(question)
+        success = True
+        fallback_used = True
+        error_message = llm_error_msg or ''
+        return build_response({
             'code': 0,
             'msg': '成功（本地回答）',
             'data': {
-                'answer': get_local_answer(question),
+                'answer': answer,
                 'model': 'local',
-                'context_used': False
+                'context_used': False,
             }
         })
 
     except json.JSONDecodeError:
-        return JsonResponse({'code': 400, 'msg': '请求数据格式错误', 'data': None}, status=400)
+        error_message = '请求数据格式错误'
+        return build_response({'code': 400, 'msg': '请求数据格式错误', 'data': None}, status=400)
     except Exception as e:
         logger.error(f'[QA] 接口异常: {str(e)}', exc_info=True)
-        return JsonResponse({
+        answer = get_local_answer(question)
+        success = True
+        fallback_used = True
+        error_message = str(e)
+        return build_response({
             'code': 0,
             'msg': '成功（本地回答）',
             'data': {
-                'answer': get_local_answer(data.get('question', '') if 'data' in locals() else ''),
+                'answer': answer,
                 'model': 'local',
-                'context_used': False
+                'context_used': False,
             }
         })
 

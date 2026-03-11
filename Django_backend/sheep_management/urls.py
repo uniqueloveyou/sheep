@@ -172,6 +172,7 @@ urlpatterns = [
     
     # 权限概览
     path('permissions/overview/', views.permission_overview, name='permission_overview'),
+    path('permissions/qa-stats/', views.qa_stats, name='qa_stats'),
     
     # ==========================
     # 优惠活动/优惠券接口

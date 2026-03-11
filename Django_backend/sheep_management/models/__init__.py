@@ -4,6 +4,7 @@ from .monitor import MonitorDevice
 from .commerce import CartItem, PromotionActivity, Coupon, UserCoupon, Order, OrderItem
 from .audit import AuditLog
 from .knowledge import KnowledgeDocument
+from .qa import QALog
 
 __all__ = [
     'Sheep',
@@ -22,4 +23,5 @@ __all__ = [
     'OrderItem',
     'AuditLog',
     'KnowledgeDocument',
+    'QALog',
 ]

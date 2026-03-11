@@ -1,0 +1,119 @@
+{% extends 'sheep_management/base.html' %}
+
+{% block page_title %}智能问答统计{% endblock %}
+
+{% block content %}
+<div class="card" style="margin-bottom:16px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
+        <h2 style="margin:0;">智能问答统计</h2>
+        <form method="get" style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+            <select name="period">
+                <option value="1" {% if period == '1' %}selected{% endif %}>近1天</option>
+                <option value="7" {% if period == '7' %}selected{% endif %}>近7天</option>
+                <option value="30" {% if period == '30' %}selected{% endif %}>近30天</option>
+            </select>
+            <select name="question_type">
+                <option value="" {% if not question_type %}selected{% endif %}>全部类型</option>
+                <option value="personal" {% if question_type == 'personal' %}selected{% endif %}>个人数据类</option>
+                <option value="general" {% if question_type == 'general' %}selected{% endif %}>通用知识类</option>
+            </select>
+            <button type="submit" class="btn">筛选</button>
+        </form>
+    </div>
+</div>
+
+<div class="stats" style="margin-bottom:20px;">
+    <div class="stat-card">
+        <h3>{{ stats.total_count }}</h3>
+        <p>问答总数</p>
+    </div>
+    <div class="stat-card">
+        <h3 style="color:#27ae60;">{{ stats.success_rate }}%</h3>
+        <p>成功率</p>
+    </div>
+    <div class="stat-card">
+        <h3 style="color:#f39c12;">{{ stats.avg_response_ms }} ms</h3>
+        <p>平均耗时</p>
+    </div>
+    <div class="stat-card">
+        <h3 style="color:#e74c3c;">{{ stats.fallback_rate }}%</h3>
+        <p>兜底触发率</p>
+    </div>
+</div>
+
+<div class="card" style="margin-bottom:20px;">
+    <h3 style="margin-bottom:12px;">最近7天问答趋势</h3>
+    {% for item in trend_data %}
+    <div style="display:grid;grid-template-columns:100px 1fr 50px;align-items:center;gap:10px;margin:8px 0;">
+        <div style="font-size:13px;color:#666;">{{ item.day|date:"m-d" }}</div>
+        <div style="height:10px;background:#edf2f7;border-radius:999px;overflow:hidden;">
+            <div style="height:100%;background:linear-gradient(90deg,#667eea,#764ba2);width:{% widthratio item.count max_trend 100 %}%;"></div>
+        </div>
+        <div style="font-size:13px;color:#333;">{{ item.count }}</div>
+    </div>
+    {% empty %}
+    <div style="color:#999;">暂无趋势数据</div>
+    {% endfor %}
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+    <div class="card" style="min-width:0;">
+        <h3 style="margin-bottom:12px;">热门问题 Top 10</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>问题</th>
+                    <th style="width:90px;">次数</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in top_questions %}
+                <tr>
+                    <td>{{ item.question|truncatechars:40 }}</td>
+                    <td>{{ item.count }}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="2" style="text-align:center;color:#999;">暂无数据</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="card" style="min-width:0;">
+        <h3 style="margin-bottom:12px;">最近问答明细</h3>
+        <div style="max-height:420px;overflow:auto;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>时间</th>
+                        <th>用户</th>
+                        <th>类型</th>
+                        <th>状态</th>
+                        <th>耗时</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for log in recent_logs %}
+                    <tr>
+                        <td>{{ log.created_at|date:"m-d H:i" }}</td>
+                        <td>{% if log.user %}{{ log.user.nickname|default:log.user.username }}{% else %}匿名{% endif %}</td>
+                        <td>{% if log.question_type == 'personal' %}个人{% else %}通用{% endif %}</td>
+                        <td>
+                            {% if log.success %}
+                                <span style="color:#27ae60;">成功</span>
+                                {% if log.fallback_used %}<span style="color:#e67e22;">(兜底)</span>{% endif %}
+                            {% else %}
+                                <span style="color:#e74c3c;">失败</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ log.response_time_ms }}ms</td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="5" style="text-align:center;color:#999;">暂无日志</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

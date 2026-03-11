@@ -22,6 +22,7 @@ from .permissions import (
     breeder_audit_list, breeder_audit_detail, breeder_approve, breeder_reject,
     role_user_list, role_user_edit, permission_overview
 )
+from .qa_stats import qa_stats
 from .views import api_get_breeders, api_search_goods, api_health
 from .cart_api import api_cart, api_cart_item
 from .promotion_api import api_promotion_activities, api_promotion_activity_detail, api_coupons, api_claim_coupon
@@ -52,7 +53,7 @@ __all__ = [
     'user_list', 'user_detail', 'user_create', 'user_update', 'user_delete', 'user_batch_delete',
     'order_list', 'order_detail', 'order_update_status',
     'breeder_audit_list', 'breeder_audit_detail', 'breeder_approve', 'breeder_reject',
-    'role_user_list', 'role_user_edit', 'permission_overview',
+    'role_user_list', 'role_user_edit', 'permission_overview', 'qa_stats',
     'coupon_list', 'coupon_create', 'coupon_edit', 'coupon_delete', 'coupon_detail',
     'breeder_dashboard', 'breeder_profile', 'breeder_update_location',
     'smart_farm',
