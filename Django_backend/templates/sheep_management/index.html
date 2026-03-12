@@ -277,10 +277,9 @@
             <div class="todo-item" style="background:#e0f7fa;border-left-color:#00bcd4;">
                 <div class="todo-num" style="color:#006064;">{{ upcoming_vaccination_count }}</div>
                 <div class="todo-label" style="color:#006064;">需接种疫苗</div>
-            </div>
-            <div class="todo-item" style="background:#fce4ec;border-left-color:#e53935;">
-                <div class="todo-num" style="color:#b71c1c;">{{ alert_count }}</div>
-                <div class="todo-label" style="color:#b71c1c;">异常预警</div>
+                {% if upcoming_vaccination_count > 0 %}
+                <a href="{% url 'vaccination_list' %}" style="color:#006064;">去处理 →</a>
+                {% endif %}
             </div>
         </div>
 
