@@ -37,10 +37,11 @@
   </view>
 
   <view class="actions" wx:if="{{isOnline}}">
-    <button class="btn" bindtap="onManualRetry">重新播放</button>
+    <button class="btn" bindtap="onManualRetry">刷新</button>
   </view>
 
   <view class="hint">
     性能优化说明：仅在本页面创建视频组件，离开页面自动停止，降低卡顿概率。
   </view>
 </view>
+

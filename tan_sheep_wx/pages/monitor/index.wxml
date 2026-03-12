@@ -1,4 +1,4 @@
-﻿<view class="page">
+<view class="page">
   <view class="header">
     <view class="title">养殖户监控总览</view>
     <view class="sub-title">请选择养殖户查看监控列表</view>
@@ -7,7 +7,7 @@
   <view class="search-box">
     <input
       class="search-input"
-      placeholder="搜索养殖户昵称/账号/手机号"
+      placeholder="搜索养殖户昵称/手机号"
       value="{{keyword}}"
       bindinput="onKeywordInput"
     />
@@ -41,3 +41,4 @@
     </view>
   </view>
 </view>
+
