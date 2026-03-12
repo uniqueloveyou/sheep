@@ -5,7 +5,6 @@
     <view class="section-title">
       <text class="section-icon"></text>
       <text>收货信息</text>
-      <van-button size="mini" plain type="primary" bind:click="chooseAddress" class="choose-addr-btn">微信地址</van-button>
     </view>
     <view class="form-item">
       <text class="form-label">收货人</text>
