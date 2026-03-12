@@ -25,7 +25,7 @@
     <view class="cancel-btn" bindtap="onCancel">取消</view>
   </view>
 
-  <!-- 搜索前：显示历史记录和热门搜索 -->
+  <!-- 搜索前：显示历史记录 -->
   <view wx:if="{{!hasSearched}}" class="search-content">
     <!-- 历史搜索 -->
     <view wx:if="{{historyList.length > 0}}" class="history-section">
@@ -48,24 +48,6 @@
       </view>
     </view>
 
-    <!-- 热门搜索 -->
-    <view class="hot-section">
-      <view class="section-header">
-        <text class="section-title">热门搜索</text>
-      </view>
-      <view class="tag-list">
-        <view 
-          wx:for="{{hotKeywords}}" 
-          wx:key="index" 
-          class="tag-item hot-tag"
-          bindtap="searchByHistory"
-          data-keyword="{{item}}"
-        >
-          <van-icon name="fire-o" size="28rpx" color="#ff6b6b"></van-icon>
-          {{item}}
-        </view>
-      </view>
-    </view>
   </view>
 
   <!-- 搜索结果 -->

@@ -7,7 +7,6 @@ Page({
     isFocus: false, // 是否聚焦搜索框
     hasSearched: false, // 是否已搜索
     historyList: [], // 历史搜索记录
-    hotKeywords: ['滩羊', '羊肉', '羊只', '领养', '定制'], // 热门搜索关键词
     resultList: [], // 搜索结果列表
     showFilterPopup: false, // 是否显示筛选弹窗
     // 筛选选项

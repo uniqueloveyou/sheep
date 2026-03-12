@@ -58,9 +58,8 @@
   padding: 32rpx;
 }
 
-/* 历史搜索和热门搜索 */
-.history-section,
-.hot-section {
+/* 历史搜索 */
+.history-section {
   margin-bottom: 48rpx;
 }
 
@@ -97,11 +96,6 @@
   display: flex;
   align-items: center;
   gap: 8rpx;
-}
-
-.tag-item.hot-tag {
-  border-color: #ff6b6b;
-  color: #ff6b6b;
 }
 
 /* 搜索结果区域 */
