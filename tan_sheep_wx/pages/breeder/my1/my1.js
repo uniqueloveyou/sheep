@@ -5,7 +5,9 @@ const API = require('../../../utils/api.js');
 Page({
     data: {
       currentBreeder: null,
-      isFollowed: false
+      isFollowed: false,
+      sheepPreviewList: [],
+      sheepPreviewCount: 3
     },
 
     onLoad: function(options) {
@@ -79,9 +81,13 @@ Page({
                     });
                 }
 
+                const previewCount = that.data.sheepPreviewCount || 3;
+                const previewList = (breeder.sheep_list || []).slice(0, previewCount);
+
                 that.setData({
                     currentBreeder: breeder,
-                    isFollowed: !!breeder.isFollowed
+                    isFollowed: !!breeder.isFollowed,
+                    sheepPreviewList: previewList
                 });
             })
             .catch(function(error) {
@@ -100,6 +106,16 @@ Page({
         const sheepId = e.currentTarget.dataset.id;
         wx.navigateTo({
             url: `/pages/adopt/customize/customize?id=${sheepId}`
+        });
+    },
+
+    // 查看更多羊只
+    goToSheepList: function () {
+        const breeder = this.data.currentBreeder;
+        if (!breeder || !breeder.id) return;
+
+        wx.navigateTo({
+            url: `/pages/breeder/sheep-list/index?breeder_id=${breeder.id}&name=${encodeURIComponent(breeder.name || '')}`
         });
     },
 

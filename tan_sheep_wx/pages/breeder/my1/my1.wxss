@@ -302,3 +302,41 @@
     font-size: 16px;
     color: #238E23;
 }
+.card-title-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #238E23;
+}
+
+.card-title-wrap {
+    display: flex;
+    align-items: baseline;
+}
+
+.more-link {
+    display: flex;
+    align-items: center;
+    color: #238E23;
+    font-size: 13px;
+}
+
+.more-arrow {
+    margin-left: 4px;
+    font-size: 18px;
+    line-height: 1;
+}
+
+.sheep-preview-list {
+    display: flex;
+    flex-direction: column;
+}
+
+.card-title-row .card-title {
+    margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: none;
+}
+

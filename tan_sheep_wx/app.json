@@ -83,7 +83,8 @@
                 "index",
                 "my1/my1",
                 "my2/my2",
-                "my3/my3"
+                "my3/my3",
+                "sheep-list/index"
             ]
         },
         {
@@ -213,3 +214,5 @@
     "sitemapLocation": "sitemap.json",
     "lazyCodeLoading": "requiredComponents"
 }
+
+

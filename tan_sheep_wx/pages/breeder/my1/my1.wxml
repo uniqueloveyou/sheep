@@ -15,7 +15,7 @@
             {{ isFollowed ? '已关注' : '关注' }}
         </button>
     </view>
-    
+
     <!-- 数据统计卡片 -->
     <view class="stats-cards" wx:if="{{currentBreeder.statistics}}">
         <view class="stat-card">
@@ -35,13 +35,13 @@
             <view class="stat-label">平均体重</view>
         </view>
     </view>
-    
+
     <!-- 简介 -->
     <view class="card" wx:if="{{currentBreeder.description}}">
         <view class="card-title">简介</view>
         <text class="card-content">{{currentBreeder.description}}</text>
     </view>
-    
+
     <!-- 养殖信息 -->
     <view class="card">
         <view class="card-title">养殖信息</view>
@@ -73,15 +73,22 @@
             <text class="data">{{currentBreeder.sheep_id}}</text>
         </view>
     </view>
-    
-    <!-- 羊只列表 -->
+
+    <!-- 羊只列表（预览） -->
     <view class="card" wx:if="{{currentBreeder.sheep_list && currentBreeder.sheep_list.length > 0}}">
-        <view class="card-title">
-            <text>羊只列表</text>
-            <text class="card-subtitle">({{currentBreeder.sheep_list.length}}只)</text>
+        <view class="card-title-row">
+            <view class="card-title-wrap">
+                <text class="card-title">羊只列表</text>
+                <text class="card-subtitle">共{{currentBreeder.sheep_list.length}}只</text>
+            </view>
+            <view class="more-link" bindtap="goToSheepList" wx:if="{{currentBreeder.sheep_list.length > sheepPreviewCount}}">
+                <text>查看更多</text>
+                <text class="more-arrow">›</text>
+            </view>
         </view>
-        <scroll-view class="sheep-list" scroll-y>
-            <view class="sheep-item" wx:for="{{currentBreeder.sheep_list}}" wx:key="id" bindtap="viewSheepDetail" data-id="{{item.id}}">
+
+        <view class="sheep-preview-list">
+            <view class="sheep-item" wx:for="{{sheepPreviewList}}" wx:key="id" bindtap="viewSheepDetail" data-id="{{item.id}}">
                 <image class="sheep-image" src="{{item.image_url || '/images/icons/function/f1.png'}}" mode="aspectFill"></image>
                 <view class="sheep-info">
                     <view class="sheep-header">
@@ -104,9 +111,9 @@
                 </view>
                 <text class="arrow">›</text>
             </view>
-        </scroll-view>
+        </view>
     </view>
-    
+
     <!-- 联系方式 -->
     <view class="card">
         <view class="card-title">联系方式</view>

@@ -1,0 +1,46 @@
+<view class="container">
+  <view class="result-header">
+    <text class="result-title">{{breederName}} · 共 {{sheepList.length}} 只羊</text>
+  </view>
+
+  <view class="sheep-list" wx:if="{{sheepList.length > 0}}">
+    <view class="sheep-item" wx:for="{{pagedSheepList}}" wx:key="id" bindtap="viewSheepDetail" data-id="{{item.id}}">
+      <view class="sheep-avatar">
+        <image wx:if="{{item.image_url}}" src="{{item.image_url}}" class="avatar-img" mode="aspectFill"></image>
+        <text wx:else class="avatar-icon">🐑</text>
+      </view>
+      <view class="sheep-info">
+        <view class="sheep-id">羊只 #{{item.id}}</view>
+        <view class="sheep-details">
+          <text class="detail-item">{{item.gender}}</text>
+          <text class="detail-item">{{item.weight}}kg</text>
+          <text class="detail-item">{{item.height}}cm</text>
+          <text class="detail-item">{{item.length}}cm</text>
+        </view>
+      </view>
+      <view class="sheep-action">
+        <text class="action-arrow">›</text>
+      </view>
+    </view>
+
+    <view class="pagination" wx:if="{{totalPages > 1}}">
+      <view class="page-btn {{currentPage <= 1 ? 'page-btn-disabled' : ''}}" bindtap="goPrevPage">
+        <text>上一页</text>
+      </view>
+      <text class="page-info">第 {{currentPage}} / {{totalPages}} 页</text>
+      <view class="page-btn {{currentPage >= totalPages ? 'page-btn-disabled' : ''}}" bindtap="goNextPage">
+        <text>下一页</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="empty-state" wx:if="{{!loading && sheepList.length === 0}}">
+    <view class="empty-icon">🐑</view>
+    <text class="empty-text">暂无羊只</text>
+    <text class="empty-hint">该养殖户暂未录入羊只信息</text>
+  </view>
+
+  <view class="loading" wx:if="{{loading}}">
+    <text>加载中...</text>
+  </view>
+</view>
