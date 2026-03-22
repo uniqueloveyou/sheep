@@ -54,6 +54,29 @@
           <view class="message-content">
             <view class="message-bubble {{item.type}}">
               <text class="message-text">{{item.content}}</text>
+              <view class="message-detail-list" wx:if="{{item.details && item.details.length}}">
+                <view class="message-detail-card" wx:for="{{item.details}}" wx:key="index">
+                  <text class="detail-title">{{item.stage_name}}</text>
+                  <text class="detail-line" wx:if="{{item.weight_range}}">体重范围：{{item.weight_range}}</text>
+                  <text class="detail-line" wx:if="{{item.nutrition_value}}">营养特点：{{item.nutrition_value}}</text>
+                  <text class="detail-line" wx:if="{{item.cost_value}}">成本说明：{{item.cost_value}}</text>
+                  <text class="detail-line" wx:if="{{item.price_value}}">价格说明：{{item.price_value}}</text>
+                  <text class="detail-line" wx:if="{{item.description}}">{{item.description}}</text>
+                </view>
+              </view>
+              <view class="related-block" wx:if="{{item.relatedQuestions && item.relatedQuestions.length}}">
+                <text class="related-title">猜你还想问</text>
+                <view class="related-list">
+                  <view
+                    class="related-item"
+                    wx:for="{{item.relatedQuestions}}"
+                    wx:key="index"
+                    data-question="{{item}}"
+                    bindtap="onRelatedQuestionTap">
+                    <text>{{item}}</text>
+                  </view>
+                </view>
+              </view>
               <view class="message-meta">
                 <text class="message-time">{{item.time}}</text>
                 <text class="message-model" wx:if="{{item.modelInfo}}">{{item.modelInfo}}</text>
@@ -66,7 +89,7 @@
 
     <!-- 快速问题 -->
     <view class="quick-questions" wx:if="{{messages.length <= 1}}">
-      <view class="quick-title">常见问题：</view>
+      <view class="quick-title">试试这些问题</view>
       <view class="quick-list">
         <view 
           class="quick-item" 

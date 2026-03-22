@@ -7,6 +7,14 @@
 const { getApiBaseUrl } = require('./api-config.js')
 const API_BASE_URL = getApiBaseUrl()
 
+function normalizeEarTag(earTag) {
+  return String(earTag || '').trim()
+}
+
+function isValidEarTag(earTag) {
+  return /^[A-Za-z0-9_-]{1,50}$/.test(normalizeEarTag(earTag))
+}
+
 /**
  * 发起请求
  */
@@ -379,6 +387,8 @@ function getNewsList(page = 1, pageSize = 10) {
 
 module.exports = {
   request,
+  normalizeEarTag,
+  isValidEarTag,
   login,
   loginWithPhone,
   loginWithPassword,

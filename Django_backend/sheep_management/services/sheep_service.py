@@ -29,6 +29,7 @@ class SheepError(Exception):
 
 
 class SheepService:
+    EAR_TAG_PATTERN = re.compile(r'^[A-Za-z0-9_-]{1,50}$')
     """羊只相关业务逻辑"""
 
     # ========================
@@ -231,6 +232,8 @@ class SheepService:
         """
         if not ear_tag:
             raise SheepError('耳标编号不能为空')
+
+        ear_tag = SheepService.validate_ear_tag(ear_tag)
 
         try:
             sheep = Sheep.objects.get(ear_tag=ear_tag)
@@ -534,6 +537,16 @@ class SheepService:
             # QR 生成失败不影响主流程
             import logging
             logging.getLogger(__name__).warning(f'QR 生成失败 sheep_id={sheep.id}: {e}')
+
+    @staticmethod
+    def validate_ear_tag(ear_tag):
+        """校验耳标编号格式，仅允许字母、数字、下划线和连字符。"""
+        normalized = (ear_tag or '').strip()
+        if not normalized:
+            raise SheepError('鑰虫爣缂栧彿涓嶈兘涓虹┖')
+        if not SheepService.EAR_TAG_PATTERN.fullmatch(normalized):
+            raise SheepError('输入格式有误，请重新输入')
+        return normalized
 
     @staticmethod
     def _parse_range(range_str):

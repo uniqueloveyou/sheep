@@ -12,6 +12,7 @@ class QALog(models.Model):
     ]
 
     SOURCE_TYPE_CHOICES = [
+        ('faq', '问答对'),
         ('user_data', '用户数据'),
         ('general', '通用知识'),
     ]
@@ -36,6 +37,8 @@ class QALog(models.Model):
     success = models.BooleanField(default=True, verbose_name='是否成功')
     fallback_used = models.BooleanField(default=False, verbose_name='是否触发兜底')
     response_time_ms = models.IntegerField(default=0, verbose_name='响应耗时(ms)')
+    qa_mode = models.CharField(max_length=20, default='ai', verbose_name='问答模式')
+    hit_faq_id = models.IntegerField(null=True, blank=True, verbose_name='命中的问答对ID')
     source_type = models.CharField(
         max_length=20,
         choices=SOURCE_TYPE_CHOICES,

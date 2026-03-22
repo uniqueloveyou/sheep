@@ -6,6 +6,7 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 import json
+import os
 import random
 import time
 import requests
@@ -13,6 +14,7 @@ import logging
 
 from ..utils import verify_token
 from ..models import Sheep, GrowthRecord, FeedingRecord, VaccinationHistory, OrderItem, User, QALog
+from ..services.faq_service import FAQService
 
 logger = logging.getLogger(__name__)
 PERSONAL_QUESTION_KEYWORDS = [
@@ -40,6 +42,8 @@ def _safe_log_qa(
     fallback_used,
     response_time_ms,
     source_type,
+    qa_mode='ai',
+    hit_faq_id=None,
     error_message='',
 ):
     try:
@@ -49,7 +53,7 @@ def _safe_log_qa(
             user = User.objects.filter(id=user_id).only('id', 'role').first()
             user_role = user.role if user else None
 
-        QALog.objects.create(
+        payload = dict(
             user=user,
             user_role=user_role,
             question=(question or '')[:5000],
@@ -59,24 +63,45 @@ def _safe_log_qa(
             fallback_used=fallback_used,
             response_time_ms=max(0, int(response_time_ms or 0)),
             source_type=source_type or 'general',
+            qa_mode=qa_mode or 'ai',
+            hit_faq_id=hit_faq_id,
             error_message=(error_message or '')[:500],
         )
+        QALog.objects.create(**payload)
     except Exception as log_error:
+        message = str(log_error)
+        if "Unknown column 'qa_mode'" in message or "Unknown column 'hit_faq_id'" in message:
+            try:
+                payload.pop('qa_mode', None)
+                payload.pop('hit_faq_id', None)
+                QALog.objects.create(**payload)
+                logger.warning('[QA] 日志表未完成 FAQ 迁移，已降级写入旧字段。')
+                return
+            except Exception as legacy_log_error:
+                logger.warning(f'[QA] 鍐欏叆鏃ュ織澶辫触: {legacy_log_error}')
+                return
         logger.warning(f'[QA] 写入日志失败: {log_error}')
 
 # ============================================
 # DeepSeek API 配置
 # ============================================
-DEEPSEEK_API_KEY = 'sk-db2a7aa8e86647bb88a4bd63627bf879'
-DEEPSEEK_API_BASE = 'https://api.deepseek.com'
-DEEPSEEK_MODEL = 'deepseek-chat'
+def _env_bool(name, default=False):
+    val = os.getenv(name)
+    if val is None:
+        return default
+    return str(val).strip().lower() in {'1', 'true', 'yes', 'y', 'on'}
+
+
+DEEPSEEK_API_KEY = os.getenv('DEEPSEEK_API_KEY', 'sk-f7dc7dcc84bc483587460b45d2adc98c').strip()
+DEEPSEEK_API_BASE = os.getenv('DEEPSEEK_API_BASE', 'https://api.deepseek.com').strip()
+DEEPSEEK_MODEL = os.getenv('DEEPSEEK_MODEL', 'deepseek-chat').strip()
 
 # ============================================
 # Mock 开关（True = 本地模拟，不实际调用 DeepSeek）
 # 用于 JMeter 压测，避免真实 API 调用带来的延迟和费用
 # 切换方式：将下面改为 False → 恢复真实 DeepSeek 调用
 # ============================================
-MOCK_DEEPSEEK = False
+MOCK_DEEPSEEK = _env_bool('MOCK_DEEPSEEK', default=False)
 
 # ============================================
 # 基础系统提示词
@@ -172,6 +197,18 @@ def _build_user_data_context(user_id):
 # ============================================
 # API 视图
 # ============================================
+@require_http_methods(["GET"])
+def api_qa_suggestions(request):
+    suggestions = FAQService.get_suggested_questions(limit=6)
+    return JsonResponse({
+        'code': 0,
+        'msg': 'success',
+        'data': {
+            'questions': suggestions,
+        }
+    })
+
+
 @csrf_exempt
 @require_http_methods(["POST"])
 def api_qa_ask(request):
@@ -184,6 +221,8 @@ def api_qa_ask(request):
     question = ''
     question_type = 'general'
     source_type = 'general'
+    qa_mode = 'ai'
+    hit_faq_id = None
     answer = ''
     success = False
     fallback_used = False
@@ -200,6 +239,8 @@ def api_qa_ask(request):
             fallback_used=fallback_used,
             response_time_ms=response_time_ms,
             source_type=source_type,
+            qa_mode=qa_mode,
+            hit_faq_id=hit_faq_id,
             error_message=error_message,
         )
         return JsonResponse(payload, status=status)
@@ -239,6 +280,29 @@ def api_qa_ask(request):
                     pass
 
         # -------- 2. 构建 system prompt --------
+        faq_result = FAQService.match_question(question)
+        if faq_result:
+            answer = faq_result['answer']
+            success = True
+            source_type = 'faq'
+            qa_mode = 'faq'
+            hit_faq_id = faq_result['id']
+            return build_response({
+                'code': 0,
+                'msg': '成功',
+                'data': {
+                    'mode': 'faq',
+                    'question': faq_result['question'],
+                    'answer': answer,
+                    'answer_type': faq_result['answer_type'],
+                    'month_stage': faq_result['month_stage'],
+                    'details': faq_result['details'],
+                    'related_questions': faq_result['related_questions'],
+                    'category': faq_result['category'],
+                    'context_used': False,
+                }
+            })
+
         system_prompt = BASE_SYSTEM_PROMPT
         has_user_data = False
 
@@ -274,9 +338,12 @@ def api_qa_ask(request):
                 'code': 0,
                 'msg': '成功',
                 'data': {
+                    'mode': 'ai',
                     'answer': answer,
                     'model': 'deepseek-v3',
                     'context_used': has_user_data,
+                    'related_questions': [],
+                    'details': [],
                     'debug_user_id': user_id,
                 }
             })
@@ -290,9 +357,12 @@ def api_qa_ask(request):
             'code': 0,
             'msg': '成功（本地回答）',
             'data': {
+                'mode': 'local',
                 'answer': answer,
                 'model': 'local',
                 'context_used': False,
+                'related_questions': [],
+                'details': [],
             }
         })
 
@@ -309,9 +379,12 @@ def api_qa_ask(request):
             'code': 0,
             'msg': '成功（本地回答）',
             'data': {
+                'mode': 'local',
                 'answer': answer,
                 'model': 'local',
                 'context_used': False,
+                'related_questions': [],
+                'details': [],
             }
         })
 

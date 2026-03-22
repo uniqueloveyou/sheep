@@ -266,7 +266,15 @@ Page({
       placeholderText: '例如：TY-2026-001',
       success: (inputRes) => {
         if (inputRes.confirm && inputRes.content) {
-          const earTag = inputRes.content.trim();
+          const earTag = API.normalizeEarTag(inputRes.content);
+          if (!API.isValidEarTag(earTag)) {
+            wx.showToast({
+              title: '输入格式有误，请重新输入',
+              icon: 'none',
+              duration: 2000
+            });
+            return;
+          }
           console.log('[扫码溯源] 手动输入耳标:', earTag);
           this.jumpToTraceDetail(earTag);
         }
@@ -300,8 +308,18 @@ Page({
           return;
         }
 
-        console.log('[扫码溯源] 耳标编号:', earTag);
-        this.jumpToTraceDetail(earTag);
+        const normalizedEarTag = API.normalizeEarTag(earTag);
+        if (!API.isValidEarTag(normalizedEarTag)) {
+          wx.showToast({
+            title: '输入格式有误，请重新输入',
+            icon: 'none',
+            duration: 2000
+          });
+          return;
+        }
+
+        console.log('[扫码溯源] 耳标编号:', normalizedEarTag);
+        this.jumpToTraceDetail(normalizedEarTag);
       },
       fail: (err) => {
         // 用户取消扫码，不显示错误提示
@@ -324,9 +342,19 @@ Page({
    * 跳转到溯源详情页
    */
   jumpToTraceDetail(earTag) {
+    const normalizedEarTag = API.normalizeEarTag(earTag);
+    if (!API.isValidEarTag(normalizedEarTag)) {
+      wx.showToast({
+        title: '输入格式有误，请重新输入',
+        icon: 'none',
+        duration: 2000
+      });
+      return;
+    }
+
     // 跳转到溯源详情页，传递耳标编号参数
     wx.navigateTo({
-      url: `/packageSearch/trace/detail?ear_tag=${encodeURIComponent(earTag)}`,
+      url: `/packageSearch/trace/detail?ear_tag=${encodeURIComponent(normalizedEarTag)}`,
       success: () => {
         console.log('[扫码溯源] 成功跳转到溯源详情页');
       },

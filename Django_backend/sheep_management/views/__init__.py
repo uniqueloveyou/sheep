@@ -38,7 +38,7 @@ from .qa_stats import qa_stats
 from .views import api_get_breeders, api_search_goods, api_health
 from .cart_api import api_cart, api_cart_item
 from .promotion_api import api_promotion_activities, api_promotion_activity_detail, api_coupons, api_claim_coupon
-from .qa_api import api_qa_ask
+from .qa_api import api_qa_ask, api_qa_suggestions
 from .breeder_dashboard import breeder_dashboard, breeder_profile, breeder_account, breeder_change_password, breeder_update_location
 from .smart_farm import (
     smart_farm,
@@ -90,6 +90,7 @@ __all__ = [
     'api_coupons',
     'api_claim_coupon',
     'api_qa_ask',
+    'api_qa_suggestions',
     'sheep_trace_h5',
     'api_breeder_follow',
     'api_breeder_unfollow',

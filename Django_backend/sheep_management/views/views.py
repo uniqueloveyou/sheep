@@ -10,6 +10,7 @@ from django.utils import timezone
 from ..models import User, Sheep, VaccinationHistory, GrowthRecord, FeedingRecord, CartItem, PromotionActivity, Coupon, BreederFollow
 from ..utils import generate_token, verify_token
 import requests
+from ..services.sheep_service import SheepService, SheepError
 
 @require_http_methods(["GET"])
 def api_health(request):
@@ -967,6 +968,11 @@ def api_get_sheep_by_ear_tag(request):
     """
     try:
         ear_tag = request.GET.get('ear_tag', '').strip()
+        result = SheepService.get_sheep_by_ear_tag(
+            ear_tag=ear_tag,
+            build_absolute_uri=request.build_absolute_uri,
+        )
+        return JsonResponse(result)
         
         if not ear_tag:
             return JsonResponse({'error': '耳标编号不能为空'}, status=400)
@@ -995,6 +1001,8 @@ def api_get_sheep_by_ear_tag(request):
         
         return JsonResponse(result)
     
+    except SheepError as e:
+        return JsonResponse({'error': e.message}, status=e.http_status)
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
 

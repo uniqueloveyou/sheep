@@ -7,14 +7,14 @@ Page({
     inputValue: '', // 输入框内容
     isLoading: false, // 是否正在加载
     scrollTop: 0, // 滚动位置
-    // 预设问题
+    // 常见问答对，优先使用已入库的 FAQ 问题，提升命中率
     quickQuestions: [
-      '滩羊的养殖方法',
-      '滩羊肉的营养价值',
-      '如何挑选优质滩羊',
-      '滩羊的烹饪方法',
-      '滩羊的生长周期',
-      '盐池滩羊的特点'
+      '滩羊一般多少个月可以出栏',
+      '滩羊6个月可以出栏吗',
+      '不同月龄滩羊营养价值有什么区别',
+      '滩羊养到6个月成本大概是多少',
+      '滩羊价格和月龄有什么关系',
+      '认养价格怎么计算'
     ]
   },
 
@@ -22,8 +22,27 @@ Page({
     // 初始化欢迎消息
     this.addMessage({
       type: 'bot',
-      content: '您好！我是滩羊智品智能助手，可以为您解答关于滩羊养殖、营养、烹饪等方面的问题。请问有什么可以帮助您的吗？',
+      content: '您好！我是滩羊智品智能助手，可以为您解答滩羊出栏、营养、成本和认养价格等问题。您也可以直接试试下面这些问题。',
       time: this.getCurrentTime()
+    });
+    this.loadSuggestedQuestions();
+  },
+
+  loadSuggestedQuestions: function() {
+    API.request('/api/qa/suggestions', 'GET').then((res) => {
+      const questions = res && res.data && Array.isArray(res.data.questions)
+        ? res.data.questions
+        : [];
+
+      if (!questions.length) {
+        return;
+      }
+
+      this.setData({
+        quickQuestions: questions
+      });
+    }).catch((err) => {
+      console.warn('[QA] load suggested questions failed:', err);
     });
   },
 
@@ -50,6 +69,18 @@ Page({
         scrollTop: messages.length * 1000
       });
     }, 100);
+  },
+
+  buildBotMessage: function(content, extra) {
+    return Object.assign({
+      type: 'bot',
+      content: content,
+      time: this.getCurrentTime(),
+      isLoading: false,
+      relatedQuestions: [],
+      details: [],
+      modelInfo: ''
+    }, extra || {});
   },
 
   // 输入框内容变化
@@ -96,6 +127,15 @@ Page({
     this.sendMessage();
   },
 
+  onRelatedQuestionTap: function(e) {
+    const question = e.currentTarget.dataset.question;
+    if (!question) return;
+    this.setData({
+      inputValue: question
+    });
+    this.sendMessage();
+  },
+
   // 获取AI回答
   getAnswer: function(question) {
     const that = this;
@@ -117,19 +157,28 @@ Page({
       messages.pop(); // 移除加载消息
       
       let answer = '抱歉，我暂时无法回答这个问题。';
+      let relatedQuestions = [];
+      let details = [];
+      let modelInfo = '';
       if (res.code === 0 && res.data && res.data.answer) {
         answer = res.data.answer;
+        relatedQuestions = Array.isArray(res.data.related_questions) ? res.data.related_questions : [];
+        details = Array.isArray(res.data.details) ? res.data.details : [];
+        if (res.data.mode === 'faq') {
+          modelInfo = '（问答对）';
+        } else if (res.data.model) {
+          modelInfo = res.data.model === 'deepseek-v3' ? '（AI回答）' : '（本地回答）';
+        }
       } else if (res.answer) {
         // 兼容旧格式
         answer = res.answer;
       }
       
-      messages.push({
-        type: 'bot',
-        content: answer,
-        time: that.getCurrentTime(),
-        isLoading: false
-      });
+      messages.push(that.buildBotMessage(answer, {
+        relatedQuestions: relatedQuestions,
+        details: details,
+        modelInfo: modelInfo
+      }));
       
       that.setData({
         messages: messages,
@@ -143,12 +192,10 @@ Page({
       
       // API调用失败，使用本地回答作为备用
       const answer = that.generateAnswer(question);
-      messages.push({
-        type: 'bot',
-        content: answer + '\n\n（注：当前使用本地回答，大模型服务暂时不可用）',
-        time: that.getCurrentTime(),
-        isLoading: false
-      });
+      messages.push(that.buildBotMessage(
+        answer + '\n\n（注：当前使用本地回答，大模型服务暂时不可用）',
+        { modelInfo: '（本地回答）' }
+      ));
       
       that.setData({
         messages: messages,

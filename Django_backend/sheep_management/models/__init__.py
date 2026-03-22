@@ -5,6 +5,7 @@ from .commerce import CartItem, PromotionActivity, Coupon, UserCoupon, BreederFo
 from .audit import AuditLog
 from .knowledge import KnowledgeDocument
 from .qa import QALog
+from .faq import QACategory, QAPair, QAAlias, QARelated, QAAnswerDetail
 from .news import News
 
 __all__ = [
@@ -26,6 +27,11 @@ __all__ = [
     'AuditLog',
     'KnowledgeDocument',
     'QALog',
+    'QACategory',
+    'QAPair',
+    'QAAlias',
+    'QARelated',
+    'QAAnswerDetail',
     'News',
 ]
 

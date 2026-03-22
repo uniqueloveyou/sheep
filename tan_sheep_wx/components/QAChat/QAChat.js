@@ -22,14 +22,14 @@ Component({
     floatBtnRight: 30, // 悬浮按钮右边距（默认值）
     floatBtnBottom: 120, // 悬浮按钮底部距离（默认值）
     isDragging: false, // 是否正在拖拽
-    // 预设问题
+    // 常见问答对，优先使用已入库的 FAQ 问题，提升命中率
     quickQuestions: [
-      '滩羊的养殖方法',
-      '滩羊肉的营养价值',
-      '如何挑选优质滩羊',
-      '滩羊的烹饪方法',
-      '滩羊的生长周期',
-      '盐池滩羊的特点'
+      '滩羊一般多少个月可以出栏',
+      '滩羊6个月可以出栏吗',
+      '不同月龄滩羊营养价值有什么区别',
+      '滩羊养到6个月成本大概是多少',
+      '滩羊价格和月龄有什么关系',
+      '认养价格怎么计算'
     ]
   },
 
@@ -86,9 +86,9 @@ Component({
       
       let welcomeMsg;
       if (isLoggedIn && userName) {
-        welcomeMsg = `您好，${userName}！我是滩羊智品助手，可以查询您的专属羊只信息，也能解答养殖、营养、烹饪等问题。请问有什么可以帮您的吗？`;
+        welcomeMsg = `您好，${userName}！我是滩羊智品助手，可以查询您的专属羊只信息，也能解答滩羊出栏、营养、成本和认养价格等问题。您也可以直接试试下面这些问题。`;
       } else if (isLoggedIn) {
-        welcomeMsg = '您好！我是滩羊智品助手，可以查询您的专属羊只信息，也能解答养殖、营养、烹饪等问题。请问有什么可以帮您的吗？';
+        welcomeMsg = '您好！我是滩羊智品助手，可以查询您的专属羊只信息，也能解答滩羊出栏、营养、成本和认养价格等问题。您也可以直接试试下面这些问题。';
       } else {
         welcomeMsg = '您好！我是滩羊智品助手，可以解答关于滩羊养殖、营养、烹饪等问题。\n\n💡 提示：登录后还可以查询您的专属羊只信息哦！';
       }
@@ -98,6 +98,7 @@ Component({
         content: welcomeMsg,
         time: this.getCurrentTime()
       });
+      this.loadSuggestedQuestions();
     }
   },
 
@@ -111,6 +112,24 @@ Component({
   },
 
   methods: {
+    loadSuggestedQuestions() {
+      API.request('/api/qa/suggestions', 'GET').then((res) => {
+        const questions = res && res.data && Array.isArray(res.data.questions)
+          ? res.data.questions
+          : [];
+
+        if (!questions.length) {
+          return;
+        }
+
+        this.setData({
+          quickQuestions: questions
+        });
+      }).catch((error) => {
+        console.warn('[QAChat] load suggested questions failed:', error);
+      });
+    },
+
     // 获取当前时间
     getCurrentTime() {
       const now = new Date();
@@ -134,6 +153,18 @@ Component({
           scrollTop: messages.length * 1000
         });
       }, 100);
+    },
+
+    buildBotMessage(content, extra) {
+      return Object.assign({
+        type: 'bot',
+        content: content,
+        time: this.getCurrentTime(),
+        isLoading: false,
+        relatedQuestions: [],
+        details: [],
+        modelInfo: ''
+      }, extra || {});
     },
 
     // 输入框内容变化
@@ -174,6 +205,15 @@ Component({
     // 快速问题点击
     onQuickQuestionTap(e) {
       const question = e.currentTarget.dataset.question;
+      this.setData({
+        inputValue: question
+      });
+      this.sendMessage();
+    },
+
+    onRelatedQuestionTap(e) {
+      const question = e.currentTarget.dataset.question;
+      if (!question) return;
       this.setData({
         inputValue: question
       });
@@ -231,15 +271,21 @@ Component({
         
         let answer = '抱歉，我暂时无法回答这个问题。';
         let modelInfo = '';
+        let relatedQuestions = [];
+        let details = [];
         
         if (res.code === 0 && res.data && res.data.answer) {
           answer = res.data.answer;
+          relatedQuestions = Array.isArray(res.data.related_questions) ? res.data.related_questions : [];
+          details = Array.isArray(res.data.details) ? res.data.details : [];
           
           // 调试：打印后端识别的 user_id
           console.log('[QAChat] 后端返回 debug_user_id:', res.data.debug_user_id, ', context_used:', res.data.context_used);
           
           // 添加模型信息
-          if (res.data.model) {
+          if (res.data.mode === 'faq') {
+            modelInfo = '（问答对）';
+          } else if (res.data.model) {
             modelInfo = res.data.model === 'deepseek-v3' ? '（AI回答）' : '（本地回答）';
           }
           
@@ -252,13 +298,11 @@ Component({
           answer = res.answer;
         }
         
-        messages.push({
-          type: 'bot',
-          content: answer,
-          time: that.getCurrentTime(),
-          isLoading: false,
-          modelInfo: modelInfo
-        });
+        messages.push(that.buildBotMessage(answer, {
+          modelInfo: modelInfo,
+          relatedQuestions: relatedQuestions,
+          details: details
+        }));
         
         that.setData({
           messages: messages,
@@ -280,12 +324,10 @@ Component({
       // 移除加载消息，添加本地回答
       const messages = this.data.messages;
       messages.pop(); // 移除加载消息
-      messages.push({
-        type: 'bot',
-        content: answer + '\n\n（注：当前使用本地回答，大模型服务暂时不可用）',
-        time: this.getCurrentTime(),
-        isLoading: false
-      });
+      messages.push(this.buildBotMessage(
+        answer + '\n\n（注：当前使用本地回答，大模型服务暂时不可用）',
+        { modelInfo: '（本地回答）' }
+      ));
       
       that.setData({
         messages: messages,

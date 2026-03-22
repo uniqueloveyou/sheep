@@ -80,6 +80,7 @@ urlpatterns = [
     path('api/growth/sheep/<int:sheep_id>', sheep_api.api_get_sheep_with_growth, name='api_get_sheep_with_growth'),
 
     # 智能问答
+    path('api/qa/suggestions', views.api_qa_suggestions, name='api_qa_suggestions'),
     path('api/qa/ask', views.api_qa_ask, name='api_qa_ask'),
     
     # 溯源查询（已迁移到 api/sheep_api.py）

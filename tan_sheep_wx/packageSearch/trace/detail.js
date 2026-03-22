@@ -15,7 +15,7 @@ Page({
 
     onLoad(options) {
         const sheepId = options.sheep_id || options.id;
-        const earTag  = options.ear_tag;
+        const earTag  = API.normalizeEarTag(options.ear_tag);
         if (sheepId) {
             this.setData({ sheepId });
             this.fetchBySheepId(sheepId);
@@ -39,11 +39,18 @@ Page({
             })
             .catch(err => {
                 wx.hideLoading();
-                this.setData({ loading: false, error: this._fmtError(err) });
+                const errorMessage = this._fmtError(err);
+                wx.showToast({ title: errorMessage, icon: 'none', duration: 2000 });
+                this.setData({ loading: false, error: errorMessage });
             });
     },
 
     fetchByEarTag(earTag) {
+        if (!API.isValidEarTag(earTag)) {
+            wx.showToast({ title: '输入格式有误，请重新输入', icon: 'none', duration: 2000 });
+            this.setData({ loading: false, error: '输入格式有误，请重新输入' });
+            return;
+        }
         wx.showLoading({ title: '溯源查询中', mask: true });
         API.request('/api/sheep/trace?ear_tag=' + encodeURIComponent(earTag), 'GET')
             .then(res => {
@@ -57,7 +64,9 @@ Page({
             })
             .catch(err => {
                 wx.hideLoading();
-                this.setData({ loading: false, error: this._fmtError(err) });
+                const errorMessage = this._fmtError(err);
+                wx.showToast({ title: errorMessage, icon: 'none', duration: 2000 });
+                this.setData({ loading: false, error: errorMessage });
             });
     },
 
@@ -79,6 +88,7 @@ Page({
     goBack() { wx.navigateBack(); },
 
     _fmtError(err) {
+        if (err && err.response && err.response.msg) return err.response.msg;
         if (!err) return '查询失败，请稍后重试。';
         if (err.statusCode === 404) return '未找到该羊只溯源信息，请检查二维码是否正确。';
         if (err.statusCode >= 500) return '服务器繁忙，请稍后再试。';
