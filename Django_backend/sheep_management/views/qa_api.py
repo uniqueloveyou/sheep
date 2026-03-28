@@ -24,6 +24,7 @@ PERSONAL_QUESTION_KEYWORDS = [
 
 
 def _classify_question_type(question):
+    # 用于日志统计：区分“个人数据类问题”和“通用知识类问题”。
     q = (question or '').strip().lower()
     if not q:
         return 'general'
@@ -46,6 +47,7 @@ def _safe_log_qa(
     hit_faq_id=None,
     error_message='',
 ):
+    # 问答接口无论命中 FAQ、AI 还是本地兜底，都会尽量落一条日志。
     try:
         user = None
         user_role = None
@@ -128,6 +130,7 @@ def _build_user_data_context(user_id):
         return None
 
     # 只查 paid（认养中，羊仍在农场）的订单
+    # 这里只把“仍在认养中”的羊只作为当前用户上下文注入给模型。
     paid_items = OrderItem.objects.filter(
         order__user_id=user_id,
         order__status='paid'
@@ -135,6 +138,7 @@ def _build_user_data_context(user_id):
     sheep_ids = list(paid_items)
 
     # 也统计 shipping/completed 数量，告知 AI 有多少已发货/完成
+    # 已发货/已完成的羊只不展开详情，但会把数量告诉模型。
     other_count = OrderItem.objects.filter(
         order__user_id=user_id,
         order__status__in=['shipping', 'completed']
@@ -150,6 +154,7 @@ def _build_user_data_context(user_id):
         )
 
     # ---------- 拼装完整数据卡片 ----------
+    # 把用户羊只、喂养、生长、疫苗记录拼成一段 prompt 上下文。
     sheep_list = Sheep.objects.filter(id__in=sheep_ids)
     total = sheep_list.count()
 
@@ -199,6 +204,7 @@ def _build_user_data_context(user_id):
 # ============================================
 @require_http_methods(["GET"])
 def api_qa_suggestions(request):
+    # 推荐问题直接来自问答对表，不走 AI。
     suggestions = FAQService.get_suggested_questions(limit=6)
     return JsonResponse({
         'code': 0,
@@ -255,6 +261,7 @@ def api_qa_ask(request):
             return build_response({'code': 400, 'msg': '问题不能为空', 'data': None}, status=400)
 
         # -------- 1. 识别用户身份 --------
+        # 1. 先识别当前提问用户，便于回答“我的羊”“我的记录”这类问题。
         token = (
             request.headers.get('Authorization', '').replace('Bearer ', '')
             or data.get('token', '')
@@ -270,6 +277,7 @@ def api_qa_ask(request):
                 logger.warning('[QA] token验证失败(可能过期)')
 
         # uid 做兜底：小程序同时存了 uid，万一 token 过期还能识别用户
+        # token 失效时，再尝试用小程序缓存的 uid 兜底识别用户。
         if not user_id:
             uid_str = data.get('uid', '')
             if uid_str:
@@ -280,6 +288,7 @@ def api_qa_ask(request):
                     pass
 
         # -------- 2. 构建 system prompt --------
+        # 2. 先查 FAQ。命中问答对时直接返回，不再调用大模型。
         faq_result = FAQService.match_question(question)
         if faq_result:
             answer = faq_result['answer']
@@ -307,6 +316,7 @@ def api_qa_ask(request):
         has_user_data = False
 
         if user_id:
+            # 已登录用户会把真实养殖档案注入 prompt，支持个性化问答。
             user_data = _build_user_data_context(user_id)
             if user_data:
                 has_user_data = True
@@ -329,6 +339,7 @@ def api_qa_ask(request):
 
         # -------- 3. 调用 DeepSeek --------
         logger.info(f'[QA] system_prompt长度={len(system_prompt)}, has_user_data={has_user_data}')
+        # 3. FAQ 未命中时再走 AI；AI 失败时最后用本地规则答案兜底。
         llm_answer, llm_error_msg = _call_deepseek(system_prompt, question)
 
         if llm_answer:
@@ -400,6 +411,7 @@ def _call_deepseek(system_prompt, question):
     """
 
     # ---- Mock 分支（压测专用，原始代码完整保留在下方）----
+    # 压测时可切到 Mock 模式，避免真实调用外部大模型。
     if MOCK_DEEPSEEK:
         sleep_time = random.uniform(1.5, 2.0)  # 模拟 AI 思考延迟 1.5~2 秒
         logger.info(f'[QA] [MOCK] 模拟 DeepSeek 休眠 {sleep_time:.2f}s')
@@ -412,6 +424,7 @@ def _call_deepseek(system_prompt, question):
         return mock_answer, None
 
     # ---- 真实 DeepSeek API 调用（MOCK_DEEPSEEK = False 时生效）----
+    # 正常情况下走真实 DeepSeek 接口。
     try:
         if not DEEPSEEK_API_KEY or DEEPSEEK_API_KEY == 'your_deepseek_api_key_here':
             return None, '未配置 DEEPSEEK_API_KEY'
@@ -465,6 +478,8 @@ def get_local_answer(question):
         return '感谢您的提问！如果您有其他关于滩羊的问题，欢迎继续提问！'
     
     q = question.lower()
+    
+    # 本地兜底答案只做关键词匹配，保证接口失败时至少有可用回复。
     
     # 根据关键词匹配回答
     if '养殖' in q or '饲养' in q or '喂养' in q:

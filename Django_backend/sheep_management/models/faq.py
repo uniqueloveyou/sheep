@@ -2,6 +2,7 @@ from django.db import models
 
 
 class QACategory(models.Model):
+    # 问答分类：用于给 QAPair 分组，便于推荐、管理和统计。
     name = models.CharField(max_length=100, unique=True, verbose_name='问答分类名称')
     code = models.CharField(max_length=50, unique=True, verbose_name='问答分类编码')
     description = models.CharField(max_length=255, blank=True, verbose_name='分类说明')
@@ -21,6 +22,7 @@ class QACategory(models.Model):
 
 
 class QAPair(models.Model):
+    # 标准问答对主表：一个标准问题对应一份标准答案。
     ANSWER_TYPE_CHOICES = [
         ('text', '纯文本'),
         ('table', '表格型'),
@@ -65,6 +67,7 @@ class QAPair(models.Model):
 
 
 class QAAlias(models.Model):
+    # 问题别名：把用户常见说法映射到标准问题，提高命中率。
     qa_pair = models.ForeignKey(
         QAPair,
         on_delete=models.CASCADE,
@@ -88,6 +91,7 @@ class QAAlias(models.Model):
 
 
 class QARelated(models.Model):
+    # 关联问题：用于在回答后继续推荐“你可能还想问”的问题。
     source_qa = models.ForeignKey(
         QAPair,
         on_delete=models.CASCADE,
@@ -111,6 +115,7 @@ class QARelated(models.Model):
 
 
 class QAAnswerDetail(models.Model):
+    # 答案明细：用于补充阶段、成本、营养等结构化信息，前端可单独展示。
     qa_pair = models.ForeignKey(
         QAPair,
         on_delete=models.CASCADE,
