@@ -1,12 +1,15 @@
 <view class="container">
 
-  <!-- 页面标题 -->
   <view class="page-title">
     <text class="title-text">我的羊只</text>
     <text class="count-text" wx:if="{{adoptingList.length > 0}}">认养中 {{adoptingList.length}} 只</text>
   </view>
 
-  <!-- 加载中 -->
+  <view wx:if="{{traceUnreadCount > 0}}" class="trace-summary-banner">
+    <van-icon name="volume-o" size="16px" color="#c4551e" />
+    <text class="trace-summary-text">你有 {{traceUnreadCount}} 只羊收到了新的溯源动态</text>
+  </view>
+
   <block wx:if="{{loading}}">
     <view class="loading-state">
       <van-icon name="flower-o" size="30px" color="#ccc" class="spin-icon"/>
@@ -14,7 +17,6 @@
     </view>
   </block>
 
-  <!-- 无数据 -->
   <block wx:elif="{{adoptingList.length === 0 && otherList.length === 0}}">
     <view class="empty-state">
       <image class="empty-image" src="/images/icons/function/f1.png" mode="aspectFit"></image>
@@ -24,10 +26,7 @@
     </view>
   </block>
 
-  <!-- 有数据 -->
   <block wx:else>
-
-    <!-- ===== 认养中的羊 ===== -->
     <block wx:if="{{adoptingList.length > 0}}">
       <view class="section-header">
         <view class="section-dot dot-green"></view>
@@ -35,16 +34,30 @@
         <text class="section-hint">羊只正在农场被照料</text>
       </view>
       <view class="sheep-list">
-        <view wx:for="{{adoptingList}}" wx:key="id" class="sheep-card" bindtap="viewSheepDetail" data-sheep-id="{{item.sheep.id}}">
+        <view
+          wx:for="{{adoptingList}}"
+          wx:key="id"
+          class="sheep-card"
+          bindtap="viewSheepDetail"
+          data-sheep-id="{{item.sheep.id}}"
+          data-latest-trace-date="{{item.latestTraceDate}}"
+        >
           <image class="sheep-avatar" src="{{item.sheep.image || '/images/icons/function/f1.png'}}" mode="aspectFill"></image>
           <view class="sheep-info">
             <view class="sheep-header">
               <text class="sheep-name">滩羊 #{{item.sheep.id}}</text>
-              <view class="status-dot-badge badge-green">🌱 认养中</view>
+              <view class="status-dot-badge badge-green">认养中</view>
+            </view>
+            <view wx:if="{{item.hasNewTrace}}" class="trace-update-tag">
+              <view class="trace-dot"></view>
+              <text>{{item.traceHintText || '有新的溯源动态'}}</text>
             </view>
             <view class="sheep-tags">
               <text class="tag gender-tag">{{item.sheep.gender}}</text>
               <text class="tag w-tag">{{item.sheep.weight}} kg</text>
+              <text wx:if="{{item.traceUpdate && item.traceUpdate.latest_update_date}}" class="tag trace-date-tag">
+                {{item.traceUpdate.latest_update_date}}
+              </text>
             </view>
             <view class="sheep-details">
               <text class="detail-text">耳标: {{item.sheep.ear_tag || '未设置'}}</text>
@@ -58,7 +71,6 @@
       </view>
     </block>
 
-    <!-- ===== 已发货/已完成 折叠区 ===== -->
     <block wx:if="{{otherList.length > 0}}">
       <view class="other-section-header" bindtap="toggleOther">
         <view class="other-header-left">
@@ -71,14 +83,24 @@
         </view>
       </view>
 
-      <!-- 折叠内容 -->
       <view class="other-list" wx:if="{{otherExpanded}}">
-        <view wx:for="{{otherList}}" wx:key="id" class="other-card" bindtap="viewSheepDetail" data-sheep-id="{{item.sheep.id}}">
+        <view
+          wx:for="{{otherList}}"
+          wx:key="id"
+          class="other-card"
+          bindtap="viewSheepDetail"
+          data-sheep-id="{{item.sheep.id}}"
+          data-latest-trace-date="{{item.latestTraceDate}}"
+        >
           <image class="other-avatar" src="{{item.sheep.image || '/images/icons/function/f1.png'}}" mode="aspectFill"></image>
           <view class="other-info">
             <view class="sheep-header">
               <text class="other-name">滩羊 #{{item.sheep.id}}</text>
               <view class="order-status-badge status-{{item.order_status_key}}">{{item.order_status}}</view>
+            </view>
+            <view wx:if="{{item.hasNewTrace}}" class="trace-update-tag trace-update-tag-history">
+              <view class="trace-dot"></view>
+              <text>{{item.traceHintText || '有新的溯源动态'}}</text>
             </view>
             <view class="other-detail-row">
               <text class="detail-text">耳标: {{item.sheep.ear_tag || '未设置'}}</text>
@@ -90,6 +112,5 @@
         </view>
       </view>
     </block>
-
   </block>
 </view>

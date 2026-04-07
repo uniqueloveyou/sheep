@@ -58,7 +58,7 @@ Page({
                      return;
                 }
 
-                const baseUrl = API.API_BASE_URL || 'http://127.0.0.1:8000';
+                const baseUrl = API.getApiBaseUrl ? API.getApiBaseUrl() : (API.API_BASE_URL || '');
 
                 // 处理头像
                 let avatarUrl = breeder.avatar_url || breeder.iconUrl || breeder.icon_url || '';

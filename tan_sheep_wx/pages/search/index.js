@@ -230,6 +230,45 @@ Page({
   },
 
   /**
+   * 解析扫码结果，兼容耳标号、sheep_id 和完整溯源 URL
+   */
+  resolveTraceTarget(scanResult) {
+    const rawValue = String(scanResult || '').trim();
+    if (!rawValue) {
+      return null;
+    }
+
+    const normalizedValue = API.normalizeEarTag(rawValue);
+    const traceUrlMatch = normalizedValue.match(/\/(?:api\/public\/)?trace\/(\d+)(?:\/)?(?:[?#].*)?$/i);
+    if (traceUrlMatch) {
+      return { sheepId: traceUrlMatch[1] };
+    }
+
+    const sheepIdQueryMatch = normalizedValue.match(/[?&](?:sheep_id|id)=(\d+)/i);
+    if (sheepIdQueryMatch) {
+      return { sheepId: sheepIdQueryMatch[1] };
+    }
+
+    if (/^\d+$/.test(normalizedValue)) {
+      return { sheepId: normalizedValue };
+    }
+
+    const earTagQueryMatch = normalizedValue.match(/[?&]ear_tag=([^&#]+)/i);
+    if (earTagQueryMatch) {
+      const earTagFromQuery = API.normalizeEarTag(decodeURIComponent(earTagQueryMatch[1]));
+      if (API.isValidEarTag(earTagFromQuery)) {
+        return { earTag: earTagFromQuery };
+      }
+    }
+
+    if (API.isValidEarTag(normalizedValue)) {
+      return { earTag: normalizedValue };
+    }
+
+    return null;
+  },
+
+  /**
    * 扫描二维码进行溯源查询
    * 功能：调用微信原生扫码接口，支持相册选择和二维码/条形码
    * 扫码成功后跳转到溯源详情页，传递耳标编号
@@ -294,32 +333,19 @@ Page({
       success: (res) => {
         console.log('[扫码溯源] 扫码成功', res);
 
-        // 获取扫码结果（羊只耳标编号）
-        const earTag = res.result;
-
-        // 检查扫码结果是否为空
-        if (!earTag || earTag.trim() === '') {
+        const traceTarget = this.resolveTraceTarget(res.result);
+        if (!traceTarget) {
           wx.showToast({
-            title: '无法识别二维码',
+            title: '无法识别溯源码',
             icon: 'none',
             duration: 2000
           });
-          console.warn('[扫码溯源] 扫码结果为空');
+          console.warn('[扫码溯源] 无法解析扫码结果:', res.result);
           return;
         }
 
-        const normalizedEarTag = API.normalizeEarTag(earTag);
-        if (!API.isValidEarTag(normalizedEarTag)) {
-          wx.showToast({
-            title: '输入格式有误，请重新输入',
-            icon: 'none',
-            duration: 2000
-          });
-          return;
-        }
-
-        console.log('[扫码溯源] 耳标编号:', normalizedEarTag);
-        this.jumpToTraceDetail(normalizedEarTag);
+        console.log('[扫码溯源] 解析后的目标:', traceTarget);
+        this.jumpToTraceDetail(traceTarget);
       },
       fail: (err) => {
         // 用户取消扫码，不显示错误提示
@@ -341,9 +367,17 @@ Page({
   /**
    * 跳转到溯源详情页
    */
-  jumpToTraceDetail(earTag) {
-    const normalizedEarTag = API.normalizeEarTag(earTag);
-    if (!API.isValidEarTag(normalizedEarTag)) {
+  jumpToTraceDetail(target) {
+    const traceTarget = typeof target === 'string'
+      ? { earTag: API.normalizeEarTag(target) }
+      : (target || {});
+
+    let url = '';
+    if (traceTarget.sheepId) {
+      url = `/packageSearch/trace/detail?sheep_id=${encodeURIComponent(traceTarget.sheepId)}`;
+    } else if (traceTarget.earTag && API.isValidEarTag(traceTarget.earTag)) {
+      url = `/packageSearch/trace/detail?ear_tag=${encodeURIComponent(traceTarget.earTag)}`;
+    } else {
       wx.showToast({
         title: '输入格式有误，请重新输入',
         icon: 'none',
@@ -352,9 +386,8 @@ Page({
       return;
     }
 
-    // 跳转到溯源详情页，传递耳标编号参数
     wx.navigateTo({
-      url: `/packageSearch/trace/detail?ear_tag=${encodeURIComponent(normalizedEarTag)}`,
+      url,
       success: () => {
         console.log('[扫码溯源] 成功跳转到溯源详情页');
       },

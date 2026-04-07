@@ -5,9 +5,10 @@
 """
 import uuid
 from decimal import Decimal
+from django.db.models import Count, Max
 from django.utils import timezone
 
-from ..models import CartItem, Sheep, Order, OrderItem, UserCoupon
+from ..models import CartItem, Sheep, Order, OrderItem, UserCoupon, GrowthRecord, FeedingRecord, VaccinationHistory
 from .user_service import UserService, UserError
 
 
@@ -354,6 +355,98 @@ class CommerceService:
                 },
             })
         return result
+
+    @staticmethod
+    def get_my_sheep_trace_updates(token):
+        """
+        获取用户已领养羊只的溯源更新摘要。
+        只返回轻量级统计，供前端做“有新动态”提示，不影响既有接口结构。
+        """
+        user = CommerceService._resolve_user(token)
+
+        sheep_ids = list(
+            OrderItem.objects.filter(
+                order__user=user,
+                order__status__in=['paid', 'shipping', 'completed']
+            ).values_list('sheep_id', flat=True).distinct()
+        )
+
+        if not sheep_ids:
+            return {
+                'total': 0,
+                'updates': []
+            }
+
+        growth_rows = GrowthRecord.objects.filter(sheep_id__in=sheep_ids).values('sheep_id').annotate(
+            latest_date=Max('record_date'),
+            total=Count('id')
+        )
+        feeding_rows = FeedingRecord.objects.filter(sheep_id__in=sheep_ids).values('sheep_id').annotate(
+            latest_date=Max('feed_date'),
+            total=Count('id')
+        )
+        vaccination_rows = VaccinationHistory.objects.filter(sheep_id__in=sheep_ids).values('sheep_id').annotate(
+            latest_date=Max('vaccination_date'),
+            total=Count('id')
+        )
+
+        growth_map = {
+            row['sheep_id']: {
+                'date': row['latest_date'],
+                'count': row['total'],
+                'type': 'growth',
+                'label': '生长记录'
+            }
+            for row in growth_rows
+        }
+        feeding_map = {
+            row['sheep_id']: {
+                'date': row['latest_date'],
+                'count': row['total'],
+                'type': 'feeding',
+                'label': '喂养记录'
+            }
+            for row in feeding_rows
+        }
+        vaccination_map = {
+            row['sheep_id']: {
+                'date': row['latest_date'],
+                'count': row['total'],
+                'type': 'vaccination',
+                'label': '疫苗记录'
+            }
+            for row in vaccination_rows
+        }
+
+        updates = []
+        for sheep_id in sheep_ids:
+            candidates = [
+                growth_map.get(sheep_id),
+                feeding_map.get(sheep_id),
+                vaccination_map.get(sheep_id),
+            ]
+            candidates = [item for item in candidates if item and item.get('date')]
+            latest = max(candidates, key=lambda item: item['date']) if candidates else None
+
+            trace_record_count = (
+                growth_map.get(sheep_id, {}).get('count', 0)
+                + feeding_map.get(sheep_id, {}).get('count', 0)
+                + vaccination_map.get(sheep_id, {}).get('count', 0)
+            )
+
+            updates.append({
+                'sheep_id': sheep_id,
+                'latest_update_date': latest['date'].strftime('%Y-%m-%d') if latest else '',
+                'latest_update_type': latest['type'] if latest else '',
+                'latest_update_label': latest['label'] if latest else '',
+                'trace_record_count': trace_record_count,
+                'has_trace_data': trace_record_count > 0,
+            })
+
+        return {
+            'total': len(updates),
+            'updates': updates
+        }
 
     @staticmethod
     def get_order_history(token):

@@ -1,3 +1,13 @@
+const TRACE_UNREAD_STORAGE_KEY = 'mySheepTraceUnreadCount';
+
+function getMySheepBadgeText() {
+    const unreadCount = parseInt(wx.getStorageSync(TRACE_UNREAD_STORAGE_KEY) || 0, 10);
+    if (!unreadCount || unreadCount < 1) {
+        return '';
+    }
+    return unreadCount > 99 ? '99+' : String(unreadCount);
+}
+
 Component({
     data: {
         selected: 0,
@@ -13,46 +23,52 @@ Component({
 
     pageLifetimes: {
         show() {
-            // 每次页面显示都重新初始化，防止角色切换后未更新
             this.initTabBar();
         }
     },
 
     methods: {
         initTabBar() {
-            // 基础菜单
+            const mySheepBadge = getMySheepBadgeText();
             const baseList = [
                 {
                     pagePath: "/pages/index/index",
                     text: "首页",
                     iconPath: "/icons/_home.png",
-                    selectedIconPath: "/icons/home.png"
+                    selectedIconPath: "/icons/home.png",
+                    badge: ""
                 },
                 {
                     pagePath: "/pages/cart/index",
                     text: "购物车",
                     iconPath: "/icons/_cart.png",
-                    selectedIconPath: "/icons/cart.png"
+                    selectedIconPath: "/icons/cart.png",
+                    badge: ""
                 },
                 {
                     pagePath: "/pages/my/index",
                     text: "我的",
                     iconPath: "/icons/_my.png",
-                    selectedIconPath: "/icons/my.png"
+                    selectedIconPath: "/icons/my.png",
+                    badge: ""
                 }
             ];
 
-            // “我的羊”对所有用户可见，插入在首页和购物车之间（索引 1 的位置）
             baseList.splice(1, 0, {
                 pagePath: "/pages/my/adopt/adopt",
                 text: "我的羊",
                 iconPath: "/icons/_sheep.png",
-                selectedIconPath: "/icons/sheep.png"
+                selectedIconPath: "/icons/sheep.png",
+                badge: mySheepBadge
             });
 
             this.setData({
                 list: baseList
             });
+        },
+
+        refreshBadges() {
+            this.initTabBar();
         },
 
         switchTab(e) {

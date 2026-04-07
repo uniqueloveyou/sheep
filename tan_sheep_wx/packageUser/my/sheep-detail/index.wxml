@@ -82,6 +82,51 @@
       </view>
     </view>
 
+    <!-- 生长记录 -->
+    <view class="section">
+      <view class="section-title">
+        <van-icon name="chart-trending-o" color="#ff8a00"/> 生长记录
+        <text class="section-count" wx:if="{{growthRecords.length > 0}}">{{growthRecords.length}}条</text>
+      </view>
+      <view class="record-card" wx:if="{{growthRecords.length > 0}}">
+        <view class="growth-head">
+          <text class="growth-col date">日期</text>
+          <text class="growth-col">体重</text>
+          <text class="growth-col">体高</text>
+          <text class="growth-col">体长</text>
+        </view>
+        <view class="growth-row" wx:for="{{growthRecords}}" wx:key="id">
+          <text class="growth-col date">{{item.record_date}}</text>
+          <text class="growth-col">{{item.weight}}kg</text>
+          <text class="growth-col">{{item.height}}cm</text>
+          <text class="growth-col">{{item.length}}cm</text>
+        </view>
+      </view>
+      <view class="empty-list" wx:else>
+        <text>该羊只暂无生长记录</text>
+      </view>
+    </view>
+
+    <!-- 喂养记录 -->
+    <view class="section">
+      <view class="section-title">
+        <van-icon name="fire-o" color="#ff976a"/> 喂养记录
+        <text class="section-count" wx:if="{{feedingRecords.length > 0}}">{{feedingRecords.length}}条</text>
+      </view>
+      <view class="record-card feeding-card" wx:if="{{feedingRecords.length > 0}}">
+        <view class="feeding-item" wx:for="{{feedingRecords}}" wx:key="id">
+          <view class="feeding-top">
+            <text class="feeding-type">{{item.feed_type || '日常喂养'}}</text>
+            <text class="feeding-date">{{item.feed_date}}</text>
+          </view>
+          <text class="feeding-amount">投喂量：{{item.amount}}{{item.unit || ''}}</text>
+        </view>
+      </view>
+      <view class="empty-list" wx:else>
+        <text>该羊只暂无喂养记录</text>
+      </view>
+    </view>
+
     <!-- 底部操作区 -->
     <view class="action-bar">
       <button class="action-btn primary-btn" bindtap="viewMonitor">查看监控</button>

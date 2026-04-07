@@ -1,4 +1,5 @@
 // pages/search/search-content.js
+const API = require('../../utils/api.js');
 Page({
   data: {
     keyword: '',
@@ -67,9 +68,26 @@ Page({
   searchscan() {
     wx.scanCode({
       success: (res) => {
-        const keyword = res.result;
+        const rawValue = String((res && res.result) || '').trim();
+        const traceUrlMatch = rawValue.match(/\/(?:api\/public\/)?trace\/(\d+)(?:\/)?(?:[?#].*)?$/i);
+
+        if (traceUrlMatch) {
+          wx.navigateTo({
+            url: `/packageSearch/trace/detail?sheep_id=${encodeURIComponent(traceUrlMatch[1])}`
+          });
+          return;
+        }
+
+        const normalizedValue = API.normalizeEarTag(rawValue);
+        if (API.isValidEarTag(normalizedValue)) {
+          wx.navigateTo({
+            url: `/packageSearch/trace/detail?ear_tag=${encodeURIComponent(normalizedValue)}`
+          });
+          return;
+        }
+
         wx.redirectTo({
-          url: `/pages/search/index?keyword=${encodeURIComponent(keyword)}`
+          url: `/pages/search/index?keyword=${encodeURIComponent(rawValue)}`
         });
       },
       fail: (err) => {

@@ -198,6 +198,23 @@ def api_my_sheep(request):
 
 @csrf_exempt
 @require_http_methods(["GET"])
+def api_my_sheep_updates(request):
+    """
+    获取用户已领养羊只的溯源更新摘要
+    GET /api/my/sheep/updates
+    """
+    try:
+        token = _get_token(request)
+        result = CommerceService.get_my_sheep_trace_updates(token)
+        return JsonResponse({'code': 0, 'msg': 'ok', 'data': result})
+    except CommerceError as e:
+        return _error_response(e)
+    except Exception as e:
+        return _error_response(e)
+
+
+@csrf_exempt
+@require_http_methods(["GET"])
 def api_sheep_status(request, sheep_id):
     """
     查询羊只领养状态

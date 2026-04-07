@@ -205,6 +205,7 @@ urlpatterns = [
     path('api/cart/<int:item_id>', commerce_api.api_cart_item, name='api_cart_item'),
     path('api/cart/checkout', commerce_api.api_checkout, name='api_checkout'),
     path('api/my/sheep', commerce_api.api_my_sheep, name='api_my_sheep'),
+    path('api/my/sheep/updates', commerce_api.api_my_sheep_updates, name='api_my_sheep_updates'),
     path('api/sheep/<int:sheep_id>/status', commerce_api.api_sheep_status, name='api_sheep_status'),
     path('api/orders', commerce_api.api_order_history, name='api_order_history'),
     path('api/breeder/orders', commerce_api.api_breeder_orders, name='api_breeder_orders'),

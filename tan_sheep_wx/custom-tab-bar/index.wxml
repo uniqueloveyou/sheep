@@ -2,7 +2,10 @@
 <view class="tab-bar">
   <view class="tab-bar-border"></view>
   <view wx:for="{{list}}" wx:key="index" class="tab-bar-item" data-path="{{item.pagePath}}" data-index="{{index}}" bindtap="switchTab">
-    <image src="{{selected === index ? item.selectedIconPath : item.iconPath}}"></image>
+    <view class="tab-icon-wrap">
+      <image src="{{selected === index ? item.selectedIconPath : item.iconPath}}"></image>
+      <view wx:if="{{item.badge}}" class="tab-badge">{{item.badge}}</view>
+    </view>
     <view style="color: {{selected === index ? selectedColor : color}}">{{item.text}}</view>
   </view>
 </view>

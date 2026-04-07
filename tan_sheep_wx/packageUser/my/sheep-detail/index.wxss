@@ -162,6 +162,13 @@ page {
   margin-right: 12rpx;
 }
 
+.section-count {
+  margin-left: 12rpx;
+  font-size: 22rpx;
+  color: #999;
+  font-weight: normal;
+}
+
 .custom-cell-group {
   box-shadow: 0 4rpx 12rpx rgba(0,0,0,0.02) !important;
   border-radius: 16rpx !important;
@@ -267,6 +274,89 @@ page {
   font-size: 24rpx;
   color: #666;
   display: block;
+}
+
+.record-card {
+  background: #fff;
+  border-radius: 16rpx;
+  padding: 24rpx;
+  box-shadow: 0 4rpx 12rpx rgba(0,0,0,0.02);
+}
+
+.growth-head,
+.growth-row {
+  display: flex;
+  align-items: center;
+}
+
+.growth-head {
+  padding-bottom: 18rpx;
+  margin-bottom: 10rpx;
+  border-bottom: 1rpx solid #f0f0f0;
+}
+
+.growth-row {
+  padding: 18rpx 0;
+  border-bottom: 1rpx solid #f6f6f6;
+}
+
+.growth-row:last-child {
+  border-bottom: none;
+}
+
+.growth-col {
+  flex: 1;
+  font-size: 23rpx;
+  color: #666;
+  text-align: center;
+}
+
+.growth-head .growth-col {
+  color: #999;
+  font-size: 22rpx;
+}
+
+.growth-col.date {
+  flex: 1.4;
+  text-align: left;
+}
+
+.feeding-card {
+  padding-top: 10rpx;
+  padding-bottom: 10rpx;
+}
+
+.feeding-item {
+  padding: 18rpx 0;
+  border-bottom: 1rpx solid #f6f6f6;
+}
+
+.feeding-item:last-child {
+  border-bottom: none;
+}
+
+.feeding-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10rpx;
+  gap: 20rpx;
+}
+
+.feeding-type {
+  font-size: 28rpx;
+  color: #333;
+  font-weight: bold;
+}
+
+.feeding-date {
+  font-size: 22rpx;
+  color: #999;
+}
+
+.feeding-amount {
+  font-size: 24rpx;
+  color: #666;
 }
 
 /* 底部操作区 */
