@@ -1,0 +1,48 @@
+{
+  "hash": "5a72c84c",
+  "configHash": "9d837de5",
+  "lockfileHash": "56dace15",
+  "browserHash": "8e66bae2",
+  "optimized": {
+    "axios": {
+      "src": "../../node_modules/axios/index.js",
+      "file": "axios.js",
+      "fileHash": "ae70fbb8",
+      "needsInterop": false
+    },
+    "react-dom/client": {
+      "src": "../../node_modules/react-dom/client.js",
+      "file": "react-dom_client.js",
+      "fileHash": "ebc6a0b5",
+      "needsInterop": true
+    },
+    "react-router-dom": {
+      "src": "../../node_modules/react-router-dom/dist/index.mjs",
+      "file": "react-router-dom.js",
+      "fileHash": "c229b5d7",
+      "needsInterop": false
+    },
+    "react": {
+      "src": "../../node_modules/react/index.js",
+      "file": "react.js",
+      "fileHash": "3ad1595d",
+      "needsInterop": true
+    },
+    "react/jsx-dev-runtime": {
+      "src": "../../node_modules/react/jsx-dev-runtime.js",
+      "file": "react_jsx-dev-runtime.js",
+      "fileHash": "e599c418",
+      "needsInterop": true
+    }
+  },
+  "chunks": {
+    "chunk-BoAXSpZd": {
+      "file": "chunk-BoAXSpZd.js",
+      "isDynamicEntry": false
+    },
+    "react-dom-BjPBJlww": {
+      "file": "react-dom-BjPBJlww.js",
+      "isDynamicEntry": false
+    }
+  }
+}

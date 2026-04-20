@@ -1,5 +1,5 @@
 const config = {
-    API_BASE_URL: 'http://localhost:5001/api'
+    API_BASE_URL: 'https://sheep.youzilite.app/api'
   };
   
   export default config;

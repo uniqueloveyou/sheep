@@ -16,8 +16,9 @@ const API_CONFIG = {
     'http://localhost:8000',
     'http://172.26.127.202:8000'
   ],
-  production: 'http://127.0.0.1:8000',
-  current: 'development'
+  // 生产环境：Cloudflare Tunnel 域名
+  production: 'https://sheep.youzilite.app',
+  current: 'production'  // 切换到生产模式
 }
 
 function normalizeBaseUrl(url) {

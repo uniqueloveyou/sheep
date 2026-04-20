@@ -110,7 +110,11 @@ else:
             'PORT': '3308',
             'OPTIONS': {
                 'charset': 'utf8mb4',
+                'connect_timeout': 10,  # 连接超时时间（秒）
             },
+            # 持久连接：每个 worker 保持连接 600 秒，避免每次请求重新握手
+            # 免费 MySQL 延迟高，此项优化效果明显
+            'CONN_MAX_AGE': 600,
         }
     }
 
@@ -206,3 +210,13 @@ STORAGES = {
         'BACKEND': 'django.contrib.staticfiles.storage.StaticFilesStorage',
     },
 }
+
+# ====================== 生产部署额外配置 ======================
+
+# Cloudflare Tunnel 会把请求通过 127.0.0.1 转发给 Django
+# 需要信任来自 Cloudflare 的 X-Forwarded-Proto 头，让 Django 知道原始是 HTTPS
+USE_X_FORWARDED_HOST = True
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+# 如需进一步锁定，将 * 换成你的 Cloudflare Tunnel 域名
+# ALLOWED_HOSTS = ['your-domain.com', '127.0.0.1', 'localhost']
