@@ -35,13 +35,61 @@
       </view>
     </view>
 
+    <!-- 溯源动态摘要 -->
+    <view class="section">
+      <view class="section-title"><van-icon name="underway-o" color="#ff7b00"/> 溯源动态</view>
+      <view class="trace-overview-card">
+        <view class="trace-overview-head">
+          <view class="trace-overview-copy">
+            <text class="trace-overview-title">{{newTraceCount > 0 ? '新的溯源动态' : '最近溯源动态'}}</text>
+            <text class="trace-overview-desc">{{traceSummaryText}}</text>
+          </view>
+          <view wx:if="{{latestTraceDate}}" class="trace-overview-date">{{latestTraceDate}}</view>
+        </view>
+        <view class="trace-stat-grid">
+          <view class="trace-stat-item">
+            <text class="trace-stat-value">{{traceStats.growth}}</text>
+            <text class="trace-stat-label">生长</text>
+          </view>
+          <view class="trace-stat-item">
+            <text class="trace-stat-value">{{traceStats.feeding}}</text>
+            <text class="trace-stat-label">喂养</text>
+          </view>
+          <view class="trace-stat-item">
+            <text class="trace-stat-value">{{traceStats.vaccines}}</text>
+            <text class="trace-stat-label">疫苗</text>
+          </view>
+          <view class="trace-stat-item">
+            <text class="trace-stat-value">{{traceStats.total}}</text>
+            <text class="trace-stat-label">总记录</text>
+          </view>
+        </view>
+        <view wx:if="{{traceDynamicPreview.length > 0}}" class="trace-dynamic-list">
+          <view class="trace-dynamic-item" wx:for="{{traceDynamicPreview}}" wx:key="id">
+            <view class="trace-dynamic-main">
+              <view class="trace-dynamic-meta">
+                <text class="trace-type-tag trace-type-{{item.type}}">{{item.typeLabel}}</text>
+                <text class="trace-dynamic-date">{{item.date}}</text>
+              </view>
+              <text class="trace-dynamic-name">{{item.title}}</text>
+              <text class="trace-dynamic-summary">{{item.summary}}</text>
+              <text class="trace-dynamic-extra">{{item.meta}}</text>
+            </view>
+          </view>
+        </view>
+        <view wx:else class="trace-dynamic-empty">
+          <text>当前还没有新的溯源动态，下面仍可查看完整档案记录</text>
+        </view>
+      </view>
+    </view>
+
     <!-- 详细档案页签 -->
     <view class="section">
       <view class="section-title"><van-icon name="notes-o" color="#4CAF50"/> 电子档案</view>
       <van-cell-group inset custom-class="custom-cell-group">
         <van-cell title="性别" value="{{sheepDetail.gender}}" />
         <van-cell title="出生日期" value="{{sheepDetail.birth_date}}" />
-        <van-cell title="养殖牧场" value="{{sheepDetail.farm_name}}" icon="shop-o" />
+        <van-cell title="羊龄" value="{{sheepDetail.age_display}}" />
         <van-cell 
           title="负责农户" 
           value="{{sheepDetail.breeder_name}}" 
@@ -66,15 +114,25 @@
     <view class="section">
       <view class="section-title"><van-icon name="shield-o" color="#1989fa"/> 检疫与健康</view>
       <view class="vaccine-list" wx:if="{{vaccineRecords.length > 0}}">
-        <view class="timeline-item" wx:for="{{vaccineRecords}}" wx:key="VaccinationID">
+        <view class="timeline-item" wx:for="{{pagedVaccineRecords}}" wx:key="id">
           <view class="timeline-dot"></view>
-          <view class="timeline-content">
+          <view class="timeline-content {{item.isNew ? 'is-new-record' : ''}}">
             <view class="timeline-header">
-              <text class="v-type">{{item.VaccineType}}</text>
-              <text class="v-date">{{item.VaccinationDate}}</text>
+              <view class="timeline-title-row">
+                <text class="v-type">{{item.vaccineType}}</text>
+                <text wx:if="{{item.isNew}}" class="record-new-badge">新</text>
+              </view>
+              <text class="v-date">{{item.displayDate}}</text>
             </view>
-            <text class="v-desc">操作人: {{item.AdministeredBy}} | 剂量: {{item.Dosage}}ml</text>
+            <text class="v-desc">操作人: {{item.administeredBy || '未记录'}} | 剂量: {{item.dosageText}}</text>
+            <text wx:if="{{item.expiryDate}}" class="v-desc">有效期至: {{item.expiryDate}}</text>
+            <text wx:if="{{item.notes}}" class="v-desc">{{item.notes}}</text>
           </view>
+        </view>
+        <view class="record-pagination" wx:if="{{vaccineTotalPages > 1}}">
+          <button class="page-btn" bindtap="changeRecordPage" data-type="vaccine" data-direction="-1" disabled="{{vaccinePage <= 1}}">上一页</button>
+          <text class="page-info">{{vaccinePage}} / {{vaccineTotalPages}}</text>
+          <button class="page-btn" bindtap="changeRecordPage" data-type="vaccine" data-direction="1" disabled="{{vaccinePage >= vaccineTotalPages}}">下一页</button>
         </view>
       </view>
       <view class="empty-list" wx:else>
@@ -95,11 +153,19 @@
           <text class="growth-col">体高</text>
           <text class="growth-col">体长</text>
         </view>
-        <view class="growth-row" wx:for="{{growthRecords}}" wx:key="id">
-          <text class="growth-col date">{{item.record_date}}</text>
-          <text class="growth-col">{{item.weight}}kg</text>
-          <text class="growth-col">{{item.height}}cm</text>
-          <text class="growth-col">{{item.length}}cm</text>
+        <view class="growth-row {{item.isNew ? 'growth-row-new' : ''}}" wx:for="{{pagedGrowthRecords}}" wx:key="id">
+          <view class="growth-date-cell">
+            <text class="growth-col date">{{item.recordDate}}</text>
+            <text wx:if="{{item.isNew}}" class="record-new-badge inline-new-badge">新</text>
+          </view>
+          <text class="growth-col">{{item.weightText}}</text>
+          <text class="growth-col">{{item.heightText}}</text>
+          <text class="growth-col">{{item.lengthText}}</text>
+        </view>
+        <view class="record-pagination" wx:if="{{growthTotalPages > 1}}">
+          <button class="page-btn" bindtap="changeRecordPage" data-type="growth" data-direction="-1" disabled="{{growthPage <= 1}}">上一页</button>
+          <text class="page-info">{{growthPage}} / {{growthTotalPages}}</text>
+          <button class="page-btn" bindtap="changeRecordPage" data-type="growth" data-direction="1" disabled="{{growthPage >= growthTotalPages}}">下一页</button>
         </view>
       </view>
       <view class="empty-list" wx:else>
@@ -114,12 +180,20 @@
         <text class="section-count" wx:if="{{feedingRecords.length > 0}}">{{feedingRecords.length}}条</text>
       </view>
       <view class="record-card feeding-card" wx:if="{{feedingRecords.length > 0}}">
-        <view class="feeding-item" wx:for="{{feedingRecords}}" wx:key="id">
+        <view class="feeding-item {{item.isNew ? 'is-new-record' : ''}}" wx:for="{{pagedFeedingRecords}}" wx:key="id">
           <view class="feeding-top">
-            <text class="feeding-type">{{item.feed_type || '日常喂养'}}</text>
-            <text class="feeding-date">{{item.feed_date}}</text>
+            <view class="timeline-title-row">
+              <text class="feeding-type">{{item.feedType}}</text>
+              <text wx:if="{{item.isNew}}" class="record-new-badge">新</text>
+            </view>
+            <text class="feeding-date">{{item.feedDate}}</text>
           </view>
-          <text class="feeding-amount">投喂量：{{item.amount}}{{item.unit || ''}}</text>
+          <text class="feeding-amount">投喂量：{{item.amountText}}</text>
+        </view>
+        <view class="record-pagination" wx:if="{{feedingTotalPages > 1}}">
+          <button class="page-btn" bindtap="changeRecordPage" data-type="feeding" data-direction="-1" disabled="{{feedingPage <= 1}}">上一页</button>
+          <text class="page-info">{{feedingPage}} / {{feedingTotalPages}}</text>
+          <button class="page-btn" bindtap="changeRecordPage" data-type="feeding" data-direction="1" disabled="{{feedingPage >= feedingTotalPages}}">下一页</button>
         </view>
       </view>
       <view class="empty-list" wx:else>

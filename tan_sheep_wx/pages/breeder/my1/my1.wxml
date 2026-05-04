@@ -46,17 +46,6 @@
     <view class="card">
         <view class="card-title">养殖信息</view>
         <view class="info-section">
-            <text class="label">记录总数：</text>
-            <text class="data">{{currentBreeder.sheep_count}}只</text>
-        </view>
-        <view class="info-section" wx:if="{{currentBreeder.actual_sheep_count !== undefined}}">
-            <text class="label">实际关联：</text>
-            <text class="data {{currentBreeder.actual_sheep_count === currentBreeder.sheep_count ? 'success' : 'warning'}}">
-                {{currentBreeder.actual_sheep_count}}只
-            </text>
-            <text class="warning-icon" wx:if="{{currentBreeder.actual_sheep_count !== currentBreeder.sheep_count}}">⚠️</text>
-        </view>
-        <view class="info-section">
             <text class="label">母羊数量：</text>
             <text class="data">{{currentBreeder.actual_female_count !== undefined ? currentBreeder.actual_female_count : currentBreeder.female_count}}只</text>
         </view>
@@ -67,10 +56,6 @@
         <view class="info-section" wx:if="{{currentBreeder.statistics && currentBreeder.statistics.vaccine_coverage}}">
             <text class="label">疫苗覆盖率：</text>
             <text class="data">{{currentBreeder.statistics.vaccine_coverage}}%</text>
-        </view>
-        <view class="info-section" wx:if="{{currentBreeder.sheep_id}}">
-            <text class="label">羊只编号：</text>
-            <text class="data">{{currentBreeder.sheep_id}}</text>
         </view>
     </view>
 
@@ -102,7 +87,7 @@
                     <view class="sheep-details">
                         <text class="detail-item">性别：{{item.gender}}</text>
                         <text class="detail-item">体重：{{item.weight}}kg</text>
-                        <text class="detail-item">身高：{{item.height}}cm</text>
+                        <text class="detail-item">体高：{{item.height}}cm</text>
                         <text class="detail-item">体长：{{item.length}}cm</text>
                     </view>
                     <view class="sheep-vaccine" wx:if="{{item.vaccine_count > 0}}">

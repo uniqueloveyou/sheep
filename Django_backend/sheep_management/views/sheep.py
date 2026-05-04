@@ -56,7 +56,7 @@ def sheep_list(request):
     adopter_map = {}
     for oi in OrderItem.objects.filter(
         sheep_id__in=sheep_ids,
-        order__status__in=['paid', 'shipping', 'completed']
+        order__status__in=['paid', 'adopting', 'ready_to_ship', 'shipping', 'completed']
     ).select_related('order__user'):
         adopter_map[oi.sheep_id] = oi.order.user
 

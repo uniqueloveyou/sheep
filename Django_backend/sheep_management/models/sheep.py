@@ -1,6 +1,6 @@
 import random
 import string
-from datetime import datetime
+from datetime import date, datetime
 from django.db import models
 
 
@@ -51,6 +51,55 @@ class Sheep(models.Model):
 
     def __str__(self):
         return f"羊只#{self.id} - {self.get_gender_display()} - {self.weight}kg"
+
+    @property
+    def age_weeks(self):
+        if not self.birth_date:
+            return None
+        days = (date.today() - self.birth_date).days
+        if days < 0:
+            return None
+        return days // 7
+
+    @property
+    def age_display(self):
+        if not self.birth_date:
+            return '未设置'
+        days = (date.today() - self.birth_date).days
+        if days < 0:
+            return '未设置'
+        if days < 7:
+            return '未满1周'
+        if days >= 365:
+            months = days // 30
+            years = months // 12
+            remaining_months = months % 12
+            if remaining_months:
+                return f'{years}年{remaining_months}个月'
+            return f'{years}年'
+        return f'{days // 7}周龄'
+
+    @property
+    def latest_growth_record(self):
+        if hasattr(self, '_latest_growth_record_cache'):
+            return self._latest_growth_record_cache
+        self._latest_growth_record_cache = self.growth_records.order_by('-record_date', '-id').first()
+        return self._latest_growth_record_cache
+
+    @property
+    def current_weight(self):
+        latest = self.latest_growth_record
+        return latest.weight if latest else self.weight
+
+    @property
+    def current_height(self):
+        latest = self.latest_growth_record
+        return latest.height if latest else self.height
+
+    @property
+    def current_length(self):
+        latest = self.latest_growth_record
+        return latest.length if latest else self.length
 
     def save(self, *args, **kwargs):
         if not self.ear_tag:

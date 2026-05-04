@@ -14,6 +14,7 @@
         <text>羊ID: {{sheep.id}}</text>
         <text>名称: {{sheep.name}}</text>
         <text>出生日期: {{sheep.birth_date}}</text>
+        <text>羊龄: {{sheep.age_display || '未设置'}}</text>
     </view>
     <view class="growth-records">
         <text>生长记录:</text>

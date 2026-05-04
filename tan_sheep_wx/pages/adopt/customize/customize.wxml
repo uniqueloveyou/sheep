@@ -50,6 +50,10 @@
                 <text class="pv">{{sheepDetail.birth_date || '未记录'}}</text>
             </view>
             <view class="param-item">
+                <text class="pk">羊龄</text>
+                <text class="pv">{{sheepDetail.age_display || '未设置'}}</text>
+            </view>
+            <view class="param-item">
                 <text class="pk">体重</text>
                 <text class="pv">{{sheepDetail.weight}} <text class="punit">kg</text></text>
             </view>

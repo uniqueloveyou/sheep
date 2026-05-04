@@ -24,10 +24,9 @@
           <van-icon name="edit" size="28rpx" color="#999" class="edit-icon" bindtap="editNick"></van-icon>
         </view>
         <view class="user-meta">
-          <text class="user-id" bind:tap="copyUid">ID: {{ apiUserInfoMap.base.id }}</text>
           <view wx:if="{{ apiUserInfoMap.base.mobile }}" class="mobile-badge">
             <van-icon name="phone-o" size="24rpx" color="#238E23"></van-icon>
-            <text class="mobile-text">{{ apiUserInfoMap.base.mobile }}</text>
+            <text class="mobile-text">{{ apiUserInfoMap.base.mobileMasked }}</text>
           </view>
         </view>
       </view>

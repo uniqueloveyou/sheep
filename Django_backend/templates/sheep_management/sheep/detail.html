@@ -36,30 +36,30 @@
                     <td>{{ sheep.birth_date|date:'Y-m-d'|default:'未设置' }}</td>
                 </tr>
                 <tr>
+                    <th>羊龄</th>
+                    <td>{{ sheep.age_display }}</td>
+                    <th>所属养殖户</th>
+                    <td>{{ sheep.owner.username }}</td>
+                </tr>
+                <tr>
                     <th>健康状态</th>
                     <td>
                         <span class="health-badge health-{% if sheep.health_status == '健康' %}healthy{% elif sheep.health_status == '良好' %}good{% elif sheep.health_status == '一般' %}normal{% elif sheep.health_status == '需关注' %}warning{% else %}danger{% endif %}">
                             {{ sheep.health_status }}
                         </span>
                     </td>
-                    <th>农场名称</th>
-                    <td>{{ sheep.farm_name|default:'未设置' }}</td>
+                    <th>价格</th>
+                    <td><strong style="color: #e74c3c;">¥ {{ sheep.price }}</strong></td>
                 </tr>
                 <tr>
                     <th>体重</th>
-                    <td>{{ sheep.weight }} kg</td>
-                    <th>身高</th>
-                    <td>{{ sheep.height }} cm</td>
+                    <td>{{ sheep.current_weight }} kg</td>
+                    <th>体高</th>
+                    <td>{{ sheep.current_height }} cm</td>
                 </tr>
                 <tr>
                     <th>体长</th>
-                    <td>{{ sheep.length }} cm</td>
-                    <th>所属养殖户</th>
-                    <td>{{ sheep.owner.username }}</td>
-                </tr>
-                <tr>
-                    <th>价格</th>
-                    <td><strong style="color: #e74c3c;">¥ {{ sheep.price }}</strong></td>
+                    <td>{{ sheep.current_length }} cm</td>
                     <th></th>
                     <td></td>
                 </tr>
@@ -100,7 +100,7 @@
                     <input type="number" name="weight" step="0.1" required>
                 </div>
                 <div style="flex: 1;">
-                    <label style="font-size: 12px;">身高(cm)</label>
+                    <label style="font-size: 12px;">体高(cm)</label>
                     <input type="number" name="height" step="0.1" required>
                 </div>
                 <div style="flex: 1;">
@@ -122,7 +122,7 @@
                 <tr>
                     <th>日期</th>
                     <th>体重(kg)</th>
-                    <th>身高(cm)</th>
+                    <th>体高(cm)</th>
                     <th>体长(cm)</th>
                     <th>操作</th>
                 </tr>
@@ -324,7 +324,7 @@
                             <div class="timeline-title">羊只建档</div>
                             <div class="timeline-desc">
                                 羊只 #{{ sheep.id }} 建档入库<br>
-                                性别：{{ sheep.get_gender_display }} | 体重：{{ sheep.weight }}kg
+                                性别：{{ sheep.get_gender_display }} | 体重：{{ sheep.current_weight }}kg
                             </div>
                         </div>
                     </div>
@@ -352,7 +352,7 @@
                             <div class="timeline-date">{{ record.record_date|date:'Y-m-d' }}</div>
                             <div class="timeline-title">生长监测</div>
                             <div class="timeline-desc">
-                                体重：{{ record.weight }}kg | 身高：{{ record.height }}cm | 体长：{{ record.length }}cm
+                                体重：{{ record.weight }}kg | 体高：{{ record.height }}cm | 体长：{{ record.length }}cm
                             </div>
                         </div>
                     </div>
@@ -496,10 +496,17 @@ document.addEventListener('DOMContentLoaded', function() {
             tension: 0.4,
             fill: true
         }, {
-            label: '身高(cm)',
+            label: '体高(cm)',
             data: [{% for record in growth_records reversed %}{{ record.height }}{% if not forloop.last %},{% endif %}{% endfor %}],
             borderColor: '#27ae60',
             backgroundColor: 'rgba(39, 174, 96, 0.1)',
+            tension: 0.4,
+            fill: true
+        }, {
+            label: '体长(cm)',
+            data: [{% for record in growth_records reversed %}{{ record.length }}{% if not forloop.last %},{% endif %}{% endfor %}],
+            borderColor: '#e67e22',
+            backgroundColor: 'rgba(230, 126, 34, 0.1)',
             tension: 0.4,
             fill: true
         }]

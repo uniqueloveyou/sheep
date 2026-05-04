@@ -3,8 +3,10 @@
 薄接口层：解析 HTTP 参数 → 调用 Service → 构建 JsonResponse
 """
 import json
+from io import BytesIO
 
-from django.http import JsonResponse
+import qrcode
+from django.http import HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 
@@ -22,6 +24,10 @@ def _error_response(e):
         {'code': 500, 'msg': f'服务器错误: {str(e)}', 'data': None},
         status=500
     )
+
+
+def _build_public_qrcode_url(request, sheep_id):
+    return request.build_absolute_uri(f'/api/public/trace/{sheep_id}/qrcode')
 
 
 @csrf_exempt
@@ -311,14 +317,17 @@ def api_public_sheep_trace(request, sheep_id):
             'ear_tag': sheep.ear_tag or '',
             'gender': sheep.get_gender_display(),
             'birth_date': sheep.birth_date.strftime('%Y-%m-%d') if sheep.birth_date else '',
+            'age_weeks': sheep.age_weeks,
+            'age_display': sheep.age_display,
             'farm_name': sheep.farm_name or '宁夏盐池滩羊核心产区',
             'health_status': sheep.health_status or '健康',
-            'weight': float(sheep.weight),
-            'height': float(sheep.height),
-            'length': float(sheep.length),
+            'weight': float(sheep.current_weight),
+            'height': float(sheep.current_height),
+            'length': float(sheep.current_length),
             'image': request.build_absolute_uri(sheep.image.url) if sheep.image else '',
-            'qr_code': request.build_absolute_uri(sheep.qr_code.url) if sheep.qr_code else '',
+            'qr_code': _build_public_qrcode_url(request, sheep.id),
             'breeder': {
+                'id': sheep.owner.id,
                 'name': sheep.owner.nickname or sheep.owner.username if sheep.owner else '官方牧场',
                 'phone': sheep.owner.mobile if sheep.owner else '',
             } if sheep.owner else None,
@@ -337,9 +346,9 @@ def api_public_sheep_trace(request, sheep_id):
             })
         data['vaccinations'] = vaccinations
 
-        # 生长记录（最近 6 条）
+        # 生长记录（完整返回，由小程序端按 10 条分页展示）
         growth = []
-        for r in GrowthRecord.objects.filter(sheep=sheep).order_by('-record_date')[:6]:
+        for r in GrowthRecord.objects.filter(sheep=sheep).order_by('-record_date'):
             growth.append({
                 'record_date': r.record_date.strftime('%Y-%m-%d'),
                 'weight': float(r.weight),
@@ -348,9 +357,9 @@ def api_public_sheep_trace(request, sheep_id):
             })
         data['growth_records'] = growth
 
-        # 喂养记录（最近 10 条）
+        # 喂养记录（完整返回，由小程序端按 10 条分页展示）
         feeding = []
-        for r in FeedingRecord.objects.filter(sheep=sheep).order_by('-feed_date')[:10]:
+        for r in FeedingRecord.objects.filter(sheep=sheep).order_by('-feed_date'):
             feeding.append({
                 'feed_date': r.feed_date.strftime('%Y-%m-%d'),
                 'feed_type': r.feed_type or '',
@@ -360,6 +369,38 @@ def api_public_sheep_trace(request, sheep_id):
         data['feeding_records'] = feeding
 
         return JsonResponse({'code': 0, 'msg': 'ok', 'data': data}, status=200)
+    except Exception as e:
+        return JsonResponse({'code': 500, 'msg': str(e), 'data': None}, status=500)
+
+
+@csrf_exempt
+@require_http_methods(["GET"])
+def api_public_sheep_qrcode(request, sheep_id):
+    """
+    动态生成羊只溯源二维码 PNG。
+    不依赖已上传到 R2/本地 media 的 qr_code 文件，保证小程序端身份标识稳定显示。
+    """
+    try:
+        from ..models import Sheep
+        try:
+            sheep = Sheep.objects.get(pk=sheep_id)
+        except Sheep.DoesNotExist:
+            return JsonResponse({'code': 404, 'msg': '羊只不存在', 'data': None}, status=404)
+
+        trace_url = request.build_absolute_uri(f'/trace/{sheep.id}/')
+        qr = qrcode.QRCode(
+            version=None,
+            error_correction=qrcode.constants.ERROR_CORRECT_M,
+            box_size=10,
+            border=4,
+        )
+        qr.add_data(trace_url)
+        qr.make(fit=True)
+        img = qr.make_image(fill_color='black', back_color='white')
+
+        buf = BytesIO()
+        img.save(buf, format='PNG')
+        return HttpResponse(buf.getvalue(), content_type='image/png')
     except Exception as e:
         return JsonResponse({'code': 500, 'msg': str(e), 'data': None}, status=500)
 

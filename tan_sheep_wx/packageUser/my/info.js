@@ -10,7 +10,22 @@ Page({
     genderArray: ['保密', '男性', '女性'],
     genderIndex: 0,
     mobile: '',
-    isUploadingAvatar: false
+    mobileMasked: '',
+    isUploadingAvatar: false,
+    centerMenus: [
+      {
+        text: '优惠券',
+        icon: 'coupon-o',
+        color: '#F44336',
+        url: '/packageUser/my/youhui/youhui'
+      },
+      {
+        text: '我的关注',
+        icon: 'like-o',
+        color: '#FF9800',
+        url: '/packageUser/my/follows/index'
+      }
+    ]
   },
 
   onLoad() {
@@ -51,7 +66,8 @@ Page({
           birthday: info.birthday || '',
           genderIndex: info.gender || 0,
           gender: this.data.genderArray[info.gender || 0],
-          mobile: info.mobile || ''
+          mobile: info.mobile || '',
+          mobileMasked: this.maskMobile(info.mobile || '')
         });
 
         // 基础信息兜底
@@ -63,6 +79,24 @@ Page({
       }
     } catch (e) {
       console.error(e);
+    }
+  },
+
+  maskMobile(mobile) {
+    const value = String(mobile || '').trim();
+    if (/^1[3-9]\d{9}$/.test(value)) {
+      return value.slice(0, 3) + '****' + value.slice(7);
+    }
+    if (value.length > 7) {
+      return value.slice(0, 3) + '****' + value.slice(-4);
+    }
+    return value;
+  },
+
+  handleCenterMenuTap(e) {
+    const url = e.currentTarget.dataset.url;
+    if (url) {
+      wx.navigateTo({ url });
     }
   },
 

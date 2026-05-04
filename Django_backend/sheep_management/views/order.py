@@ -5,6 +5,7 @@ from django.db.models import Q
 from django.core.paginator import Paginator
 from ..models import Order, OrderItem
 from ..permissions import login_required, ROLE_ADMIN, ROLE_BREEDER
+from ..services.commerce_service import CommerceService, CommerceError
 
 
 @login_required
@@ -49,7 +50,9 @@ def order_list(request):
     stats = {
         'total':     base_qs.count(),
         'pending':   base_qs.filter(status='pending').count(),
-        'paid':      base_qs.filter(status='paid').count(),
+        'paid':      base_qs.filter(status__in=['paid', 'adopting', 'ready_to_ship']).count(),
+        'settlement_pending': base_qs.filter(status='settlement_pending').count(),
+        'awaiting_delivery': base_qs.filter(status='awaiting_delivery').count(),
         'shipping':  base_qs.filter(status='shipping').count(),
         'completed': base_qs.filter(status='completed').count(),
         'cancelled': base_qs.filter(status='cancelled').count(),
@@ -93,11 +96,25 @@ def order_update_status(request, pk):
 
     if request.method == 'POST':
         status = request.POST.get('status')
+        logistics_info = {
+            'logistics_company': request.POST.get('logistics_company', ''),
+            'logistics_tracking_number': request.POST.get('logistics_tracking_number', ''),
+        }
+        try:
+            if user.role != ROLE_ADMIN:
+                owner_ids = set(order.items.values_list('sheep__owner_id', flat=True))
+                if owner_ids != {user.id}:
+                    raise CommerceError('该订单包含其他养殖户的羊只，请由管理员处理')
+            CommerceService._validate_order_transition(order, status, logistics_info)
+        except CommerceError as e:
+            messages.error(request, e.message)
+            return redirect('order_update_status', pk=order.pk)
+
         order.status = status
 
         if status == 'shipping':
-            order.logistics_company = request.POST.get('logistics_company')
-            order.logistics_tracking_number = request.POST.get('logistics_tracking_number')
+            order.logistics_company = logistics_info['logistics_company'].strip()
+            order.logistics_tracking_number = logistics_info['logistics_tracking_number'].strip()
             order.shipping_date = timezone.now()
         elif status == 'completed' and not order.delivery_date:
             order.delivery_date = timezone.now()

@@ -130,6 +130,19 @@ page {
   color: #333;
 }
 
+.center-menu-item {
+  gap: 20rpx;
+}
+
+.menu-icon-wrapper {
+  width: 56rpx;
+  height: 56rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
 /* 底部按钮 */
 .btn-box {
   margin-top: 40rpx;

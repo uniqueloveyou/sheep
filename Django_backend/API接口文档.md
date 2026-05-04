@@ -113,7 +113,7 @@
 - **请求参数**:
   - `gender`: 性别（如：公/母）
   - `weight`: 体重范围（格式：`min-max` 或 `min-max kg`）
-  - `height`: 身高范围（格式：`min-max` 或 `min-max cm`）
+  - `height`: 体高范围（格式：`min-max` 或 `min-max cm`）
   - `length`: 体长范围（格式：`min-max` 或 `min-max cm`）
 - **示例**: `/api/sheep/search?gender=公&weight=40-50&height=60-70&length=80-100`
 - **返回格式**: 羊只数组

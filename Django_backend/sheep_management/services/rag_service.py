@@ -93,7 +93,7 @@ class RAGService:
             sheep_ids = list(
                 OrderItem.objects.filter(
                     order__user_id=user_id,
-                    order__status__in=['paid', 'completed', 'shipping']
+                    order__status__in=['paid', 'adopting', 'ready_to_ship', 'shipping', 'completed']
                 ).values_list('sheep_id', flat=True).distinct()
             )
             return sheep_ids
@@ -114,7 +114,7 @@ class RAGService:
             for sheep in sheep_list:
                 context += f"- 羊只#{sheep.id}, 耳标: {sheep.ear_tag or '无'}, "
                 context += f"性别: {sheep.get_gender_display()}, "
-                context += f"体重: {sheep.weight}kg, 身高: {sheep.height}cm, 体长: {sheep.length}cm, "
+                context += f"体重: {sheep.current_weight}kg, 体高: {sheep.current_height}cm, 体长: {sheep.current_length}cm, 羊龄: {sheep.age_display}, "
                 context += f"健康状况: {sheep.health_status}, "
                 context += f"出生日期: {sheep.birth_date or '未知'}, "
                 context += f"所在农场: {sheep.farm_name or '未知'}\n"
@@ -160,7 +160,7 @@ class RAGService:
             for record in records:
                 context += f"- 羊只#{record.sheep_id}: "
                 context += f"{record.record_date} 体重{record.weight}kg, "
-                context += f"身高{record.height}cm, 体长{record.length}cm\n"
+                context += f"体高{record.height}cm, 体长{record.length}cm\n"
             
             return context
         except Exception as e:
@@ -203,7 +203,7 @@ class RAGService:
             keywords.append('feeding')
         
         # 生长相关关键词
-        if any(word in question for word in ['生长', '体重', '身高', '体长', '周期', '发育']):
+        if any(word in question for word in ['生长', '体重', '体高', '身高', '体长', '周期', '发育', '羊龄', '周龄']):
             keywords.append('growth')
         
         # 疫苗相关关键词
@@ -242,8 +242,8 @@ class RAGService:
             context = "【羊只基本信息】\n"
             for sheep in sheep_list:
                 context += f"- 耳标: {sheep.ear_tag or '无'}, 性别: {sheep.get_gender_display()}, "
-                context += f"体重: {sheep.weight}kg, "
-                context += f"身高: {sheep.height}cm, 体长: {sheep.length}cm, "
+                context += f"体重: {sheep.current_weight}kg, "
+                context += f"体高: {sheep.current_height}cm, 体长: {sheep.current_length}cm, 羊龄: {sheep.age_display}, "
                 context += f"健康状况: {sheep.health_status}\n"
             
             return context
@@ -270,7 +270,7 @@ class RAGService:
             for record in growth_records:
                 context += f"- 日期: {record.record_date}, "
                 context += f"体重: {record.weight}kg, "
-                context += f"身高: {record.height}cm, "
+                context += f"体高: {record.height}cm, "
                 context += f"体长: {record.length}cm\n"
             
             return context

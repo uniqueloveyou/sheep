@@ -2,6 +2,7 @@
 用户业务逻辑 Service
 """
 import uuid
+import re
 
 import boto3
 from botocore.config import Config
@@ -38,6 +39,13 @@ class UserService:
     # ========================
     #  通用方法
     # ========================
+
+    @staticmethod
+    def _validate_mobile(mobile):
+        mobile = (mobile or '').strip()
+        if mobile and not re.fullmatch(r'1[3-9]\d{9}', mobile):
+            raise UserError('手机号格式不正确')
+        return mobile
 
     @staticmethod
     def get_user_by_token(token):
@@ -194,9 +202,7 @@ class UserService:
             user.gender = gender
 
         if mobile is not None:
-            mobile = mobile.strip()
-            if mobile and len(mobile) > 20:
-                raise UserError('手机号格式不正确')
+            mobile = UserService._validate_mobile(mobile)
             user.mobile = mobile or None
 
         if description is not None:
@@ -225,7 +231,8 @@ class UserService:
         user = UserService.get_user_by_token(token)
         
         mobile = mobile.strip() if mobile else ''
-        if not mobile or len(mobile) > 20:
+        mobile = UserService._validate_mobile(mobile)
+        if not mobile:
             raise UserError('请提供有效的手机号')
         
         # 即使之前是不同角色，这里申请后我们统一标记为 role=1, is_verified=False 等待后台审核
@@ -269,7 +276,7 @@ class UserService:
         # 计算累计消费 (只要状态为 paid 或 completed)
         total_consumed = Order.objects.filter(
             user=user, 
-            status__in=['paid', 'completed']
+            status__in=['paid', 'adopting', 'ready_to_ship', 'shipping', 'completed']
         ).aggregate(total=Sum('total_amount'))['total'] or 0
 
         return {

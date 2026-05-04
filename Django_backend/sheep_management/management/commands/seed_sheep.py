@@ -1,5 +1,5 @@
 """
-批量添羊命令：为每个角色为"养殖户"的用户批量添加 200 只羊
+批量添羊命令：为每个角色为"养殖户"的用户批量添加 50 只羊
 用法：python manage.py seed_sheep
      python manage.py seed_sheep --count 100   # 自定义每人添加数量
      python manage.py seed_sheep --clear        # 添加前先清空所有羊只数据
@@ -36,14 +36,14 @@ def _unique_ear_tag(owner_id: int, used_tags: set) -> str:
 
 
 class Command(BaseCommand):
-    help = '为每个"养殖户"用户批量添加 200 只羊'
+    help = '为每个"养殖户"用户批量添加 50 只羊'
 
     def add_arguments(self, parser):
         parser.add_argument(
             '--count',
             type=int,
-            default=200,
-            help='每位养殖户添加的羊只数量（默认 200）',
+            default=50,
+            help='每位养殖户添加的羊只数量（默认 50）',
         )
         parser.add_argument(
             '--clear',
@@ -88,7 +88,7 @@ class Command(BaseCommand):
                 # 体重：30 ~ 80 kg，保留 1 位小数
                 weight = round(random.uniform(30.0, 80.0), 1)
 
-                # 身高：55 ~ 80 cm
+                # 体高：55 ~ 80 cm
                 height = round(random.uniform(55.0, 80.0), 1)
 
                 # 体长：60 ~ 100 cm

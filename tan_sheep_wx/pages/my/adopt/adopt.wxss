@@ -140,18 +140,29 @@ page {
 
 .trace-summary-banner {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 12rpx;
   margin: 0 10rpx 24rpx;
   padding: 18rpx 22rpx;
-  background: linear-gradient(135deg, #fff7eb 0%, #fff1df 100%);
-  border: 1rpx solid #f7d9ba;
-  border-radius: 16rpx;
+  background: #fff7f0;
+  border-radius: 18rpx;
+  box-shadow: 0 6rpx 18rpx rgba(195, 105, 38, 0.06);
+}
+
+.trace-summary-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 6rpx;
 }
 
 .trace-summary-text {
   font-size: 24rpx;
-  color: #9a4d1e;
+  color: #7f4d27;
+}
+
+.trace-summary-subtext {
+  font-size: 22rpx;
+  color: #a06f48;
 }
 
 /* ===== 状态页面 ===== */
@@ -288,30 +299,35 @@ page {
 .sheep-tags {
   display: flex;
   flex-wrap: wrap;
-  gap: 12rpx;
+  align-items: center;
+  gap: 10rpx;
   margin-top: 10rpx;
-  margin-bottom: 10rpx;
+  margin-bottom: 12rpx;
 }
 
 .tag {
-  font-size: 22rpx;
-  padding: 4rpx 14rpx;
-  border-radius: 6rpx;
+  font-size: 23rpx;
+  padding: 0;
+  border-radius: 0;
+  background: transparent;
+  line-height: 1.4;
 }
 
 .gender-tag {
-  color: #1989fa;
-  background-color: #ebf5ff;
+  color: #4f6b8a;
 }
 
 .w-tag {
-  color: #ff976a;
-  background-color: #fffbe8;
+  color: #333;
+  font-weight: 600;
 }
 
 .trace-date-tag {
-  color: #7a4d1d;
-  background-color: #fff2df;
+  color: #8a8a8a;
+}
+
+.trace-type-tag {
+  color: #8c5a2b;
 }
 
 .trace-update-tag {
@@ -355,4 +371,38 @@ page {
   font-size: 20rpx;
   color: #eee;
   margin: 0 10rpx;
+}
+
+.adoption-fee-row {
+  margin-top: 12rpx;
+  display: flex;
+  justify-content: space-between;
+  gap: 12rpx;
+  font-size: 22rpx;
+  color: #8a6d3b;
+}
+
+.adoption-action-row {
+  margin-top: 14rpx;
+  display: flex;
+  justify-content: flex-end;
+  gap: 12rpx;
+}
+
+.adoption-action-btn {
+  margin: 0;
+  padding: 0 22rpx;
+  height: 54rpx;
+  line-height: 54rpx;
+  border-radius: 27rpx;
+  font-size: 24rpx;
+  color: #16831c;
+  background: #f0faf1;
+  border: 1rpx solid #bfe8c4;
+}
+
+.adoption-action-btn.primary {
+  color: #fff;
+  background: #16831c;
+  border-color: #16831c;
 }

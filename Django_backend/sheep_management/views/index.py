@@ -29,7 +29,7 @@ def _admin_dashboard(request, user):
     pending_breeders = User.objects.filter(role=ROLE_BREEDER, is_verified=False).count()
     total_sheep    = Sheep.objects.count()
     total_orders   = Order.objects.count()
-    pending_orders = Order.objects.filter(status='paid').count()   # 已付款待发货
+    pending_orders = Order.objects.filter(status__in=['paid', 'adopting', 'ready_to_ship', 'settlement_pending', 'awaiting_delivery']).count()
 
     # 全平台未处理环境预警
     alert_count = EnvironmentAlert.objects.filter(is_resolved=False).count()
@@ -92,8 +92,8 @@ def _breeder_dashboard(request, user):
         .aggregate(total=Sum('price'))['total'] or 0
     )
 
-    # 1. 待发货订单
-    pending_shipping_count = order_qs.filter(status='paid').count()
+    # 1. 认养中订单
+    pending_shipping_count = order_qs.filter(status__in=['paid', 'adopting', 'ready_to_ship', 'settlement_pending', 'awaiting_delivery']).count()
 
     # 2. 即将到期疫苗（30天内，且未过期）
     upcoming_vaccinations = []

@@ -46,10 +46,10 @@
       <view class="info-grid">
         <view class="info-cell"><text class="ic-label">性别</text><text class="ic-val">{{sheep.gender}}</text></view>
         <view class="info-cell"><text class="ic-label">出生日期</text><text class="ic-val">{{sheep.birth_date || ''}}</text></view>
+        <view class="info-cell"><text class="ic-label">羊龄</text><text class="ic-val">{{sheep.age_display || '未设置'}}</text></view>
         <view class="info-cell"><text class="ic-label">体重</text><text class="ic-val weight-val">{{sheep.weight}} kg</text></view>
         <view class="info-cell"><text class="ic-label">体高</text><text class="ic-val height-val">{{sheep.height}} cm</text></view>
         <view class="info-cell"><text class="ic-label">体长</text><text class="ic-val length-val">{{sheep.length}} cm</text></view>
-        <view class="info-cell"><text class="ic-label">牧场</text><text class="ic-val farm-val">{{sheep.farm_name}}</text></view>
       </view>
     </view>
 
@@ -70,10 +70,10 @@
       </view>
       <block wx:if="{{vaccineExpanded}}">
         <view wx:if="{{sheep.vaccinations.length > 0}}" class="timeline">
-          <view class="tl-item" wx:for="{{sheep.vaccinations}}" wx:key="index">
+          <view class="tl-item" wx:for="{{sheep.paged_vaccinations}}" wx:key="index">
             <view class="tl-left">
               <view class="tl-dot"></view>
-              <view class="tl-line" wx:if="{{index < sheep.vaccinations.length - 1}}"></view>
+              <view class="tl-line" wx:if="{{index < sheep.paged_vaccinations.length - 1}}"></view>
             </view>
             <view class="tl-body">
               <text class="tl-name">{{item.vaccine_type}}</text>
@@ -81,6 +81,11 @@
               <text class="tl-detail">操作人：{{item.administered_by}}　剂量：{{item.dosage}}ml</text>
               <text wx:if="{{item.notes}}" class="tl-notes">{{item.notes}}</text>
             </view>
+          </view>
+          <view class="record-pagination" wx:if="{{vaccineTotalPages > 1}}">
+            <button class="page-btn" bindtap="changeRecordPage" data-type="vaccine" data-direction="-1" disabled="{{vaccinePage <= 1}}">上一页</button>
+            <text class="page-info">{{vaccinePage}} / {{vaccineTotalPages}}</text>
+            <button class="page-btn" bindtap="changeRecordPage" data-type="vaccine" data-direction="1" disabled="{{vaccinePage >= vaccineTotalPages}}">下一页</button>
           </view>
         </view>
         <view wx:else class="empty-tip">暂无接种记录</view>
@@ -103,11 +108,16 @@
             <text class="th c-height">体高(cm)</text>
             <text class="th c-length">体长(cm)</text>
           </view>
-          <view class="tbl-row {{index % 2 === 1 ? 'row-even' : ''}}" wx:for="{{sheep.growth_records}}" wx:key="index">
+          <view class="tbl-row {{index % 2 === 1 ? 'row-even' : ''}}" wx:for="{{sheep.paged_growth_records}}" wx:key="index">
             <text class="td">{{item.record_date}}</text>
             <text class="td c-weight weight-val">{{item.weight}}</text>
             <text class="td c-height height-val">{{item.height}}</text>
             <text class="td c-length length-val">{{item.length}}</text>
+          </view>
+          <view class="record-pagination" wx:if="{{growthTotalPages > 1}}">
+            <button class="page-btn" bindtap="changeRecordPage" data-type="growth" data-direction="-1" disabled="{{growthPage <= 1}}">上一页</button>
+            <text class="page-info">{{growthPage}} / {{growthTotalPages}}</text>
+            <button class="page-btn" bindtap="changeRecordPage" data-type="growth" data-direction="1" disabled="{{growthPage >= growthTotalPages}}">下一页</button>
           </view>
         </view>
         <view wx:else class="empty-tip">暂无生长记录</view>
@@ -124,9 +134,14 @@
       </view>
       <block wx:if="{{feedExpanded}}">
         <view wx:if="{{sheep.feeding_records.length > 0}}" class="feed-tags">
-          <view class="feed-tag" wx:for="{{sheep.feeding_records}}" wx:key="index">
+          <view class="feed-tag" wx:for="{{sheep.paged_feeding_records}}" wx:key="index">
             <text class="feed-date">{{item.feed_date}}</text>
             <text class="feed-type">{{item.feed_type}} {{item.amount}}{{item.unit}}</text>
+          </view>
+          <view class="record-pagination" wx:if="{{feedTotalPages > 1}}">
+            <button class="page-btn" bindtap="changeRecordPage" data-type="feed" data-direction="-1" disabled="{{feedPage <= 1}}">上一页</button>
+            <text class="page-info">{{feedPage}} / {{feedTotalPages}}</text>
+            <button class="page-btn" bindtap="changeRecordPage" data-type="feed" data-direction="1" disabled="{{feedPage >= feedTotalPages}}">下一页</button>
           </view>
         </view>
         <view wx:else class="empty-tip">暂无喂养记录</view>

@@ -13,13 +13,11 @@
   </view> -->
 </view>
 <view class='btn-view'>
-  
   <form bindsubmit="payDeposit" report-submit="true">
     <button class='btn' type="default" size="mini" form-type="submit" hover-class="btn-hover" plain="true">
-        充值
+      充值
     </button>
   </form>
-
 </view>
 <van-tabs active="{{ activeIndex }}" bind:change="tabClick">
   <van-tab wx:for="{{tabs}}" wx:key="*this" title="{{item}}" />
@@ -32,8 +30,3 @@
   <van-empty wx:if="{{withDrawlogs.length === 0}}" description="暂无提现记录" />
   <van-cell wx:for="{{withDrawlogs}}" wx:key="index" title="{{ item.statusStr }}" label="{{ item.dateAdd }}{{ item.rejectionReason ? ' 驳回原因：' + item.rejectionReason : '' }}" value="{{ item.money }}" />
 </van-cell-group>
-<van-cell-group wx:if="{{activeIndex == 2}}">
-  <van-empty wx:if="{{depositlogs.length === 0}}" description="暂无押金记录" />
-  <van-cell wx:for="{{depositlogs}}" wx:key="index" title="{{ item.statusStr }}" label="{{ item.dateAdd }}" value="{{ item.amount }}" />
-</van-cell-group>
-

@@ -18,7 +18,7 @@ const API_CONFIG = {
   ],
   // 生产环境：Cloudflare Tunnel 域名
   production: 'https://sheep.youzilite.app',
-  current: 'production'  // 切换到生产模式
+  current: 'development'  // 开发/答辩演示默认走本地 Django，避免生产隧道 502 影响调试
 }
 
 function normalizeBaseUrl(url) {
@@ -52,11 +52,11 @@ function getApiBaseUrlCandidates() {
     : [API_CONFIG[API_CONFIG.current] || API_CONFIG.production]
 
   const candidates = []
+  const orderedUrls = API_CONFIG.current === 'development'
+    ? currentConfig.concat([getStoredApiBaseUrl(), getLastKnownGoodApiBaseUrl()])
+    : [getStoredApiBaseUrl(), getLastKnownGoodApiBaseUrl()].concat(currentConfig)
 
-  ;[
-    getStoredApiBaseUrl(),
-    getLastKnownGoodApiBaseUrl()
-  ].concat(currentConfig).forEach((url) => {
+  orderedUrls.forEach((url) => {
     const normalizedUrl = normalizeBaseUrl(url)
     if (normalizedUrl && candidates.indexOf(normalizedUrl) === -1) {
       candidates.push(normalizedUrl)

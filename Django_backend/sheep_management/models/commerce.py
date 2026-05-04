@@ -190,8 +190,12 @@ class Order(models.Model):
     """订单主表"""
     STATUS_CHOICES = [
         ('pending', '待支付'),
-        ('paid', '已支付/认养中'),
-        ('shipping', '已发货'),
+        ('paid', '认养中'),
+        ('adopting', '认养中'),
+        ('ready_to_ship', '认养中'),
+        ('settlement_pending', '待结算'),
+        ('awaiting_delivery', '待交付'),
+        ('shipping', '交付中'),
         ('completed', '已完成'),
         ('cancelled', '已取消'),
     ]
@@ -201,16 +205,23 @@ class Order(models.Model):
     total_amount = models.DecimalField(max_digits=10, decimal_places=2, verbose_name='订单总金额')
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending', verbose_name='订单状态')
 
-    # 收货信息
+    # 认养联系人与交付信息
     receiver_name    = models.CharField(max_length=50,  null=True, blank=True, verbose_name='收货人姓名')
     receiver_phone   = models.CharField(max_length=20,  null=True, blank=True, verbose_name='收货人手机')
-    shipping_address = models.TextField(null=True, blank=True, verbose_name='收货地址')
+    shipping_address = models.TextField(null=True, blank=True, verbose_name='交付地址')
 
     # 物流信息
     logistics_company = models.CharField(max_length=100, null=True, blank=True, verbose_name='物流公司')
     logistics_tracking_number = models.CharField(max_length=100, null=True, blank=True, verbose_name='物流单号')
     shipping_date = models.DateTimeField(null=True, blank=True, verbose_name='发货日期')
     delivery_date = models.DateTimeField(null=True, blank=True, verbose_name='送达日期')
+
+    # 周期养殖服务费
+    adoption_start_time = models.DateTimeField(null=True, blank=True, verbose_name='认养开始时间')
+    end_requested_at = models.DateTimeField(null=True, blank=True, verbose_name='申请结束认养时间')
+    daily_care_fee = models.DecimalField(max_digits=10, decimal_places=2, default=10.00, verbose_name='每日养殖服务费')
+    care_fee_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00, verbose_name='周期服务费')
+    care_fee_paid_at = models.DateTimeField(null=True, blank=True, verbose_name='周期服务费支付时间')
 
     # 以后如果你要接微信支付，这里还可以加上 transaction_id(微信流水号)
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='创建时间')

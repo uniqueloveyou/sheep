@@ -63,7 +63,7 @@
 
     <view class="list-item">
       <view class="item-label">手机：</view>
-      <view class="item-value mobile-text" style="{{ !mobile ? 'color: #f44336;' : '' }}">{{ mobile || '未绑定' }}</view>
+      <view class="item-value mobile-text" style="{{ !mobile ? 'color: #f44336;' : '' }}">{{ mobileMasked || '未绑定' }}</view>
       <van-button 
         wx:if="{{ !mobile }}" 
         type="primary" 
@@ -73,6 +73,23 @@
       >
         绑定
       </van-button>
+    </view>
+  </view>
+
+  <view class="card">
+    <view class="card-header">个人中心</view>
+    <view
+      class="list-item center-menu-item"
+      wx:for="{{centerMenus}}"
+      wx:key="text"
+      bindtap="handleCenterMenuTap"
+      data-url="{{item.url}}"
+    >
+      <view class="menu-icon-wrapper">
+        <van-icon name="{{item.icon}}" size="40rpx" color="{{item.color}}"></van-icon>
+      </view>
+      <view class="item-value">{{item.text}}</view>
+      <van-icon name="arrow" size="28rpx" color="#ccc"></van-icon>
     </view>
   </view>
 

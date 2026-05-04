@@ -114,7 +114,7 @@
                     <span>🐑</span>
                     <span>{{ sheep.ear_tag }}</span>
                     <span style="font-weight:400;color:#666;font-size:13px;">
-                        {{ sheep.get_gender_display }}{% if sheep.birth_date %} · {{ sheep.birth_date }} 出生{% endif %}
+                        {{ sheep.get_gender_display }}{% if sheep.birth_date %} · {{ sheep.birth_date }} 出生 · {{ sheep.age_display }}{% endif %}
                     </span>
                     {% if is_admin %}
                     <span class="owner-tag">{{ sheep.owner.username }}</span>
@@ -143,7 +143,7 @@
                         <tr>
                             <th>记录日期</th>
                             <th>体重 (kg)</th>
-                            <th>身高 (cm)</th>
+                            <th>体高 (cm)</th>
                             <th>体长 (cm)</th>
                         </tr>
                     </thead>
@@ -266,7 +266,7 @@ function initGrowthChart(sheepId) {
                     fill: true,
                 },
                 {
-                    label: '身高 (cm)',
+                    label: '体高 (cm)',
                     data: data.heights,
                     borderColor: '#27ae60',
                     backgroundColor: 'transparent',

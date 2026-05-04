@@ -7,7 +7,10 @@
 
   <view wx:if="{{traceUnreadCount > 0}}" class="trace-summary-banner">
     <van-icon name="volume-o" size="16px" color="#c4551e" />
-    <text class="trace-summary-text">你有 {{traceUnreadCount}} 只羊收到了新的溯源动态</text>
+    <view class="trace-summary-copy">
+      <text class="trace-summary-text">你有 {{traceUnreadCount}} 只羊收到了新的溯源动态</text>
+      <text class="trace-summary-subtext">点开对应卡片，可直接查看本次新增记录</text>
+    </view>
   </view>
 
   <block wx:if="{{loading}}">
@@ -55,6 +58,9 @@
             <view class="sheep-tags">
               <text class="tag gender-tag">{{item.sheep.gender}}</text>
               <text class="tag w-tag">{{item.sheep.weight}} kg</text>
+              <text wx:if="{{item.traceUpdate && item.traceUpdate.latest_update_label}}" class="tag trace-type-tag">
+                {{item.traceUpdate.latest_update_label}}
+              </text>
               <text wx:if="{{item.traceUpdate && item.traceUpdate.latest_update_date}}" class="tag trace-date-tag">
                 {{item.traceUpdate.latest_update_date}}
               </text>
@@ -65,6 +71,15 @@
               <text class="detail-text">体高: {{item.sheep.height}} cm</text>
               <text class="detail-divider">|</text>
               <text class="detail-text">体长: {{item.sheep.length}} cm</text>
+            </view>
+            <view class="adoption-action-row">
+              <button
+                wx:if="{{item.canRequestEnd}}"
+                class="adoption-action-btn"
+                catchtap="requestEndAdoption"
+                data-order-id="{{item.order_id}}">
+                申请交付
+              </button>
             </view>
           </view>
         </view>

@@ -133,7 +133,7 @@ def _build_user_data_context(user_id):
     # 这里只把“仍在认养中”的羊只作为当前用户上下文注入给模型。
     paid_items = OrderItem.objects.filter(
         order__user_id=user_id,
-        order__status='paid'
+        order__status__in=['paid', 'adopting', 'ready_to_ship']
     ).values_list('sheep_id', flat=True).distinct()
     sheep_ids = list(paid_items)
 
@@ -168,7 +168,8 @@ def _build_user_data_context(user_id):
         lines.append(f'===== 羊只 #{sheep.id} =====')
         lines.append(f'耳标号: {sheep.ear_tag or "无"}')
         lines.append(f'性别: {sheep.get_gender_display()}')
-        lines.append(f'当前体重: {sheep.weight}kg / 身高: {sheep.height}cm / 体长: {sheep.length}cm')
+        lines.append(f'当前体重: {sheep.current_weight}kg / 体高: {sheep.current_height}cm / 体长: {sheep.current_length}cm')
+        lines.append(f'羊龄: {sheep.age_display}')
         lines.append(f'健康状况: {sheep.health_status}')
         lines.append(f'出生日期: {sheep.birth_date or "未知"}')
         lines.append(f'所在农场: {sheep.farm_name or "未知"}')
@@ -185,7 +186,7 @@ def _build_user_data_context(user_id):
         if growths:
             lines.append('最近生长记录:')
             for g in growths:
-                lines.append(f'  {g.record_date}: 体重{g.weight}kg, 身高{g.height}cm, 体长{g.length}cm')
+                lines.append(f'  {g.record_date}: 体重{g.weight}kg, 体高{g.height}cm, 体长{g.length}cm')
 
         # 最近 5 条疫苗记录
         vaccines = VaccinationHistory.objects.filter(sheep=sheep).select_related('vaccine').order_by('-vaccination_date')[:5]

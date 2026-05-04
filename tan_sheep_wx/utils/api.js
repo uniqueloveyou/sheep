@@ -33,6 +33,23 @@ function isPrivateNetworkHost(host) {
     || /^172\.(1[6-9]|2\d|3[01])\./.test(host)
 }
 
+function isRetriableStatus(statusCode) {
+  return statusCode === 502 || statusCode === 503 || statusCode === 504
+}
+
+function formatResponseErrorData(data) {
+  if (data && data.msg) {
+    return data.msg
+  }
+  if (typeof data === 'string') {
+    if (data.indexOf('Error code 502') !== -1 || data.indexOf('Bad gateway') !== -1) {
+      return '服务器网关异常，请确认后端服务是否已启动'
+    }
+    return data.length > 120 ? data.slice(0, 120) + '...' : data
+  }
+  return ''
+}
+
 function getResolvedApiBaseUrl() {
   return getApiBaseUrl()
 }
@@ -102,26 +119,32 @@ function request(url, method = 'GET', data = {}) {
     return requestOnce(fullUrl, method, data)
       .then(function (res) {
         console.log(`[API鍝嶅簲] ${fullUrl}`, res)
-        rememberApiBaseUrl(baseUrl)
 
         if (res.statusCode === 200) {
+          rememberApiBaseUrl(baseUrl)
           return res.data
         }
 
         let errorMsg = `璇锋眰澶辫触: HTTP ${res.statusCode}`
-        if (res.data && res.data.msg) {
-          errorMsg = res.data.msg
-        } else if (res.data && typeof res.data === 'string') {
-          errorMsg = res.data
+        const responseMsg = formatResponseErrorData(res.data)
+        if (responseMsg) {
+          errorMsg = responseMsg
         }
         const error = new Error(errorMsg)
         error.statusCode = res.statusCode
         error.response = res.data
-        console.error('[API閿欒]', error.message, res)
+        error.fullUrl = fullUrl
+        console.error('[API閿欒]', error.message, {
+          statusCode: res.statusCode,
+          url: fullUrl
+        })
         throw error
       })
       .catch(function (err) {
         if (err && typeof err.statusCode === 'number') {
+          if (isRetriableStatus(err.statusCode) && index + 1 < baseUrls.length) {
+            return attempt(index + 1)
+          }
           throw err
         }
 
@@ -354,8 +377,9 @@ function confirmAvatarUpload(token, objectKey) {
  * @param {string} paymentMethod 鏀粯鏂瑰紡锛?balance' 鎴?'wechat'锛?
  * @param {object} addressInfo { receiver_name, receiver_phone, shipping_address }
  * @param {number} userCouponId 鐢ㄦ埛浼樻儬鍒窱D锛堝彲閫夛級
+ * @param {number[]} selectedCartItemIds
  */
-function checkout(token, paymentMethod = 'balance', addressInfo = {}, userCouponId = null) {
+function checkout(token, paymentMethod = 'balance', addressInfo = {}, userCouponId = null, selectedCartItemIds = []) {
   const data = {
     token: token,
     payment_method: paymentMethod,
@@ -363,6 +387,9 @@ function checkout(token, paymentMethod = 'balance', addressInfo = {}, userCoupon
   };
   if (userCouponId) {
     data.user_coupon_id = userCouponId;
+  }
+  if (Array.isArray(selectedCartItemIds) && selectedCartItemIds.length > 0) {
+    data.selected_cart_item_ids = selectedCartItemIds
   }
   return request('/api/cart/checkout', 'POST', data)
 }
@@ -389,6 +416,19 @@ function getMySheepUpdates(token) {
  */
 function getOrderHistory(token) {
   return request('/api/orders?token=' + token, 'GET')
+}
+
+function requestEndAdoption(token, orderId) {
+  return request(`/api/orders/${orderId}/request-end`, 'POST', {
+    token: token
+  })
+}
+
+function payCareFee(token, orderId, paymentMethod = 'balance') {
+  return request(`/api/orders/${orderId}/pay-care-fee`, 'POST', {
+    token: token,
+    payment_method: paymentMethod
+  })
 }
 
 /**
@@ -496,6 +536,8 @@ const api = {
   getMySheep,
   getMySheepUpdates,
   getOrderHistory,
+  requestEndAdoption,
+  payCareFee,
   getPromotionActivities,
   getAvailableCoupons,
   getUserCoupons,

@@ -48,8 +48,28 @@ page {
   color: #999;
 }
 
-.status-paid {
+.status-paid,
+.status-adopting,
+.status-ready_to_ship,
+.status-settlement_pending,
+.status-awaiting_delivery {
   color: #4CAF50;
+}
+
+.status-pending {
+  color: #f59a23;
+}
+
+.status-shipping {
+  color: #1677ff;
+}
+
+.status-completed {
+  color: #333;
+}
+
+.status-cancelled {
+  color: #999;
 }
 
 .order-items {
@@ -96,6 +116,7 @@ page {
   font-size: 28rpx;
   color: #e64340;
   font-weight: 500;
+  line-height: 1.35;
 }
 
 .order-footer {

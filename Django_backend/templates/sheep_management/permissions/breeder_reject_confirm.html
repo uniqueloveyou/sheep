@@ -14,10 +14,6 @@
         <tr><th>手机号</th><td>{{ breeder.mobile|default:"未设置" }}</td></tr>
     </table>
 
-    <p style="color:#e74c3c; margin-bottom: 18px;">
-        ⚠ 操作后该用户将变回普通用户，失去养殖户权限。
-    </p>
-
     <form method="post">
         {% csrf_token %}
         <div class="form-group">

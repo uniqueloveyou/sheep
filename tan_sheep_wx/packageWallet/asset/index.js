@@ -16,12 +16,11 @@ Page({
     score: 0,   
     score_sign_continuous: 0,
     cashlogs: [],  
-    tabs: ["资金明细", "提现记录", "押金记录"],
+    tabs: ["资金明细", "提现记录"],
     activeIndex: 0,
     sliderOffset: 0,
     sliderLeft: 0,
     withDrawlogs: [],
-    depositlogs: [],
     rechargeOpen: false
   },
 
@@ -30,11 +29,11 @@ Page({
     if (withdrawal == '1') {
       this.setData({
         withdrawal,
-        tabs: ["资金明细", "提现记录", "押金记录"]
+        tabs: ["资金明细", "提现记录"]
       })
     } else {
       this.setData({
-        tabs: ["资金明细", "押金记录"]
+        tabs: ["资金明细"]
       })
     }
     AUTH.checkHasLogined().then(isLogined => {
@@ -81,9 +80,6 @@ Page({
     if (activeIndex == 1) {
       this.withDrawlogs()
     }
-    if (activeIndex == 2) {
-      this.depositlogs()
-    }
   },
 
   // 资金明细
@@ -112,22 +108,6 @@ Page({
       if (res.code == 0) {
         _this.setData({
           withDrawlogs: res.data || []
-        })
-      }
-    })
-  },
-
-  //押金记录
-  depositlogs() {
-    const _this = this
-    WXAPI.depositList({
-      token: wx.getStorageSync('token'),
-      page: 1,
-      pageSize: 50
-    }).then(res => {
-      if (res.code == 0) {
-        _this.setData({
-          depositlogs: res.data.result || []
         })
       }
     })

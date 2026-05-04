@@ -105,7 +105,7 @@
                     <td style="padding:12px 14px; font-size:13px;">#{{ item.sheep.id }}</td>
                     <td style="padding:12px 14px; font-size:13px;">{{ item.sheep.ear_tag|default:'无' }}</td>
                     <td style="padding:12px 14px; font-size:13px;">{{ item.sheep.get_gender_display }}</td>
-                    <td style="padding:12px 14px; font-size:13px;">{{ item.sheep.weight }}kg</td>
+                    <td style="padding:12px 14px; font-size:13px;">{{ item.sheep.current_weight }}kg</td>
                     {% if is_admin %}
                     <td style="padding:12px 14px; font-size:13px; color:#5c6bc0;">
                         {{ item.sheep.owner.nickname|default:item.sheep.owner.username|default:'—' }}

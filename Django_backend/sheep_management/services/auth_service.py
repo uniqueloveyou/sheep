@@ -4,6 +4,7 @@
 通过 raise AuthError 传递错误。
 """
 import hashlib
+import re
 import time
 import requests as http_requests
 from datetime import datetime
@@ -175,6 +176,9 @@ class AuthService:
             raise AuthError('用户名长度为3-50个字符')
         if len(password) < 6:
             raise AuthError('密码长度至少6个字符')
+        mobile = (mobile or '').strip()
+        if mobile and not re.fullmatch(r'1[3-9]\d{9}', mobile):
+            raise AuthError('手机号格式不正确')
 
         # 唯一性检查
         if User.objects.filter(username=username).exists():
@@ -231,6 +235,25 @@ class AuthService:
             'openid': user.openid or '',
             'mobile': user.mobile or '',
         }
+
+    @staticmethod
+    def get_user_by_token(token):
+        """
+        通过 JWT Token 获取用户对象。
+        保留这个入口是为了兼容羊只维护等旧 API 中对 AuthService 的调用。
+        """
+        if not token:
+            raise AuthError('缺少 token 参数', code=401, http_status=401)
+
+        payload = verify_token(token)
+        if not payload:
+            raise AuthError('token 无效或已过期', code=401, http_status=401)
+
+        user_id = payload.get('user_id')
+        try:
+            return User.objects.get(pk=user_id)
+        except User.DoesNotExist:
+            raise AuthError('用户不存在', code=404, http_status=404)
 
     # ========================
     #  私有方法

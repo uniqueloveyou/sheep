@@ -162,6 +162,7 @@ def api_checkout(request):
         receiver_name    = (data.get('receiver_name', '') or '').strip() or None
         receiver_phone   = (data.get('receiver_phone', '') or '').strip() or None
         shipping_address = (data.get('shipping_address', '') or '').strip() or None
+        selected_cart_item_ids = data.get('selected_cart_item_ids') or []
         user_coupon_id   = data.get('user_coupon_id')  # 新增
         
         result = CommerceService.checkout(
@@ -170,6 +171,7 @@ def api_checkout(request):
             receiver_name=receiver_name,
             receiver_phone=receiver_phone,
             shipping_address=shipping_address,
+            selected_cart_item_ids=selected_cart_item_ids,
             user_coupon_id=user_coupon_id,  # 新增
         )
         return JsonResponse({'code': 0, 'msg': '结算成功', 'data': result})
@@ -222,7 +224,7 @@ def api_sheep_status(request, sheep_id):
     """
     try:
         token = _get_token(request)
-        result = CommerceService.get_sheep_adopt_status(token, sheep_id)
+        result = CommerceService.get_sheep_adopt_status_v2(token, sheep_id)
         return JsonResponse({'code': 0, 'msg': 'ok', 'data': result})
     except CommerceError as e:
         return _error_response(e)
@@ -241,6 +243,35 @@ def api_order_history(request):
         token = _get_token(request)
         result = CommerceService.get_order_history(token)
         return JsonResponse({'code': 0, 'msg': 'ok', 'data': result})
+    except CommerceError as e:
+        return _error_response(e)
+    except Exception as e:
+        return _error_response(e)
+
+
+@csrf_exempt
+@require_http_methods(["POST"])
+def api_request_end_adoption(request, order_id):
+    try:
+        data = json.loads(request.body or "{}")
+        token = data.get('token', '') or _get_token(request)
+        result = CommerceService.request_end_adoption(token, order_id)
+        return JsonResponse({'code': 0, 'msg': '已申请结束认养，请结算周期服务费', 'data': result})
+    except CommerceError as e:
+        return _error_response(e)
+    except Exception as e:
+        return _error_response(e)
+
+
+@csrf_exempt
+@require_http_methods(["POST"])
+def api_pay_care_fee(request, order_id):
+    try:
+        data = json.loads(request.body or "{}")
+        token = data.get('token', '') or _get_token(request)
+        payment_method = data.get('payment_method', 'balance')
+        result = CommerceService.pay_care_fee(token, order_id, payment_method)
+        return JsonResponse({'code': 0, 'msg': '周期服务费支付成功，订单已进入待交付', 'data': result})
     except CommerceError as e:
         return _error_response(e)
     except Exception as e:

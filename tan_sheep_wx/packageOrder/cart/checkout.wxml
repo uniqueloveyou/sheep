@@ -1,42 +1,39 @@
 <view class="checkout-page">
 
-  <!-- 收货人信息 -->
   <view class="section">
     <view class="section-title">
       <text class="section-icon"></text>
-      <text>收货信息</text>
+      <text>认养联系人信息</text>
     </view>
     <view class="form-item">
-      <text class="form-label">收货人</text>
-      <input class="form-input" placeholder="请输入姓名" value="{{receiverName}}" bindinput="onNameInput" />
+      <text class="form-label">联系人</text>
+      <input class="form-input" placeholder="请输入联系人姓名" value="{{receiverName}}" bindinput="onNameInput" />
     </view>
     <view class="form-item">
-      <text class="form-label">手机号</text>
-      <input class="form-input" placeholder="请输入手机号" type="number" value="{{receiverPhone}}" bindinput="onPhoneInput" />
+      <text class="form-label">联系电话</text>
+      <input class="form-input" placeholder="请输入联系电话" value="{{receiverPhone}}" bindinput="onPhoneInput" />
     </view>
     <view class="form-item form-item-addr">
-      <text class="form-label">收货地址</text>
-      <textarea class="form-textarea" placeholder="请输入详细地址" value="{{shippingAddress}}" bindinput="onAddressInput" auto-height />
+      <text class="form-label">交付地址</text>
+      <textarea class="form-textarea" placeholder="可现在填写，也可后续补充" value="{{shippingAddress}}" bindinput="onAddressInput" auto-height />
     </view>
   </view>
 
-  <!-- 商品清单 -->
   <view class="section">
     <view class="section-title">
       <text class="section-icon"></text>
-      <text>商品清单（{{checkoutItems.length}}件）</text>
+      <text>认养羊只（{{checkoutItems.length}}只）</text>
     </view>
     <view class="goods-item" wx:for="{{checkoutItems}}" wx:key="cart_item_id">
       <image class="goods-img" src="{{item.sheep.image || '/images/icons/function/f1.png'}}" mode="aspectFill" />
       <view class="goods-info">
         <text class="goods-name">滩羊 #{{item.id}}</text>
-        <text class="goods-attr">{{item.gender}}  {{item.weight}} kg</text>
+        <text class="goods-attr">{{item.gender}} {{item.weight}} kg</text>
       </view>
       <view class="goods-price">¥{{item.price}}</view>
     </view>
   </view>
 
-  <!-- 优惠券 -->
   <view class="section">
     <view class="section-title">
       <text class="section-icon"></text>
@@ -47,7 +44,7 @@
 
     <block wx:elif="{{availableCoupons.length}}">
       <view class="coupon-tools" wx:if="{{selectedCouponId}}">
-        <text class="coupon-tools-text">已选1张优惠券</text>
+        <text class="coupon-tools-text">已选择 1 张优惠券</text>
         <text class="coupon-clear" bindtap="onClearCouponTap">取消选择</text>
       </view>
 
@@ -63,15 +60,14 @@
         <view class="coupon-right">
           <text class="coupon-cut">可减</text>
           <text class="coupon-money">¥{{item.previewDiscount}}</text>
-          <text class="coupon-state">{{selectedCouponId===item.id ? '已选' : '选择'}}</text>
+          <text class="coupon-state">{{selectedCouponId===item.id ? '已选中' : '选择'}}</text>
         </view>
       </view>
     </block>
 
-    <view class="coupon-empty" wx:else>当前订单暂无可用优惠券</view>
+    <view class="coupon-empty" wx:else>当前认养暂无可用优惠券</view>
   </view>
 
-  <!-- 支付方式 -->
   <view class="section">
     <view class="section-title">
       <text class="section-icon"></text>
@@ -86,14 +82,13 @@
     </view>
   </view>
 
-  <!-- 金额明细 -->
   <view class="section">
     <view class="section-title">
       <text class="section-icon"></text>
-      <text>金额明细</text>
+      <text>认养费用明细</text>
     </view>
     <view class="amount-row">
-      <text class="amount-label">商品金额</text>
+      <text class="amount-label">认养费用</text>
       <text class="amount-value">¥{{originalTotalPrice}}</text>
     </view>
     <view class="amount-row" wx:if="{{selectedCouponId}}">
@@ -101,19 +96,18 @@
       <text class="amount-discount">-¥{{discountAmount}}</text>
     </view>
     <view class="amount-row amount-row-final">
-      <text class="amount-label-final">应付金额</text>
+      <text class="amount-label-final">应付费用</text>
       <text class="amount-payable">¥{{payableAmount}}</text>
     </view>
     <text class="coupon-tip" wx:if="{{couponTip}}">{{couponTip}}</text>
   </view>
 
-  <!-- 底部展示总价 + 下单按钮 -->
   <view class="footer-bar">
     <view class="footer-total">
       <text class="total-label">应付：</text>
       <text class="total-price">¥{{payableAmount}}</text>
     </view>
-    <van-button type="danger" round loading="{{loading}}" bind:click="submitOrder" class="submit-btn">确认下单</van-button>
+    <van-button type="danger" round loading="{{loading}}" bind:click="submitOrder" class="submit-btn">确认认养</van-button>
   </view>
 
 </view>

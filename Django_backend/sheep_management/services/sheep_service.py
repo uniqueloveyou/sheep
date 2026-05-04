@@ -42,7 +42,7 @@ class SheepService:
         搜索羊只
         :param gender: 性别筛选（支持中文/英文/数字）
         :param weight: 体重范围（如 "30-50kg"）
-        :param height: 身高范围（如 "60-80cm"）
+        :param height: 体高范围（如 "60-80cm"）
         :param length: 体长范围
         :return: list[dict]
         """
@@ -85,9 +85,11 @@ class SheepService:
             result.append({
                 'id': sheep.id,
                 'gender': sheep.get_gender_display(),  # 显示为中文
-                'weight': float(sheep.weight),
-                'height': float(sheep.height),
-                'length': float(sheep.length),
+                'weight': float(sheep.current_weight),
+                'height': float(sheep.current_height),
+                'length': float(sheep.current_length),
+                'age_weeks': sheep.age_weeks,
+                'age_display': sheep.age_display,
                 'price': float(sheep.price),
             })
         return result
@@ -110,10 +112,12 @@ class SheepService:
         return {
             'id': sheep.id,
             'gender': sheep.get_gender_display(),  # 显示为中文
-            'weight': float(sheep.weight),
-            'height': float(sheep.height),
-            'length': float(sheep.length),
+            'weight': float(sheep.current_weight),
+            'height': float(sheep.current_height),
+            'length': float(sheep.current_length),
             'birth_date': sheep.birth_date.strftime('%Y-%m-%d') if sheep.birth_date else '',
+            'age_weeks': sheep.age_weeks,
+            'age_display': sheep.age_display,
             'price': float(sheep.price),
             'ear_tag': sheep.ear_tag or '',
             'qr_code': sheep.qr_code.url if sheep.qr_code else '',
@@ -213,9 +217,11 @@ class SheepService:
         return {
             'id': sheep.id,
             'gender': sheep.get_gender_display() if sheep.gender is not None else '',  # 显示为中文
-            'weight': float(sheep.weight) if sheep.weight is not None else 0.0,
-            'height': float(sheep.height) if sheep.height is not None else 0.0,
-            'length': float(sheep.length) if sheep.length is not None else 0.0,
+            'weight': float(sheep.current_weight) if sheep.current_weight is not None else 0.0,
+            'height': float(sheep.current_height) if sheep.current_height is not None else 0.0,
+            'length': float(sheep.current_length) if sheep.current_length is not None else 0.0,
+            'age_weeks': sheep.age_weeks,
+            'age_display': sheep.age_display,
             'price': float(sheep.price) if sheep.price is not None else 0.0,
             'growth_records': growth_data,
             'feeding_records': feeding_data,
@@ -249,9 +255,11 @@ class SheepService:
             'id': sheep.id,
             'ear_tag': sheep.ear_tag,
             'gender': sheep.get_gender_display(),
-            'weight': float(sheep.weight),
-            'height': float(sheep.height),
-            'length': float(sheep.length),
+            'weight': float(sheep.current_weight),
+            'height': float(sheep.current_height),
+            'length': float(sheep.current_length),
+            'age_weeks': sheep.age_weeks,
+            'age_display': sheep.age_display,
             'qr_code': qr_code_url,
             'breeder': {
                 'id': sheep.owner.id if sheep.owner else None,
@@ -367,14 +375,16 @@ class SheepService:
                 'id': sheep.id,
                 'ear_tag': sheep.ear_tag or '',
                 'gender': sheep.get_gender_display(),
-                'weight': float(sheep.weight),
-                'height': float(sheep.height),
-                'length': float(sheep.length),
+                'weight': float(sheep.current_weight),
+                'height': float(sheep.current_height),
+                'length': float(sheep.current_length),
                 'birth_date': sheep.birth_date.strftime('%Y-%m-%d') if sheep.birth_date else '',
+                'age_weeks': sheep.age_weeks,
+                'age_display': sheep.age_display,
                 'farm_name': sheep.farm_name or '',
                 'price': float(sheep.price),
                 'image': sheep.image.url if sheep.image else '',
-                'video': sheep.video.url if sheep.video else '',
+                'video': sheep.video.url if getattr(sheep, 'video', None) else '',
             })
         return result
 
@@ -494,9 +504,11 @@ class SheepService:
                 'id': sheep.id,
                 'ear_tag': sheep.ear_tag or '',
                 'gender': sheep.get_gender_display(),
-                'weight': float(sheep.weight),
-                'height': float(sheep.height),
-                'length': float(sheep.length),
+                'weight': float(sheep.current_weight),
+                'height': float(sheep.current_height),
+                'length': float(sheep.current_length),
+                'age_weeks': sheep.age_weeks,
+                'age_display': sheep.age_display,
                 'price': float(sheep.price),
                 'image': sheep.image.url if sheep.image else '',
                 'farm_name': sheep.farm_name or '宁夏盐池滩羊核心产区',

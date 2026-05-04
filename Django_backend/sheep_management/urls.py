@@ -107,6 +107,7 @@ urlpatterns = [
 
     # 公开溯源数据 API（无需登录）
     path('api/public/trace/<int:sheep_id>', sheep_api.api_public_sheep_trace, name='api_public_sheep_trace'),
+    path('api/public/trace/<int:sheep_id>/qrcode', sheep_api.api_public_sheep_qrcode, name='api_public_sheep_qrcode'),
 
     # 传统视图路由
     path('sheep/', views.sheep_list, name='sheep_list'),
@@ -208,6 +209,8 @@ urlpatterns = [
     path('api/my/sheep/updates', commerce_api.api_my_sheep_updates, name='api_my_sheep_updates'),
     path('api/sheep/<int:sheep_id>/status', commerce_api.api_sheep_status, name='api_sheep_status'),
     path('api/orders', commerce_api.api_order_history, name='api_order_history'),
+    path('api/orders/<int:order_id>/request-end', commerce_api.api_request_end_adoption, name='api_request_end_adoption'),
+    path('api/orders/<int:order_id>/pay-care-fee', commerce_api.api_pay_care_fee, name='api_pay_care_fee'),
     path('api/breeder/orders', commerce_api.api_breeder_orders, name='api_breeder_orders'),
     path('api/breeder/orders/<int:order_id>/status', commerce_api.api_update_order_status, name='api_update_order_status')]
 

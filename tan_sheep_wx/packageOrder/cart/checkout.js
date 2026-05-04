@@ -1,4 +1,4 @@
-const API = require('../../utils/api.js');
+﻿const API = require('../../utils/api.js');
 
 Page({
   data: {
@@ -13,7 +13,7 @@ Page({
     availableCoupons: [],
     couponLoading: false,
 
-    // 收货信息
+    // 认养联系人信息
     receiverName: '',
     receiverPhone: '',
     shippingAddress: '',
@@ -28,6 +28,9 @@ Page({
     const items = wx.getStorageSync('checkoutItems') || [];
     const totalPrice = this.calculateItemsTotal(items);
     const preferredCouponId = options.user_coupon_id ? Number(options.user_coupon_id) : null;
+    const selectedCartItemIds = items
+      .map(item => Number(item.cart_item_id))
+      .filter(id => Number.isFinite(id) && id > 0);
 
     this.setData({
       checkoutItems: items,
@@ -40,7 +43,7 @@ Page({
 
     await this.loadAvailableCoupons(preferredCouponId);
 
-    // 读取上次填写的收货信息
+    // 读取上次填写的认养联系人信息
     const lastAddress = wx.getStorageSync('lastShippingInfo') || {};
     this.setData({
       receiverName: lastAddress.receiverName || '',
@@ -49,6 +52,10 @@ Page({
     });
 
     // 拉取最新余额
+    if (selectedCartItemIds.length === 0) {
+      wx.showToast({ title: '请先返回购物车重新勾选结算商品', icon: 'none' }); return;
+    }
+
     const token = wx.getStorageSync('token');
     if (token) {
       API.getUserInfo(token).then(res => {
@@ -118,7 +125,7 @@ Page({
       this.setData({
         availableCoupons: usableCoupons,
         couponLoading: false,
-        couponTip: usableCoupons.length ? '请选择一张优惠券' : '当前订单暂无可用优惠券'
+      couponTip: usableCoupons.length ? '请选择一张优惠券' : '当前认养暂无可用优惠券'
       });
 
       if (usableCoupons.length === 0) {
@@ -150,7 +157,7 @@ Page({
     const minPurchase = parseFloat(coupon.min_purchase_amount) || 0;
 
     if (eligibleAmount <= 0) {
-      return { discount: 0, payable: orderTotal, tip: '当前商品不符合该优惠券使用范围' };
+      return { discount: 0, payable: orderTotal, tip: '当前羊只不符合该优惠券使用范围' };
     }
 
     if (eligibleAmount < minPurchase) {
@@ -209,7 +216,7 @@ Page({
       discountAmount: '0.00',
       payableAmount: orderTotal.toFixed(2),
       totalPrice: orderTotal.toFixed(2),
-      couponTip: this.data.availableCoupons.length ? '未使用优惠券' : '当前订单暂无可用优惠券'
+      couponTip: this.data.availableCoupons.length ? '未使用优惠券' : '当前认养暂无可用优惠券'
     });
 
     if (showToast) {
@@ -255,17 +262,17 @@ Page({
   // 提交订单
   async submitOrder() {
     const { receiverName, receiverPhone, shippingAddress, payMethod, userCouponId, payableAmount, discountAmount } = this.data;
+    const selectedCartItemIds = (this.data.checkoutItems || [])
+      .map(item => Number(item.cart_item_id))
+      .filter(id => Number.isFinite(id) && id > 0);
 
     if (!receiverName.trim()) {
-      wx.showToast({ title: '请填写收货人姓名', icon: 'none' }); return;
+      wx.showToast({ title: '请填写联系人姓名', icon: 'none' }); return;
     }
-    if (!receiverPhone.trim() || receiverPhone.length < 11) {
-      wx.showToast({ title: '请填写正确的手机号', icon: 'none' }); return;
+    if (!receiverPhone.trim()) {
+      wx.showToast({ title: '请填写联系电话', icon: 'none' });
+      return;
     }
-    if (!shippingAddress.trim()) {
-      wx.showToast({ title: '请填写收货地址', icon: 'none' }); return;
-    }
-
     const token = wx.getStorageSync('token');
     if (!token) { wx.showToast({ title: '请先登录', icon: 'none' }); return; }
 
@@ -274,10 +281,10 @@ Page({
     const hasDiscount = parseFloat(discountText) > 0;
 
     wx.showModal({
-      title: '确认下单',
+      title: '确认认养',
       content: hasDiscount
-        ? `已优惠 ¥${discountText}，应付 ¥${payText}，确认支付吗？`
-        : `共 ¥${payText}，使用余额支付，确认吗？`,
+        ? `已优惠 ¥${discountText}，本次认养应付 ¥${payText}，确认支付吗？`
+        : `本次认养共 ¥${payText}，使用余额支付，确认吗？`,
       success: async (modalRes) => {
         if (!modalRes.confirm) return;
 
@@ -287,7 +294,7 @@ Page({
             receiver_name: receiverName.trim(),
             receiver_phone: receiverPhone.trim(),
             shipping_address: shippingAddress.trim(),
-          }, userCouponId);
+          }, userCouponId, selectedCartItemIds);
 
           if (res.code === 0) {
             wx.setStorageSync('lastShippingInfo', {
@@ -297,12 +304,14 @@ Page({
               wx.setStorageSync('balance', parseFloat(res.data.user_balance).toFixed(2));
             }
             wx.removeStorageSync('checkoutItems');
-            wx.showToast({ title: '下单成功！', icon: 'success', duration: 1800 });
+            wx.showToast({ title: '认养成功', icon: 'success', duration: 1800 });
             setTimeout(() => {
-              wx.navigateBack();
+              wx.redirectTo({
+                url: '/packageOrder/cart/history/index'
+              });
             }, 1800);
           } else {
-            wx.showModal({ title: '下单失败', content: res.msg || '请稍后重试', showCancel: false });
+            wx.showModal({ title: '认养失败', content: res.msg || '请稍后重试', showCancel: false });
           }
         } catch (err) {
           wx.showModal({ title: '网络错误', content: err.message || '请稍后重试', showCancel: false });

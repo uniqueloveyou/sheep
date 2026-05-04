@@ -212,9 +212,9 @@ def api_search_sheep(request):
             result.append({
                 'id': sheep.id,
                 'gender': sheep.get_gender_display(),  # 显示为中文
-                'weight': float(sheep.weight),
-                'height': float(sheep.height),
-                'length': float(sheep.length)
+                'weight': float(sheep.current_weight),
+                'height': float(sheep.current_height),
+                'length': float(sheep.current_length)
             })
 
         return JsonResponse(result, safe=False, status=200)
@@ -241,9 +241,9 @@ def api_get_sheep_by_id(request, sheep_id=None):
             result = {
                 'id': sheep.id,
                 'gender': sheep.get_gender_display(),  # 显示为中文
-                'weight': float(sheep.weight),
-                'height': float(sheep.height),
-                'length': float(sheep.length)
+                'weight': float(sheep.current_weight),
+                'height': float(sheep.current_height),
+                'length': float(sheep.current_length)
             }
             return JsonResponse(result, status=200)
         except Sheep.DoesNotExist:
@@ -346,9 +346,9 @@ def api_get_breeders(request, breeder_id=None):
                     sheep_data.append({
                         'id': sheep.id,
                         'gender': sheep.get_gender_display(),  # 显示为中文
-                        'weight': float(sheep.weight),
-                        'height': float(sheep.height),
-                        'length': float(sheep.length),
+                        'weight': float(sheep.current_weight),
+                        'height': float(sheep.current_height),
+                        'length': float(sheep.current_length),
                         'vaccine_count': vaccine_count,
                         'is_healthy': has_recent_vaccine,
                         'image_url': f'/images/sheep/{sheep.id}.jpg'
@@ -514,7 +514,7 @@ def api_search_goods(request):
                     sheep_id = int(num_value)
                     sheep_list = Sheep.objects.filter(id=sheep_id)
                 else:
-                    # 浮点数，可能是体重/身高/体长（允许±5的误差）
+                    # 浮点数，可能是体重/体高/体长（允许±5的误差）
                     sheep_list = Sheep.objects.filter(
                         Q(weight__gte=num_value-5, weight__lte=num_value+5) |
                         Q(height__gte=num_value-5, height__lte=num_value+5) |
@@ -537,20 +537,22 @@ def api_search_goods(request):
             
             for sheep in sheep_list:
                 # 根据体重计算价格
-                calculated_price = round(float(sheep.weight) * PRICE_PER_KG, 2)
+                calculated_price = round(float(sheep.current_weight) * PRICE_PER_KG, 2)
                 
                 result.append({
                     'type': 'sheep',
                     'id': sheep.id,
                     'name': f'羊只#{sheep.id}',
                     'title': f'羊只#{sheep.id} - {sheep.get_gender_display()}',
-                    'description': f'性别: {sheep.get_gender_display()}, 体重: {sheep.weight}kg, 身高: {sheep.height}cm, 体长: {sheep.length}cm',
+                    'description': f'性别: {sheep.get_gender_display()}, 羊龄: {sheep.age_display}, 体重: {sheep.current_weight}kg, 体高: {sheep.current_height}cm, 体长: {sheep.current_length}cm',
                     'price': calculated_price,
                     'image': '/images/icons/function/f1.png',
                     'gender': sheep.get_gender_display(),  # 显示为中文
-                    'weight': float(sheep.weight),
-                    'height': float(sheep.height),
-                    'length': float(sheep.length),
+                    'weight': float(sheep.current_weight),
+                    'height': float(sheep.current_height),
+                    'length': float(sheep.current_length),
+                    'age_weeks': sheep.age_weeks,
+                    'age_display': sheep.age_display,
                     'breeder_id': sheep.owner_id if sheep.owner_id else None,
                     'breeder_name': sheep.owner.nickname or sheep.owner.username if sheep.owner else None
                 })
@@ -715,9 +717,9 @@ def api_get_sheep_with_growth(request, sheep_id):
         result = {
             'id': sheep.id,
             'gender': sheep.get_gender_display() if sheep.gender is not None else '',  # 显示为中文
-            'weight': float(sheep.weight) if sheep.weight is not None else 0.0,
-            'height': float(sheep.height) if sheep.height is not None else 0.0,
-            'length': float(sheep.length) if sheep.length is not None else 0.0,
+            'weight': float(sheep.current_weight) if sheep.current_weight is not None else 0.0,
+            'height': float(sheep.current_height) if sheep.current_height is not None else 0.0,
+            'length': float(sheep.current_length) if sheep.current_length is not None else 0.0,
             'growth_records': growth_data,
             'feeding_records': feeding_data,
             'vaccination_records': vaccination_data
@@ -988,9 +990,9 @@ def api_get_sheep_by_ear_tag(request):
             'id': sheep.id,
             'ear_tag': sheep.ear_tag,
             'gender': sheep.get_gender_display(),
-            'weight': float(sheep.weight),
-            'height': float(sheep.height),
-            'length': float(sheep.length),
+            'weight': float(sheep.current_weight),
+            'height': float(sheep.current_height),
+            'length': float(sheep.current_length),
             'qr_code': request.build_absolute_uri(sheep.qr_code.url) if sheep.qr_code else None,
             'breeder': {
                 'id': sheep.breeder.id if sheep.breeder else None,

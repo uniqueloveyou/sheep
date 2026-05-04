@@ -10,7 +10,7 @@
             <view class="sheep-description">
                 <text class="sheep-title">{{sheepDetail.title}}</text>
                 <text class="sheep-gender">性别: {{sheepDetail.gender}}</text>
-                <text class="sheep-measurements">身高: {{sheepDetail.height}} cm, 体长: {{sheepDetail.length}} cm, 体重: {{sheepDetail.weight}} kg</text>
+                <text class="sheep-measurements">体高: {{sheepDetail.height}} cm, 体长: {{sheepDetail.length}} cm, 体重: {{sheepDetail.weight}} kg</text>
                 <text class="sheep-price">价格: {{sheepDetail.price}} 元</text>
                 <text class="sheep-id">羊ID:{{sheepDetail.sheepId}}</text>
                 <text class="sheep-breeder">养殖户姓名:{{sheepDetail.breederName}}</text>

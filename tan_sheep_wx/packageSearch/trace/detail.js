@@ -1,6 +1,19 @@
 // pages/trace/detail.js
 // 扫码后的溯源详情页：通过 sheep_id 拉取完整生命周期数据
 const API = require('../../utils/api.js');
+const RECORD_PAGE_SIZE = 10;
+
+function paginate(list, page) {
+    const safeList = Array.isArray(list) ? list : [];
+    const totalPages = Math.max(1, Math.ceil(safeList.length / RECORD_PAGE_SIZE));
+    const currentPage = Math.min(Math.max(parseInt(page || 1, 10), 1), totalPages);
+    const start = (currentPage - 1) * RECORD_PAGE_SIZE;
+    return {
+        list: safeList.slice(start, start + RECORD_PAGE_SIZE),
+        currentPage,
+        totalPages
+    };
+}
 
 Page({
     data: {
@@ -11,6 +24,12 @@ Page({
         vaccineExpanded: true,
         growthExpanded: true,
         feedExpanded: false,
+        vaccinePage: 1,
+        vaccineTotalPages: 1,
+        growthPage: 1,
+        growthTotalPages: 1,
+        feedPage: 1,
+        feedTotalPages: 1,
     },
 
     onLoad(options) {
@@ -32,7 +51,7 @@ Page({
             .then(res => {
                 wx.hideLoading();
                 if (res.code === 0) {
-                    this.setData({ sheep: res.data, loading: false, error: null });
+                    this.setSheepData(res.data);
                 } else {
                     this.setData({ loading: false, error: res.msg || '查询失败' });
                 }
@@ -68,6 +87,45 @@ Page({
                 wx.showToast({ title: errorMessage, icon: 'none', duration: 2000 });
                 this.setData({ loading: false, error: errorMessage });
             });
+    },
+
+    setSheepData(sheep) {
+        const nextSheep = Object.assign({}, sheep || {});
+        const vaccine = paginate(nextSheep.vaccinations, this.data.vaccinePage);
+        const growth = paginate(nextSheep.growth_records, this.data.growthPage);
+        const feed = paginate(nextSheep.feeding_records, this.data.feedPage);
+
+        nextSheep.paged_vaccinations = vaccine.list;
+        nextSheep.paged_growth_records = growth.list;
+        nextSheep.paged_feeding_records = feed.list;
+
+        this.setData({
+            sheep: nextSheep,
+            vaccinePage: vaccine.currentPage,
+            vaccineTotalPages: vaccine.totalPages,
+            growthPage: growth.currentPage,
+            growthTotalPages: growth.totalPages,
+            feedPage: feed.currentPage,
+            feedTotalPages: feed.totalPages,
+            loading: false,
+            error: null
+        });
+    },
+
+    changeRecordPage(e) {
+        const type = e.currentTarget.dataset.type;
+        const direction = Number(e.currentTarget.dataset.direction || 0);
+        const pageKey = `${type}Page`;
+        const totalKey = `${type}TotalPages`;
+        const nextPage = Math.min(
+            Math.max((this.data[pageKey] || 1) + direction, 1),
+            this.data[totalKey] || 1
+        );
+        if (nextPage === this.data[pageKey]) {
+            return;
+        }
+        this.setData({ [pageKey]: nextPage });
+        this.setSheepData(this.data.sheep);
     },
 
     toggleSection(e) {

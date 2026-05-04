@@ -24,30 +24,12 @@ Page({
         badge: ''
       },
       {
-        text: '优惠券',
-        icon: 'coupon-o',
-        bgColor: '#FFEBEE',
-        iconColor: '#F44336',
-        url: '/packageUser/my/youhui/youhui',
-        type: 'coupon',
-        badge: ''
-      },
-      {
         text: '个人中心',
         icon: 'user-o',
         bgColor: '#E6F5ED',
         iconColor: '#238E23',
         url: '/packageUser/my/info',
         type: 'profile',
-        badge: ''
-      },
-      {
-        text: '我的关注',
-        icon: 'like-o',
-        bgColor: '#FFF3E0',
-        iconColor: '#FF9800',
-        url: '/packageUser/my/follows/index',
-        type: 'follows',
         badge: ''
       },
       {
@@ -64,25 +46,11 @@ Page({
     // 服务与工具区（列表形式）
     toolsMenus: [
       {
-        text: '意见反馈',
-        icon: 'chat-o',
-        color: '#666666',
-        url: '/pages/my/feedback',
-        type: 'feedback'
-      },
-      {
         text: '关于我们',
         icon: 'info-o',
         color: '#666666',
         url: '',
         type: 'about'
-      },
-      {
-        text: '设置',
-        icon: 'setting-o',
-        color: '#666666',
-        url: '/pages/my/setting',
-        type: 'setting'
       }
     ],
     
@@ -160,6 +128,7 @@ Page({
               nick: info.nickname || info.username || '未设置昵称',
               avatarUrl: info.avatar_url || '',
               mobile: info.mobile || '',
+              mobileMasked: this.maskMobile(info.mobile || ''),
               username: info.username || '',
               role: info.role || 0,
               is_verified: info.is_verified || false
@@ -207,6 +176,17 @@ Page({
       return { ...item, badge };
     });
     this.setData({ coreFunctions: newCore });
+  },
+
+  maskMobile(mobile) {
+    var value = String(mobile || '').trim();
+    if (/^1[3-9]\d{9}$/.test(value)) {
+      return value.slice(0, 3) + '****' + value.slice(7);
+    }
+    if (value.length > 7) {
+      return value.slice(0, 3) + '****' + value.slice(-4);
+    }
+    return value;
   },
 
   handleFunctionTap(e) {
