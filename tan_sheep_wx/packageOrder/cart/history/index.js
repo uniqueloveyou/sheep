@@ -28,7 +28,9 @@ function normalizeOrder(order) {
 
   return Object.assign({}, order, {
     items,
-    status_display: STATUS_LABELS[order.status] || order.status_display || order.status,
+    status_display: order.status === 'shipping' && order.delivery_method === 'logistics'
+      ? '已发货'
+      : (STATUS_LABELS[order.status] || order.status_display || order.status),
     totalAmountText: formatAmount(order.total_amount)
   });
 }

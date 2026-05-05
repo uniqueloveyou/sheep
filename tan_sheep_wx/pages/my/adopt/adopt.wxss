@@ -436,6 +436,12 @@ page {
   border-color: #16831c;
 }
 
+.adoption-action-btn.secondary {
+  color: #1268a8;
+  background: #eef7ff;
+  border-color: #cfe7fa;
+}
+
 .adoption-action-btn.disabled {
   color: #8a8f96;
   background: #f3f4f5;

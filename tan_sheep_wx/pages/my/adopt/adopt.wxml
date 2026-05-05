@@ -41,7 +41,8 @@
           wx:for="{{adoptingList}}"
           wx:key="id"
           class="sheep-card"
-          bindtap="viewSheepDetail"
+          bindtap="viewAdoptionEntry"
+          data-record-id="{{item.id}}"
           data-sheep-id="{{item.sheep.id}}"
           data-latest-trace-date="{{item.latestTraceDate}}"
         >
@@ -88,7 +89,7 @@
               </button>
               <button
                 wx:else
-                class="adoption-action-btn disabled"
+                class="adoption-action-btn {{item.actionDisabled ? 'disabled' : 'secondary'}}"
                 disabled="{{item.actionDisabled}}">
                 {{item.actionText}}
               </button>
@@ -115,7 +116,8 @@
           wx:for="{{otherList}}"
           wx:key="id"
           class="other-card"
-          bindtap="viewSheepDetail"
+          bindtap="viewAdoptionEntry"
+          data-record-id="{{item.id}}"
           data-sheep-id="{{item.sheep.id}}"
           data-latest-trace-date="{{item.latestTraceDate}}"
         >

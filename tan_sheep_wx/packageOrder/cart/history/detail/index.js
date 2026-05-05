@@ -41,15 +41,22 @@ function normalizeItem(item) {
 function normalizeOrder(order) {
   const items = (order.items || []).map(normalizeItem);
   const shippingAddress = order.shipping_address || '';
-  const hasLogistics = !!(order.logistics_company || order.logistics_tracking_number || order.shipping_date);
+  const deliveryMethod = order.delivery_method || 'logistics';
+  const isLogisticsDelivery = deliveryMethod === 'logistics';
+  const isOfflineDelivery = deliveryMethod === 'offline';
+  const hasLogistics = isLogisticsDelivery && !!(order.logistics_company || order.logistics_tracking_number || order.shipping_date);
+  const hasOfflineDelivery = isOfflineDelivery && !!(order.offline_delivery_location || order.offline_delivery_note || order.shipping_date);
   const isCompleted = order.status === 'completed';
   const isShipping = order.status === 'shipping';
+  const isDeliveryStage = ['awaiting_delivery', 'shipping', 'completed'].indexOf(order.status) >= 0;
 
   let deliveryStatusText = '暂未交付';
   let deliveryHint = '待羊只具备交付条件后，由养殖户安排交付。';
   if (isShipping) {
-    deliveryStatusText = '交付中';
-    deliveryHint = '';
+    deliveryStatusText = isLogisticsDelivery ? '已发货' : '交付中';
+    deliveryHint = isLogisticsDelivery
+      ? '养殖户已发货，可根据物流单号查看配送进度。'
+      : '养殖户已安排线下交付，请按约定地点和时间完成交付。';
   } else if (isCompleted) {
     deliveryStatusText = '已完成';
     deliveryHint = '';
@@ -57,15 +64,19 @@ function normalizeOrder(order) {
 
   return Object.assign({}, order, {
     items,
-    status_display: getDisplayStatus(order.status),
+    status_display: isShipping && isLogisticsDelivery ? '已发货' : getDisplayStatus(order.status),
     statusClass: getStatusClass(order.status),
     totalAmountText: formatAmount(order.total_amount),
+    deliveryMethod,
+    deliveryMethodText: order.delivery_method_display || (isOfflineDelivery ? '线下交付' : '物流配送'),
     receiverNameText: order.receiver_name || '未填写',
     receiverPhoneText: order.receiver_phone || '未填写',
     shippingAddressText: shippingAddress || '可后续补充',
     primarySheepId: items[0] && items[0].sheep_id,
     hasLogistics,
+    hasOfflineDelivery,
     isCompleted,
+    showTraceSection: !isDeliveryStage,
     deliveryStatusText,
     deliveryHint
   });

@@ -118,8 +118,11 @@ def order_update_status(request, pk):
         if status == 'adopting' and order.status in ACTIVE_ORDER_STATUS_ALIASES:
             status = order.status
         logistics_info = {
+            'delivery_method': request.POST.get('delivery_method', 'logistics'),
             'logistics_company': request.POST.get('logistics_company', ''),
             'logistics_tracking_number': request.POST.get('logistics_tracking_number', ''),
+            'offline_delivery_location': request.POST.get('offline_delivery_location', ''),
+            'offline_delivery_note': request.POST.get('offline_delivery_note', ''),
         }
         try:
             if user.role != ROLE_ADMIN:
@@ -134,8 +137,18 @@ def order_update_status(request, pk):
         order.status = status
 
         if status == 'shipping':
-            order.logistics_company = logistics_info['logistics_company'].strip()
-            order.logistics_tracking_number = logistics_info['logistics_tracking_number'].strip()
+            delivery_method = logistics_info['delivery_method']
+            order.delivery_method = delivery_method
+            if delivery_method == 'logistics':
+                order.logistics_company = logistics_info['logistics_company'].strip()
+                order.logistics_tracking_number = logistics_info['logistics_tracking_number'].strip()
+                order.offline_delivery_location = ''
+                order.offline_delivery_note = ''
+            else:
+                order.logistics_company = ''
+                order.logistics_tracking_number = ''
+                order.offline_delivery_location = logistics_info['offline_delivery_location'].strip()
+                order.offline_delivery_note = logistics_info['offline_delivery_note'].strip()
             order.shipping_date = timezone.now()
         elif status == 'completed' and not order.delivery_date:
             order.delivery_date = timezone.now()

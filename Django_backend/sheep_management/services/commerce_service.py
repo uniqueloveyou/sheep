@@ -44,6 +44,10 @@ class CommerceService:
         "completed": "已完成",
         "cancelled": "已取消",
     }
+    DELIVERY_METHOD_DISPLAY = {
+        "logistics": "物流配送",
+        "offline": "线下交付",
+    }
     ORDER_TRANSITIONS = {
         "pending": ["adopting", "cancelled"],
         "paid": ["settlement_pending", "ready_to_ship", "cancelled"],
@@ -353,18 +357,37 @@ class CommerceService:
                     ),
                     "order_status_key": order_item.order.status,
                     "price": float(order_item.price),
+                    "total_amount": float(order_item.order.total_amount or 0),
+                    "final_amount": float(
+                        (order_item.order.total_amount or Decimal("0"))
+                        + (order_item.order.care_fee_amount or Decimal("0"))
+                    ),
                     "daily_care_fee": float(order_item.order.daily_care_fee or 0),
                     "care_fee_amount": float(order_item.order.care_fee_amount or 0),
                     "estimated_care_fee": float(estimated_care_fee),
                     "adoption_days": adoption_days,
+                    "delivery_method": order_item.order.delivery_method or "logistics",
+                    "delivery_method_display": CommerceService.DELIVERY_METHOD_DISPLAY.get(
+                        order_item.order.delivery_method or "logistics",
+                        "物流配送",
+                    ),
                     "end_requested_at": order_item.order.end_requested_at.strftime("%Y-%m-%d %H:%M")
                     if order_item.order.end_requested_at
+                    else "",
+                    "care_fee_paid_at": order_item.order.care_fee_paid_at.strftime("%Y-%m-%d %H:%M")
+                    if order_item.order.care_fee_paid_at
                     else "",
                     "adoption_start_time": order_item.order.adoption_start_time.strftime("%Y-%m-%d %H:%M")
                     if order_item.order.adoption_start_time
                     else "",
                     "pay_time": order_item.order.pay_time.strftime("%Y-%m-%d %H:%M")
                     if order_item.order.pay_time
+                    else "",
+                    "shipping_date": order_item.order.shipping_date.strftime("%Y-%m-%d %H:%M")
+                    if order_item.order.shipping_date
+                    else "",
+                    "delivery_date": order_item.order.delivery_date.strftime("%Y-%m-%d %H:%M")
+                    if order_item.order.delivery_date
                     else "",
                     "sheep": {
                         "id": sheep.id,
@@ -378,6 +401,16 @@ class CommerceService:
                         "price": float(sheep.price),
                         "image": sheep.image.url if sheep.image else "",
                     },
+                    "logistics_company": order_item.order.logistics_company or "",
+                    "logistics_tracking_number": order_item.order.logistics_tracking_number or "",
+                    "offline_delivery_location": order_item.order.offline_delivery_location or "",
+                    "offline_delivery_note": order_item.order.offline_delivery_note or "",
+                    "receiver_name": order_item.order.receiver_name or "",
+                    "receiver_phone": order_item.order.receiver_phone or "",
+                    "shipping_address": order_item.order.shipping_address or "",
+                    "created_at": order_item.order.created_at.strftime("%Y-%m-%d %H:%M")
+                    if order_item.order.created_at
+                    else "",
                 }
             )
         return result
@@ -483,8 +516,15 @@ class CommerceService:
                     "pay_time": order.pay_time.strftime("%Y-%m-%d %H:%M") if order.pay_time else "",
                     "shipping_date": order.shipping_date.strftime("%Y-%m-%d %H:%M") if order.shipping_date else "",
                     "delivery_date": order.delivery_date.strftime("%Y-%m-%d %H:%M") if order.delivery_date else "",
+                    "delivery_method": order.delivery_method or "logistics",
+                    "delivery_method_display": CommerceService.DELIVERY_METHOD_DISPLAY.get(
+                        order.delivery_method or "logistics",
+                        "物流配送",
+                    ),
                     "logistics_company": order.logistics_company or "",
                     "logistics_tracking_number": order.logistics_tracking_number or "",
+                    "offline_delivery_location": order.offline_delivery_location or "",
+                    "offline_delivery_note": order.offline_delivery_note or "",
                     "receiver_name": order.receiver_name or "",
                     "receiver_phone": order.receiver_phone or "",
                     "shipping_address": order.shipping_address or "",
@@ -587,8 +627,18 @@ class CommerceService:
         order.status = status
         if status == "shipping":
             logistics_info = logistics_info or {}
-            order.logistics_company = (logistics_info.get("logistics_company") or "").strip()
-            order.logistics_tracking_number = (logistics_info.get("logistics_tracking_number") or "").strip()
+            delivery_method = (logistics_info.get("delivery_method") or "logistics").strip()
+            order.delivery_method = delivery_method
+            if delivery_method == "logistics":
+                order.logistics_company = (logistics_info.get("logistics_company") or "").strip()
+                order.logistics_tracking_number = (logistics_info.get("logistics_tracking_number") or "").strip()
+                order.offline_delivery_location = ""
+                order.offline_delivery_note = ""
+            else:
+                order.logistics_company = ""
+                order.logistics_tracking_number = ""
+                order.offline_delivery_location = (logistics_info.get("offline_delivery_location") or "").strip()
+                order.offline_delivery_note = (logistics_info.get("offline_delivery_note") or "").strip()
             order.shipping_date = timezone.now()
         elif status == "completed" and not order.delivery_date:
             order.delivery_date = timezone.now()
@@ -689,10 +739,16 @@ class CommerceService:
             raise CommerceError(f"订单状态不能从“{current_status}”流转到“{next_status}”。")
         if target_status == "shipping":
             logistics_info = logistics_info or {}
-            company = (logistics_info.get("logistics_company") or "").strip()
-            tracking_number = (logistics_info.get("logistics_tracking_number") or "").strip()
-            if not company or not tracking_number:
-                raise CommerceError("发货时必须填写物流公司和物流单号。")
+            delivery_method = (logistics_info.get("delivery_method") or "logistics").strip()
+            if delivery_method not in CommerceService.DELIVERY_METHOD_DISPLAY:
+                raise CommerceError("交付方式不合法。")
+            if delivery_method == "logistics":
+                company = (logistics_info.get("logistics_company") or "").strip()
+                tracking_number = (logistics_info.get("logistics_tracking_number") or "").strip()
+                if not company or not tracking_number:
+                    raise CommerceError("物流配送时必须填写物流公司和物流单号。")
+            elif not (logistics_info.get("offline_delivery_location") or "").strip():
+                raise CommerceError("线下交付时请填写交付地点。")
 
     @staticmethod
     def _resolve_user(token):
@@ -755,8 +811,15 @@ class CommerceService:
             "pay_time": order.pay_time.strftime("%Y-%m-%d %H:%M:%S") if order.pay_time else "",
             "shipping_date": order.shipping_date.strftime("%Y-%m-%d %H:%M:%S") if order.shipping_date else "",
             "delivery_date": order.delivery_date.strftime("%Y-%m-%d %H:%M:%S") if order.delivery_date else "",
+            "delivery_method": order.delivery_method or "logistics",
+            "delivery_method_display": CommerceService.DELIVERY_METHOD_DISPLAY.get(
+                order.delivery_method or "logistics",
+                "物流配送",
+            ),
             "logistics_company": order.logistics_company or "",
             "logistics_tracking_number": order.logistics_tracking_number or "",
+            "offline_delivery_location": order.offline_delivery_location or "",
+            "offline_delivery_note": order.offline_delivery_note or "",
             "receiver_name": order.receiver_name or "",
             "receiver_phone": order.receiver_phone or "",
             "shipping_address": order.shipping_address or "",

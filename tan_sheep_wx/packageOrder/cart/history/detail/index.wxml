@@ -32,7 +32,7 @@
     </view>
   </view>
 
-  <view class="section">
+  <view class="section" wx:if="{{order.showTraceSection}}">
     <view class="header-row">
       <text class="title">溯源记录</text>
     </view>
@@ -45,12 +45,19 @@
       <text class="title">交付信息</text>
     </view>
     <view class="info-row"><text class="label">交付状态</text><text class="value">{{order.deliveryStatusText}}</text></view>
+    <view class="info-row" wx:if="{{order.status === 'shipping' || order.status === 'completed'}}"><text class="label">交付方式</text><text class="value">{{order.deliveryMethodText}}</text></view>
     <view class="info-row"><text class="label">交付地址</text><text class="value">{{order.shippingAddressText}}</text></view>
 
     <block wx:if="{{order.hasLogistics}}">
       <view class="info-row"><text class="label">物流公司</text><text class="value">{{order.logistics_company || '未填写'}}</text></view>
       <view class="info-row"><text class="label">物流单号</text><text class="value">{{order.logistics_tracking_number || '未填写'}}</text></view>
       <view class="info-row"><text class="label">发货时间</text><text class="value">{{order.shipping_date || '未记录'}}</text></view>
+    </block>
+
+    <block wx:if="{{order.hasOfflineDelivery}}">
+      <view class="info-row"><text class="label">交付地点</text><text class="value">{{order.offline_delivery_location || '未填写'}}</text></view>
+      <view class="info-row"><text class="label">交付说明</text><text class="value">{{order.offline_delivery_note || '无'}}</text></view>
+      <view class="info-row"><text class="label">开始时间</text><text class="value">{{order.shipping_date || '未记录'}}</text></view>
     </block>
 
     <view class="info-row" wx:if="{{order.isCompleted}}">

@@ -9,7 +9,7 @@
         <div><strong>基础照料服务费：</strong>¥{{ order.care_fee_amount }}{% if order.daily_care_fee %}<span style="color:#999; margin-left:6px;">¥{{ order.daily_care_fee }}/天/只</span>{% endif %}</div>
         <div><strong>当前状态：</strong>{{ order.get_status_display }}</div>
         {% if order.status == 'awaiting_delivery' %}
-        <div style="color:#16a085;">用户已结清服务费，可选择“交付中”并填写物流信息。</div>
+        <div style="color:#16a085;">用户已结清服务费，可选择“交付中”并选择物流配送或线下交付。</div>
         {% elif order.status == 'settlement_pending' %}
         <div style="color:#f39c12;">用户已申请交付，正在等待支付基础照料服务费。</div>
         {% endif %}
@@ -32,15 +32,39 @@
         </div>
         
         <div class="form-group" id="logistics-info" style="{% if order.status != 'shipping' %}display: none;{% endif %}">
-            <h4>物流信息</h4>
-            <p style="margin: 0 0 12px; color: #777; font-size: 13px;">选择“交付中”时，请填写物流公司和物流单号。</p>
-            <div class="form-group">
+            <h4>交付方式</h4>
+            <p style="margin: 0 0 12px; color: #777; font-size: 13px;">选择“交付中”时，请先选择交付方式。物流配送会在小程序显示“已发货”，线下交付会显示“交付中”。</p>
+            <div style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:18px;">
+                <label style="display:flex; align-items:center; gap:8px; padding:10px 14px; border:1px solid #ddd; border-radius:8px; cursor:pointer;">
+                    <input type="radio" name="delivery_method" value="logistics" {% if order.delivery_method != 'offline' %}checked{% endif %}>
+                    物流配送
+                </label>
+                <label style="display:flex; align-items:center; gap:8px; padding:10px 14px; border:1px solid #ddd; border-radius:8px; cursor:pointer;">
+                    <input type="radio" name="delivery_method" value="offline" {% if order.delivery_method == 'offline' %}checked{% endif %}>
+                    线下交付
+                </label>
+            </div>
+
+            <div id="logistics-fields">
+                <div class="form-group">
                 <label for="logistics_company">物流公司</label>
                 <input type="text" name="logistics_company" id="logistics_company" value="{{ order.logistics_company }}" placeholder="请输入物流公司名称">
-            </div>
-            <div class="form-group">
+                </div>
+                <div class="form-group">
                 <label for="logistics_tracking_number">物流单号</label>
                 <input type="text" name="logistics_tracking_number" id="logistics_tracking_number" value="{{ order.logistics_tracking_number }}" placeholder="请输入物流单号">
+                </div>
+            </div>
+
+            <div id="offline-fields">
+                <div class="form-group">
+                    <label for="offline_delivery_location">线下交付地点</label>
+                    <input type="text" name="offline_delivery_location" id="offline_delivery_location" value="{{ order.offline_delivery_location }}" placeholder="请输入线下交付地点">
+                </div>
+                <div class="form-group">
+                    <label for="offline_delivery_note">线下交付说明</label>
+                    <textarea name="offline_delivery_note" id="offline_delivery_note" rows="3" placeholder="例如：请提前联系养殖户确认交付时间">{{ order.offline_delivery_note }}</textarea>
+                </div>
             </div>
         </div>
         
@@ -52,7 +76,14 @@
 </div>
 
 <script>
-    // 选择“交付中”时显示物流信息
+    function updateDeliveryMethodFields() {
+        const selected = document.querySelector('input[name="delivery_method"]:checked');
+        const method = selected ? selected.value : 'logistics';
+        document.getElementById('logistics-fields').style.display = method === 'logistics' ? 'block' : 'none';
+        document.getElementById('offline-fields').style.display = method === 'offline' ? 'block' : 'none';
+    }
+
+    // 选择“交付中”时显示交付信息
     document.getElementById('status').addEventListener('change', function() {
         const logisticsInfo = document.getElementById('logistics-info');
         if (this.value === 'shipping') {
@@ -61,5 +92,11 @@
             logisticsInfo.style.display = 'none';
         }
     });
+
+    document.querySelectorAll('input[name="delivery_method"]').forEach(function(input) {
+        input.addEventListener('change', updateDeliveryMethodFields);
+    });
+
+    updateDeliveryMethodFields();
 </script>
 {% endblock %}

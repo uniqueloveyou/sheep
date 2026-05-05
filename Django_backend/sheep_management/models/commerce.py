@@ -188,6 +188,11 @@ class BreederFollow(models.Model):
         return f"{self.user} -> {self.breeder}"
 class Order(models.Model):
     """订单主表"""
+    DELIVERY_METHOD_CHOICES = [
+        ('logistics', '物流配送'),
+        ('offline', '线下交付'),
+    ]
+
     STATUS_CHOICES = [
         ('pending', '待支付'),
         ('paid', '认养中'),
@@ -211,8 +216,16 @@ class Order(models.Model):
     shipping_address = models.TextField(null=True, blank=True, verbose_name='交付地址')
 
     # 物流信息
+    delivery_method = models.CharField(
+        max_length=20,
+        choices=DELIVERY_METHOD_CHOICES,
+        default='logistics',
+        verbose_name='交付方式',
+    )
     logistics_company = models.CharField(max_length=100, null=True, blank=True, verbose_name='物流公司')
     logistics_tracking_number = models.CharField(max_length=100, null=True, blank=True, verbose_name='物流单号')
+    offline_delivery_location = models.CharField(max_length=200, null=True, blank=True, verbose_name='线下交付地点')
+    offline_delivery_note = models.TextField(null=True, blank=True, verbose_name='线下交付说明')
     shipping_date = models.DateTimeField(null=True, blank=True, verbose_name='发货日期')
     delivery_date = models.DateTimeField(null=True, blank=True, verbose_name='送达日期')
 
