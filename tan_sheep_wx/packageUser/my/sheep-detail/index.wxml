@@ -64,11 +64,22 @@
             <text class="trace-stat-label">总记录</text>
           </view>
         </view>
-        <view wx:if="{{traceDynamicPreview.length > 0}}" class="trace-dynamic-list">
-          <view class="trace-dynamic-item" wx:for="{{traceDynamicPreview}}" wx:key="id">
-            <view class="trace-dynamic-main">
-              <view class="trace-dynamic-meta">
-                <text class="trace-type-tag trace-type-{{item.type}}">{{item.typeLabel}}</text>
+        <view wx:if="{{traceTimelinePreview.length > 0}}" class="trace-timeline">
+          <view class="trace-timeline-heading">
+            <text class="trace-timeline-title">完整溯源时间线</text>
+            <text class="trace-timeline-count">{{traceTimelineItems.length}}条</text>
+          </view>
+          <view class="trace-timeline-item" wx:for="{{traceTimelinePreview}}" wx:key="id">
+            <view class="trace-timeline-axis">
+              <view class="trace-timeline-dot trace-dot-{{item.type}}"></view>
+              <view wx:if="{{index < traceTimelinePreview.length - 1}}" class="trace-timeline-line"></view>
+            </view>
+            <view class="trace-timeline-content {{item.isNew ? 'trace-timeline-new' : ''}}">
+              <view class="trace-timeline-meta">
+                <view class="trace-timeline-tags">
+                  <text class="trace-type-tag trace-type-{{item.type}}">{{item.typeLabel}}</text>
+                  <text wx:if="{{item.isNew}}" class="record-new-badge">新</text>
+                </view>
                 <text class="trace-dynamic-date">{{item.date}}</text>
               </view>
               <text class="trace-dynamic-name">{{item.title}}</text>
@@ -76,9 +87,14 @@
               <text class="trace-dynamic-extra">{{item.meta}}</text>
             </view>
           </view>
+          <button
+            wx:if="{{traceTimelineCanToggle}}"
+            class="trace-timeline-toggle"
+            bindtap="toggleTraceTimeline"
+          >{{traceTimelineExpanded ? '收起时间线' : '查看全部记录'}}</button>
         </view>
         <view wx:else class="trace-dynamic-empty">
-          <text>当前还没有新的溯源动态，下面仍可查看完整档案记录</text>
+          <text>当前还没有溯源记录，后续养殖记录会在这里按时间汇总</text>
         </view>
       </view>
     </view>

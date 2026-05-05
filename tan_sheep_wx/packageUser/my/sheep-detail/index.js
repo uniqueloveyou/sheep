@@ -3,6 +3,7 @@ const API = require('../../../utils/api.js');
 const TRACE_SEEN_STORAGE_KEY = 'mySheepTraceSeenMap';
 const TRACE_UNREAD_STORAGE_KEY = 'mySheepTraceUnreadCount';
 const RECORD_PAGE_SIZE = 10;
+const TRACE_TIMELINE_PREVIEW_SIZE = 6;
 
 function normalizeDate(dateStr) {
     return String(dateStr || '').trim().slice(0, 10);
@@ -88,6 +89,56 @@ function buildDynamicItems(vaccineRecords, growthRecords, feedingRecords) {
     return items.sort((a, b) => String(b.date).localeCompare(String(a.date)));
 }
 
+function buildTraceTimelineItems(vaccineRecords, growthRecords, feedingRecords) {
+    const items = [];
+
+    vaccineRecords.forEach((record) => {
+        items.push({
+            id: record.id,
+            type: 'vaccination',
+            typeLabel: '疫苗',
+            date: record.displayDate,
+            sortDate: record.sortDate || record.displayDate,
+            title: record.vaccineType || '疫苗接种',
+            summary: record.expiryDate
+                ? `有效期至 ${record.expiryDate}`
+                : '已完成接种记录',
+            meta: `操作人 ${record.administeredBy || '未记录'} · 剂量 ${record.dosageText}`,
+            isNew: record.isNew
+        });
+    });
+
+    growthRecords.forEach((record) => {
+        items.push({
+            id: record.id,
+            type: 'growth',
+            typeLabel: '生长',
+            date: record.recordDate,
+            sortDate: record.sortDate || record.recordDate,
+            title: '体征更新',
+            summary: `体重 ${record.weightText} · 体高 ${record.heightText} · 体长 ${record.lengthText}`,
+            meta: '成长档案记录',
+            isNew: record.isNew
+        });
+    });
+
+    feedingRecords.forEach((record) => {
+        items.push({
+            id: record.id,
+            type: 'feeding',
+            typeLabel: '喂养',
+            date: record.feedDate,
+            sortDate: record.sortDate || record.feedDate,
+            title: record.feedType || '日常喂养',
+            summary: `投喂量 ${record.amountText}`,
+            meta: '饲养档案记录',
+            isNew: record.isNew
+        });
+    });
+
+    return items.sort((a, b) => String(b.sortDate).localeCompare(String(a.sortDate)));
+}
+
 function paginate(list, page) {
     const safeList = Array.isArray(list) ? list : [];
     const totalPages = Math.max(1, Math.ceil(safeList.length / RECORD_PAGE_SIZE));
@@ -118,6 +169,10 @@ Page({
         feedingTotalPages: 1,
         traceDynamicItems: [],
         traceDynamicPreview: [],
+        traceTimelineItems: [],
+        traceTimelinePreview: [],
+        traceTimelineExpanded: false,
+        traceTimelineCanToggle: false,
         traceSummaryText: '',
         traceStats: {
             vaccines: 0,
@@ -200,6 +255,7 @@ Page({
                         id: `vaccination-${index}-${displayDate}`,
                         vaccineType: record.vaccine_type || '疫苗接种',
                         displayDate: displayDate || '未记录日期',
+                        sortDate: displayDate,
                         expiryDate: normalizeDate(record.expiry_date),
                         administeredBy: record.administered_by || '',
                         dosageText: dosageValue !== '' ? `${dosageValue}ml` : '未记录',
@@ -213,6 +269,7 @@ Page({
                     return {
                         id: `growth-${index}-${recordDate}`,
                         recordDate: recordDate || '未记录日期',
+                        sortDate: recordDate,
                         weightText: `${record.weight || 0}kg`,
                         heightText: `${record.height || 0}cm`,
                         lengthText: `${record.length || 0}cm`,
@@ -227,6 +284,7 @@ Page({
                     return {
                         id: `feeding-${index}-${feedDate}`,
                         feedDate: feedDate || '未记录日期',
+                        sortDate: feedDate,
                         feedType: record.feed_type || '日常喂养',
                         amountText: `${amount}${unit}`,
                         isNew: shouldMarkAsNew(feedDate, previousSeenDate, latestTraceDate)
@@ -234,10 +292,15 @@ Page({
                 });
 
                 const traceDynamicItems = buildDynamicItems(vaccineRecords, growthRecords, feedingRecords);
-                const newTraceCount = traceDynamicItems.length;
+                const traceTimelineItems = buildTraceTimelineItems(vaccineRecords, growthRecords, feedingRecords);
+                const newTraceCount = traceTimelineItems.filter((item) => item.isNew).length;
+                const latestTimelineDate = traceTimelineItems.length > 0 ? traceTimelineItems[0].date : '';
+                const displayLatestTraceDate = latestTimelineDate || latestTraceDate;
                 const traceSummaryText = newTraceCount > 0
-                    ? `本次新增 ${newTraceCount} 条溯源记录，已为你整理在下方`
-                    : (latestTraceDate ? `最近一次更新发生在 ${latestTraceDate}` : '当前还没有新的溯源动态');
+                    ? `本次新增 ${newTraceCount} 条溯源记录，完整时间线已更新`
+                    : (traceTimelineItems.length > 0
+                        ? `已汇总 ${traceTimelineItems.length} 条养殖记录，最近更新于 ${displayLatestTraceDate}`
+                        : '当前还没有溯源记录');
 
                 const vaccinePageData = paginate(vaccineRecords, 1);
                 const growthPageData = paginate(growthRecords, 1);
@@ -275,6 +338,10 @@ Page({
                     feedingTotalPages: feedingPageData.totalPages,
                     traceDynamicItems: traceDynamicItems,
                     traceDynamicPreview: traceDynamicItems.slice(0, 3),
+                    traceTimelineItems: traceTimelineItems,
+                    traceTimelinePreview: traceTimelineItems.slice(0, TRACE_TIMELINE_PREVIEW_SIZE),
+                    traceTimelineExpanded: false,
+                    traceTimelineCanToggle: traceTimelineItems.length > TRACE_TIMELINE_PREVIEW_SIZE,
                     traceSummaryText: traceSummaryText,
                     traceStats: {
                         vaccines: vaccineRecords.length,
@@ -282,6 +349,7 @@ Page({
                         feeding: feedingRecords.length,
                         total: vaccineRecords.length + growthRecords.length + feedingRecords.length
                     },
+                    latestTraceDate: displayLatestTraceDate,
                     newTraceCount: newTraceCount,
                     loading: false
                 });
@@ -291,6 +359,16 @@ Page({
                 this.setData({ loading: false });
                 wx.showToast({ title: '加载失败', icon: 'none' });
             });
+    },
+
+    toggleTraceTimeline: function () {
+        const nextExpanded = !this.data.traceTimelineExpanded;
+        this.setData({
+            traceTimelineExpanded: nextExpanded,
+            traceTimelinePreview: nextExpanded
+                ? this.data.traceTimelineItems
+                : this.data.traceTimelineItems.slice(0, TRACE_TIMELINE_PREVIEW_SIZE)
+        });
     },
 
     changeRecordPage: function (e) {
