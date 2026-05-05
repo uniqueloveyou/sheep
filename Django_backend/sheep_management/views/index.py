@@ -40,8 +40,8 @@ def _admin_dashboard(request, user):
         is_resolved=False
     ).select_related('owner').order_by('-created_at')[:5]
 
-    # 最近注册用户（最多 6 个）
-    recent_users = User.objects.order_by('-date_joined')[:6]
+    # 最近注册的普通微信用户（最多 6 个）
+    recent_users = User.objects.filter(role=0).order_by('-date_joined')[:6]
 
     # 待审核养殖户
     pending_breeder_list = User.objects.filter(

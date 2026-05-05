@@ -11,10 +11,10 @@ from ..permissions import admin_required, ROLE_BREEDER, ROLE_ADMIN
 @admin_required
 def breeder_audit_list(request):
     """
-    养殖户审核列表 - 显示所有待审核和已审核的养殖户
+    养殖户管理列表 - 默认显示已认证养殖户，也可切换查看待审核申请
     仅管理员可访问
     """
-    filter_status = request.GET.get('status', 'pending')  # pending / verified / rejected / all
+    filter_status = request.GET.get('status', 'verified')  # pending / verified / all
     search = request.GET.get('search', '').strip()
     
     # 基础查询：所有角色为养殖户的用户
@@ -53,7 +53,7 @@ def breeder_audit_list(request):
 @admin_required
 def breeder_audit_detail(request, pk):
     """
-    养殖户审核详情 - 显示单个养殖户的详细信息
+    养殖户详情 - 显示单个养殖户的详细信息
     """
     breeder = get_object_or_404(User, pk=pk, role=ROLE_BREEDER)
     

@@ -99,7 +99,7 @@
         <a href="{% url 'user_list' %}" class="kpi" style="border-left-color:#42a5f5;">
             <div class="label">👤 普通用户</div>
             <div class="num" style="color:#42a5f5;">{{ total_users }}</div>
-            <div class="hint">进入用户管理 →</div>
+            <div class="hint">进入微信用户 →</div>
         </a>
         <a href="{% url 'breeder_list' %}" class="kpi" style="border-left-color:#66bb6a;">
             <div class="label">🌾 养殖户</div>
@@ -132,12 +132,12 @@
         <div class="nav-grid">
             <a href="{% url 'breeder_audit_list' %}" class="nav-btn" {% if pending_breeders > 0 %}style="background:#fff8e1;border-color:#ffe082;position:relative;"{% else %}style="position:relative;"{% endif %}>
                 <div class="icon">{% if pending_breeders > 0 %}🔍{% else %}✅{% endif %}</div>
-                <div class="txt" {% if pending_breeders > 0 %}style="color:#e65100;"{% else %}style="color:#666;"{% endif %}>养殖户审核</div>
+                <div class="txt" {% if pending_breeders > 0 %}style="color:#e65100;"{% else %}style="color:#666;"{% endif %}>养殖户管理</div>
                 {% if pending_breeders > 0 %}<span class="badge-dot">{{ pending_breeders }}</span>{% endif %}
             </a>
             <a href="{% url 'user_list' %}" class="nav-btn" style="background:#e3f2fd;border-color:#90caf9;">
                 <div class="icon">👥</div>
-                <div class="txt" style="color:#1565c0;">用户管理</div>
+                <div class="txt" style="color:#1565c0;">微信用户</div>
             </a>
             <a href="{% url 'order_list' %}" class="nav-btn" style="background:#fce4ec;border-color:#f48fb1;">
                 <div class="icon">📦</div>

@@ -112,6 +112,7 @@ urlpatterns = [
 
     # 传统视图路由
     path('sheep/', views.sheep_list, name='sheep_list'),
+    path('sheep/batch-delete/', views.sheep_batch_delete, name='sheep_batch_delete'),
     path('sheep/<int:pk>/', views.sheep_detail, name='sheep_detail'),
     path('sheep/create/', views.sheep_create, name='sheep_create'),
     path('sheep/<int:pk>/edit/', views.sheep_edit, name='sheep_edit'),
@@ -175,7 +176,7 @@ urlpatterns = [
     # ==========================
     # 权限管理路由（仅管理员）
     # ==========================
-    # 养殖户审核
+    # 养殖户管理与审核
     path('permissions/breeder-audit/', views.breeder_audit_list, name='breeder_audit_list'),
     path('permissions/breeder-audit/<int:pk>/', views.breeder_audit_detail, name='breeder_audit_detail'),
     path('permissions/breeder-audit/<int:pk>/approve/', views.breeder_approve, name='breeder_approve'),

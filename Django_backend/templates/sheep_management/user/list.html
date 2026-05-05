@@ -50,13 +50,15 @@ tr.row-selected td { background: #fff5f5 !important; }
 
 <div class="card">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-        <h2>用户列表</h2>
-        <a href="{% url 'user_create' %}" class="btn btn-success">+ 新增用户</a>
+        <div>
+            <h2 style="margin-bottom: 6px;">微信用户列表</h2>
+            <div style="font-size: 13px; color: #888;">仅显示小程序端普通用户，养殖户请到“养殖户管理”维护</div>
+        </div>
     </div>
 
     <div class="search-box">
         <form method="get">
-            <input type="text" name="search" placeholder="搜索用户名、昵称、openid或手机号..." value="{{ search }}">
+            <input type="text" name="search" placeholder="搜索微信昵称、用户名、OpenID或手机号..." value="{{ search }}">
             <button type="submit" class="btn">搜索</button>
         </form>
     </div>
@@ -84,10 +86,11 @@ tr.row-selected td { background: #fff5f5 !important; }
                 <th>昵称</th>
                 <th>OpenID</th>
                 <th>手机号</th>
+                <th>订单数</th>
+                <th>领养羊只</th>
                 <th>性别</th>
                 <th>创建时间</th>
                 <th>最后登录</th>
-                <th>角色</th>
                 <th>操作</th>
             </tr>
         </thead>
@@ -111,10 +114,11 @@ tr.row-selected td { background: #fff5f5 !important; }
                 <td>{{ user.nickname|default:"未设置" }}</td>
                 <td>{{ user.openid|truncatechars:20 }}</td>
                 <td>{{ user.mobile|default:"未设置" }}</td>
+                <td>{{ user.order_count|default:0 }}</td>
+                <td>{{ user.adopted_sheep_count|default:0 }}</td>
                 <td>{{ user.get_gender_display|default:"未知" }}</td>
                 <td>{{ user.created_at|date:"Y-m-d H:i" }}</td>
                 <td>{{ user.last_login|date:"Y-m-d H:i"|default:"从未登录" }}</td>
-                <td>{{ user.get_role_display }}</td>
                 <td>
                     <a href="{% url 'user_detail' user.pk %}" class="btn" style="padding: 5px 10px; font-size: 12px;">查看</a>
                     <a href="{% url 'user_update' user.pk %}" class="btn" style="padding: 5px 10px; font-size: 12px; background: #f39c12;">编辑</a>
@@ -125,7 +129,7 @@ tr.row-selected td { background: #fff5f5 !important; }
             </tr>
             {% empty %}
             <tr>
-                <td colspan="12" style="text-align: center; padding: 40px;">暂无数据</td>
+                <td colspan="13" style="text-align: center; padding: 40px;">暂无普通微信用户数据</td>
             </tr>
             {% endfor %}
         </tbody>

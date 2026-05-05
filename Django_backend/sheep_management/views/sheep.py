@@ -113,13 +113,53 @@ def sheep_list(request):
         'adoption_tab': adoption_tab,
         'available_count': available_count,
         'adopted_count': adopted_count,
-        'table_colspan': 11 if is_admin and adoption_tab == 'available' else (10 if adoption_tab == 'available' else 12),
+        'table_colspan': 12 if is_admin and adoption_tab == 'available' else (11 if adoption_tab == 'available' else 12),
         'health_choices': health_choices,
         'gender_choices': gender_choices,
         'is_admin': is_admin,
         'breeders': breeders,
     }
     return render(request, 'sheep_management/sheep/list.html', context)
+
+
+@login_required
+def sheep_batch_delete(request):
+    """批量删除可领养羊只"""
+    if request.method != 'POST':
+        return redirect('sheep_list')
+
+    sheep_ids = request.POST.getlist('sheep_ids')
+    next_url = request.POST.get('next') or ''
+    redirect_url = next_url if next_url.startswith('/') and not next_url.startswith('//') else None
+
+    if not sheep_ids:
+        messages.warning(request, '请先选择要删除的羊只')
+        return redirect(redirect_url or 'sheep_list')
+
+    is_admin = request.user.role == ROLE_ADMIN
+    sheep_queryset = Sheep.objects.filter(pk__in=sheep_ids)
+    if not is_admin:
+        sheep_queryset = sheep_queryset.filter(owner=request.user)
+
+    adopted_ids = set(
+        OrderItem.objects.filter(
+            sheep__in=sheep_queryset,
+            order__status__in=ADOPTED_ORDER_STATUSES,
+        ).values_list('sheep_id', flat=True)
+    )
+    deletable_queryset = sheep_queryset.exclude(id__in=adopted_ids)
+    deleted_count = deletable_queryset.count()
+    skipped_count = len(set(str(sid) for sid in sheep_ids)) - deleted_count
+
+    if deleted_count:
+        deletable_queryset.delete()
+        messages.success(request, f'已删除 {deleted_count} 只可领养羊只')
+    if skipped_count:
+        messages.warning(request, f'{skipped_count} 只羊因已领养、无权限或不存在，未删除')
+    if not deleted_count and not skipped_count:
+        messages.warning(request, '没有可删除的羊只')
+
+    return redirect(redirect_url or 'sheep_list')
 
 
 @login_required
@@ -334,6 +374,10 @@ def sheep_delete(request, pk):
     # 权限检查：养殖户只能删除自己的羊
     if not is_admin and sheep.owner != request.user:
         messages.error(request, '无权删除该羊只')
+        return redirect('sheep_list')
+
+    if OrderItem.objects.filter(sheep=sheep, order__status__in=ADOPTED_ORDER_STATUSES).exists():
+        messages.error(request, '该羊只已被领养，不能删除；请在已领养羊只中查看订单和交付状态。')
         return redirect('sheep_list')
     
     if request.method == 'POST':

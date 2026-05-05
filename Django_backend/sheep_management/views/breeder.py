@@ -10,8 +10,8 @@ from ..permissions import admin_required, ROLE_BREEDER
 def breeder_list(request):
     """养殖户列表"""
     search = request.GET.get('search', '')
-    # 已通过审核的养殖户
-    qs = User.objects.filter(role=ROLE_BREEDER).annotate(actual_sheep_count=Count('sheep_list'))
+    # 养殖户列表只展示已通过审核的账号，待审核申请在养殖户管理页单独处理
+    qs = User.objects.filter(role=ROLE_BREEDER, is_verified=True).annotate(actual_sheep_count=Count('sheep_list'))
 
     if search:
         qs = qs.filter(
@@ -99,10 +99,7 @@ def breeder_edit(request, pk):
 
 @admin_required
 def breeder_delete(request, pk):
-    """删除养殖户"""
+    """养殖户账号不允许硬删除，避免破坏羊只和订单关联"""
     breeder = get_object_or_404(User, pk=pk, role=ROLE_BREEDER)
-    if request.method == 'POST':
-        breeder.delete()
-        messages.success(request, '养殖户已删除')
-        return redirect('breeder_list')
-    return render(request, 'sheep_management/breeder/confirm_delete.html', {'breeder': breeder})
+    messages.error(request, '养殖户已关联羊只、订单或养殖档案，不能直接删除；如需停止其资格，请在养殖户管理中撤销认证。')
+    return redirect('breeder_detail', pk=breeder.pk)

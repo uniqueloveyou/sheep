@@ -6,6 +6,9 @@
         <h2>{{ title }}</h2>
         <a href="{% url 'user_list' %}" class="btn" style="background: #95a5a6;">返回列表</a>
     </div>
+    <div style="margin-bottom: 18px; padding: 12px 14px; background: #f6f8fb; border-radius: 8px; color: #666; font-size: 13px;">
+        当前页面只维护普通微信用户。养殖户账号请到“养殖户管理”创建和编辑，管理员账号请到“权限管理”处理。
+    </div>
 
     <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
@@ -61,21 +64,6 @@
             <textarea id="description" name="description" rows="3"
                       placeholder="请输入个人简介（最多200字）"
                       style="width:100%;padding:8px;border:1px solid #ddd;border-radius:4px;font-size:14px;resize:vertical;">{% if target_user %}{{ target_user.description|default:'' }}{% endif %}</textarea>
-        </div>
-
-        <div class="form-group">
-            <label for="role">角色</label>
-            <select id="role" name="role">
-                <option value="0" {% if target_user and target_user.role == 0 %}selected{% endif %}>普通用户</option>
-                <option value="1" {% if target_user and target_user.role == 1 %}selected{% endif %}>养殖户</option>
-                <option value="2" {% if target_user and target_user.role == 2 %}selected{% endif %}>管理员</option>
-            </select>
-        </div>
-
-        <div class="form-group" style="display: flex; align-items: center; gap: 8px;">
-            <input id="is_verified" type="checkbox" name="is_verified" style="width: auto;"
-                   {% if target_user and target_user.is_verified %}checked{% endif %}>
-            <label for="is_verified" style="margin: 0;">养殖户审核通过</label>
         </div>
 
         <div style="display: flex; gap: 10px; margin-top: 24px;">

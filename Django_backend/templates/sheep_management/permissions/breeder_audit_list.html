@@ -1,6 +1,6 @@
 {% extends 'sheep_management/base.html' %}
 
-{% block page_title %}养殖户申请审核{% endblock %}
+{% block page_title %}养殖户管理{% endblock %}
 
 {% block content %}
 <!-- 统计卡片 -->
@@ -15,24 +15,24 @@
     </div>
     <div class="stat-card">
         <h3 style="color: #27ae60;">{{ stats.verified }}</h3>
-        <p>已认证</p>
+        <p>已认证养殖户</p>
     </div>
 </div>
 
 <div class="card">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-        <h2>养殖户申请审核</h2>
-        <a href="{% url 'breeder_list' %}" class="btn" style="background: #95a5a6;">← 养殖户列表</a>
+        <h2>养殖户管理</h2>
+        <a href="{% url 'breeder_create' %}" class="btn btn-success">+ 新增养殖户</a>
     </div>
 
     <!-- Tab 筛选 -->
     <div class="nav-tabs">
+        <a href="?status=verified{% if search %}&search={{ search }}{% endif %}"
+           class="nav-tab {% if filter_status == 'verified' %}active{% endif %}">已认证</a>
         <a href="?status=pending{% if search %}&search={{ search }}{% endif %}"
            class="nav-tab {% if filter_status == 'pending' %}active{% endif %}">
             待审核 {% if stats.pending > 0 %}<span style="background:#e74c3c;color:white;border-radius:10px;padding:1px 7px;font-size:12px;margin-left:4px;">{{ stats.pending }}</span>{% endif %}
         </a>
-        <a href="?status=verified{% if search %}&search={{ search }}{% endif %}"
-           class="nav-tab {% if filter_status == 'verified' %}active{% endif %}">已认证</a>
         <a href="?status=all{% if search %}&search={{ search }}{% endif %}"
            class="nav-tab {% if filter_status == 'all' %}active{% endif %}">全部</a>
     </div>
@@ -87,7 +87,7 @@
             {% empty %}
             <tr>
                 <td colspan="7" style="text-align:center;padding:40px;color:#999;">
-                    {% if filter_status == 'pending' %}暂无待审核申请{% else %}暂无数据{% endif %}
+                    {% if filter_status == 'pending' %}暂无待审核申请{% elif filter_status == 'verified' %}暂无已认证养殖户{% else %}暂无数据{% endif %}
                 </td>
             </tr>
             {% endfor %}

@@ -1,16 +1,31 @@
 """用户管理视图"""
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
-from django.db.models import Q
+from django.db.models import Q, Count
 from ..models import User
-from ..permissions import admin_required
+from ..permissions import admin_required, ROLE_USER
 
 
 @admin_required
 def user_list(request):
-    """用户列表"""
+    """普通微信用户列表"""
     search = request.GET.get('search', '')
-    user_list = User.objects.all()
+    user_list = User.objects.filter(role=ROLE_USER).annotate(
+        order_count=Count('orders', distinct=True),
+        adopted_sheep_count=Count(
+            'orders__items',
+            filter=Q(orders__status__in=[
+                'paid',
+                'adopting',
+                'ready_to_ship',
+                'settlement_pending',
+                'awaiting_delivery',
+                'shipping',
+                'completed',
+            ]),
+            distinct=True
+        )
+    )
     
     if search:
         user_list = user_list.filter(
@@ -23,33 +38,32 @@ def user_list(request):
 
 @admin_required
 def user_detail(request, pk):
-    """用户详情"""
-    target_user = get_object_or_404(User, pk=pk)
+    """普通微信用户详情"""
+    target_user = get_object_or_404(User, pk=pk, role=ROLE_USER)
     context = {'target_user': target_user}
     return render(request, 'sheep_management/user/detail.html', context)
 
 
 @admin_required
 def user_create(request):
-    """创建用户"""
+    """创建普通微信用户"""
     if request.method == 'POST':
         username = request.POST.get('username', '').strip()
         password = request.POST.get('password', '').strip()
         nickname = request.POST.get('nickname', '').strip()
         mobile = request.POST.get('mobile', '').strip()
-        role = int(request.POST.get('role', 0) or 0)
 
         if not username or not password:
             messages.error(request, '用户名和密码不能为空')
             return render(request, 'sheep_management/user/form.html', {
-                'title': '创建用户',
+                'title': '创建微信用户',
                 'is_create': True,
             })
 
         if User.objects.filter(username=username).exists():
             messages.error(request, '用户名已存在，请更换')
             return render(request, 'sheep_management/user/form.html', {
-                'title': '创建用户',
+                'title': '创建微信用户',
                 'is_create': True,
             })
 
@@ -57,36 +71,35 @@ def user_create(request):
             username=username,
             nickname=nickname,
             mobile=mobile,
-            role=role,
-            is_verified=(request.POST.get('is_verified') == 'on')
+            role=ROLE_USER,
+            is_verified=False
         )
         user.set_password(password)
         user.save()
         messages.success(request, '用户创建成功！')
         return redirect('user_detail', pk=user.pk)
-    return render(request, 'sheep_management/user/form.html', {'target_user': None, 'title': '创建用户', 'is_create': True})
+    return render(request, 'sheep_management/user/form.html', {'target_user': None, 'title': '创建微信用户', 'is_create': True})
 
 
 @admin_required
 def user_update(request, pk):
-    """编辑用户"""
-    user = get_object_or_404(User, pk=pk)
+    """编辑普通微信用户"""
+    user = get_object_or_404(User, pk=pk, role=ROLE_USER)
     if request.method == 'POST':
         username = request.POST.get('username', user.username).strip()
         nickname = request.POST.get('nickname', user.nickname or '').strip()
         mobile = request.POST.get('mobile', user.mobile or '').strip()
-        role = int(request.POST.get('role', user.role) or user.role)
         new_password = request.POST.get('password', '').strip()
 
         if username != user.username and User.objects.filter(username=username).exists():
             messages.error(request, '用户名已存在，请更换')
-            return render(request, 'sheep_management/user/form.html', {'target_user': user, 'title': '编辑用户', 'is_create': False})
+            return render(request, 'sheep_management/user/form.html', {'target_user': user, 'title': '编辑微信用户', 'is_create': False})
 
         user.username = username
         user.nickname = nickname
         user.mobile = mobile
-        user.role = role
-        user.is_verified = (request.POST.get('is_verified') == 'on')
+        user.role = ROLE_USER
+        user.is_verified = False
         user.description = request.POST.get('description', '').strip() or None
 
         # 处理头像上传（走 settings.DEFAULT_FILE_STORAGE，R2 或本地均可）
@@ -104,13 +117,13 @@ def user_update(request, pk):
         user.save()
         messages.success(request, '用户信息更新成功！')
         return redirect('user_detail', pk=user.pk)
-    return render(request, 'sheep_management/user/form.html', {'target_user': user, 'title': '编辑用户', 'is_create': False})
+    return render(request, 'sheep_management/user/form.html', {'target_user': user, 'title': '编辑微信用户', 'is_create': False})
 
 
 @admin_required
 def user_delete(request, pk):
-    """删除用户"""
-    user = get_object_or_404(User, pk=pk)
+    """删除普通微信用户"""
+    user = get_object_or_404(User, pk=pk, role=ROLE_USER)
 
     if request.user.pk == user.pk:
         messages.error(request, '不能删除当前登录账号')
@@ -134,8 +147,8 @@ def user_batch_delete(request):
         messages.warning(request, '未选择任何用户')
         return redirect('user_list')
 
-    # 排除当前登录账号
-    to_delete = User.objects.filter(pk__in=ids).exclude(pk=request.user.pk)
+    # 只允许在微信用户管理里批量删除普通用户
+    to_delete = User.objects.filter(pk__in=ids, role=ROLE_USER).exclude(pk=request.user.pk)
     count = to_delete.count()
     to_delete.delete()
     messages.success(request, f'已成功删除 {count} 个用户')

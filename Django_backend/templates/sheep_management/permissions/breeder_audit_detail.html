@@ -1,12 +1,12 @@
 {% extends 'sheep_management/base.html' %}
 
-{% block page_title %}养殖户审核详情{% endblock %}
+{% block page_title %}养殖户详情{% endblock %}
 
 {% block content %}
 <div class="card" style="max-width: 800px;">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-        <h2>养殖户审核详情 #{{ breeder.id }}</h2>
-        <a href="{% url 'breeder_audit_list' %}" class="btn" style="background:#95a5a6;">← 返回审核列表</a>
+        <h2>养殖户详情 #{{ breeder.id }}</h2>
+        <a href="{% url 'breeder_audit_list' %}" class="btn" style="background:#95a5a6;">← 返回养殖户管理</a>
     </div>
 
     {% if messages %}
