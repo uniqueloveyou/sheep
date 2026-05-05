@@ -1,3 +1,5 @@
+const API = require('../../../../utils/api.js');
+
 function formatAmount(value) {
   const amount = Number(value || 0);
   if (!Number.isFinite(amount)) return '0.00';
@@ -49,6 +51,7 @@ function normalizeOrder(order) {
   const isCompleted = order.status === 'completed';
   const isShipping = order.status === 'shipping';
   const isDeliveryStage = ['awaiting_delivery', 'shipping', 'completed'].indexOf(order.status) >= 0;
+  const statusDisplay = isShipping && isLogisticsDelivery ? '已发货' : getDisplayStatus(order.status);
 
   let deliveryStatusText = '暂未交付';
   let deliveryHint = '待羊只具备交付条件后，由养殖户安排交付。';
@@ -64,7 +67,7 @@ function normalizeOrder(order) {
 
   return Object.assign({}, order, {
     items,
-    status_display: isShipping && isLogisticsDelivery ? '已发货' : getDisplayStatus(order.status),
+    status_display: statusDisplay,
     statusClass: getStatusClass(order.status),
     totalAmountText: formatAmount(order.total_amount),
     deliveryMethod,
@@ -85,7 +88,8 @@ function normalizeOrder(order) {
 Page({
   data: {
     order: null,
-    orderId: null
+    orderId: null,
+    refreshing: false
   },
 
   onLoad(options) {
@@ -108,6 +112,32 @@ Page({
       order: normalizeOrder(cached),
       orderId: orderId || cached.id
     });
+
+    this.refreshOrderDetail(orderId || cached.id);
+  },
+
+  refreshOrderDetail(orderId) {
+    const token = wx.getStorageSync('token');
+    if (!token || !orderId) {
+      return;
+    }
+
+    this.setData({ refreshing: true });
+    API.getOrderHistory(token)
+      .then((res) => {
+        const orders = Array.isArray(res.data || res) ? (res.data || res) : [];
+        const latest = orders.find(item => Number(item.id) === Number(orderId));
+        if (!latest) {
+          return;
+        }
+        const normalized = normalizeOrder(latest);
+        wx.setStorageSync('currentOrderDetail', normalized);
+        this.setData({ order: normalized });
+      })
+      .catch(() => {})
+      .finally(() => {
+        this.setData({ refreshing: false });
+      });
   },
 
   openTrace(e) {

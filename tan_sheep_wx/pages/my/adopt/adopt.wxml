@@ -151,45 +151,47 @@
         <text class="delivery-modal-close" catchtap="closeDeliveryModal">×</text>
       </view>
 
-      <view class="delivery-fee-panel">
-        <view class="delivery-fee-row">
-          <text>已认养</text>
-          <text>{{deliveryForm.adoptionDays}} 天</text>
-        </view>
-        <view class="delivery-fee-row">
-          <text>基础照料费</text>
-          <text>¥{{deliveryForm.dailyFeeText}}/天/只</text>
-        </view>
-        <view class="delivery-fee-row strong">
-          <text>预计需结算</text>
-          <text>¥{{deliveryForm.estimatedFeeText}}</text>
-        </view>
-        <text class="delivery-fee-tip">提交后将停止继续计费，支付服务费后由养殖户安排物流发货。</text>
-      </view>
-
-      <view class="delivery-form">
-        <view class="delivery-field">
-          <text class="delivery-label">收货人</text>
-          <input class="delivery-input" placeholder="请输入姓名" value="{{deliveryForm.receiverName}}" bindinput="onDeliveryNameInput" />
-        </view>
-        <view class="delivery-field">
-          <text class="delivery-label">手机号</text>
-          <input class="delivery-input" type="number" maxlength="11" placeholder="请输入手机号" value="{{deliveryForm.receiverPhone}}" bindinput="onDeliveryPhoneInput" />
-        </view>
-        <picker mode="region" value="{{deliveryForm.region}}" bindchange="onDeliveryRegionChange">
-          <view class="delivery-field">
-            <text class="delivery-label">省市区</text>
-            <text class="delivery-picker-value {{deliveryForm.region.length ? '' : 'placeholder'}}">
-              {{deliveryForm.region.length ? deliveryForm.region[0] + ' ' + deliveryForm.region[1] + ' ' + deliveryForm.region[2] : '请选择省市区'}}
-            </text>
-            <van-icon name="arrow" size="26rpx" color="#bbb" />
+      <scroll-view class="delivery-modal-body" scroll-y>
+        <view class="delivery-fee-panel">
+          <view class="delivery-fee-row">
+            <text>已认养</text>
+            <text>{{deliveryForm.adoptionDays}} 天</text>
           </view>
-        </picker>
-        <view class="delivery-field address-field">
-          <text class="delivery-label">详细地址</text>
-          <textarea class="delivery-textarea" placeholder="街道、门牌号等详细信息" value="{{deliveryForm.detailAddress}}" bindinput="onDeliveryAddressInput" auto-height />
+          <view class="delivery-fee-row">
+            <text>基础照料费</text>
+            <text>¥{{deliveryForm.dailyFeeText}}/天/只</text>
+          </view>
+          <view class="delivery-fee-row strong">
+            <text>预计需结算</text>
+            <text>¥{{deliveryForm.estimatedFeeText}}</text>
+          </view>
+          <text class="delivery-fee-tip">提交后将停止继续计费，支付服务费后由养殖户安排物流发货。</text>
         </view>
-      </view>
+
+        <view class="delivery-form">
+          <view class="delivery-field">
+            <text class="delivery-label">收货人</text>
+            <input class="delivery-input" placeholder="请输入姓名" value="{{deliveryForm.receiverName}}" bindinput="onDeliveryNameInput" />
+          </view>
+          <view class="delivery-field">
+            <text class="delivery-label">手机号</text>
+            <input class="delivery-input" type="number" maxlength="11" placeholder="请输入手机号" value="{{deliveryForm.receiverPhone}}" bindinput="onDeliveryPhoneInput" />
+          </view>
+          <picker mode="region" value="{{deliveryForm.region}}" bindchange="onDeliveryRegionChange">
+            <view class="delivery-field">
+              <text class="delivery-label">省市区</text>
+              <text class="delivery-picker-value {{deliveryForm.region.length ? '' : 'placeholder'}}">
+                {{deliveryForm.region.length ? deliveryForm.region[0] + ' ' + deliveryForm.region[1] + ' ' + deliveryForm.region[2] : '请选择省市区'}}
+              </text>
+              <van-icon name="arrow" size="26rpx" color="#bbb" />
+            </view>
+          </picker>
+          <view class="delivery-field address-field">
+            <text class="delivery-label">详细地址</text>
+            <textarea class="delivery-textarea" placeholder="街道、门牌号等详细信息" value="{{deliveryForm.detailAddress}}" bindinput="onDeliveryAddressInput" auto-height />
+          </view>
+        </view>
+      </scroll-view>
 
       <view class="delivery-modal-actions">
         <button class="delivery-cancel-btn" catchtap="closeDeliveryModal">取消</button>

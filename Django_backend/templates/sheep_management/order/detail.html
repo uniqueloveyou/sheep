@@ -82,25 +82,26 @@
             </table>
         </div>
 
-        <!-- 物流信息 -->
+        <!-- 交付信息 -->
         <div class="card" style="padding:20px;">
             <h3 style="margin:0 0 16px; font-size:15px; color:#333; border-bottom:1px solid #f0f0f0; padding-bottom:10px;">🚚 交付信息</h3>
-            {% if order.shipping_date %}
             <table style="width:100%; border-collapse:collapse;">
                 <tr>
-                    <td style="padding:8px 0; color:#888; font-size:13px; width:90px;">交付方式</td>
-                    <td style="padding:8px 0; font-size:13px;">{{ order.get_delivery_method_display }}</td>
-                </tr>
-                {% if order.delivery_method == 'offline' %}
-                <tr>
-                    <td style="padding:8px 0; color:#888; font-size:13px;">交付地点</td>
-                    <td style="padding:8px 0; font-size:13px;">{{ order.offline_delivery_location|default:'未填写' }}</td>
+                    <td style="padding:8px 0; color:#888; font-size:13px; width:90px;">收货人</td>
+                    <td style="padding:8px 0; font-size:13px; font-weight:600;">{{ order.receiver_name|default:'未填写' }}</td>
                 </tr>
                 <tr>
-                    <td style="padding:8px 0; color:#888; font-size:13px;">交付说明</td>
-                    <td style="padding:8px 0; font-size:13px;">{{ order.offline_delivery_note|default:'无' }}</td>
+                    <td style="padding:8px 0; color:#888; font-size:13px;">手机号</td>
+                    <td style="padding:8px 0; font-size:13px; font-weight:600;">{{ order.receiver_phone|default:'未填写' }}</td>
                 </tr>
-                {% else %}
+                <tr>
+                    <td style="padding:8px 0; color:#888; font-size:13px;">收货地址</td>
+                    <td style="padding:8px 0; font-size:13px; line-height:1.6;">{{ order.shipping_address|default:'未填写' }}</td>
+                </tr>
+                <tr>
+                    <td style="padding:8px 0; color:#888; font-size:13px;">交付方式</td>
+                    <td style="padding:8px 0; font-size:13px;">物流配送</td>
+                </tr>
                 <tr>
                     <td style="padding:8px 0; color:#888; font-size:13px; width:90px;">物流公司</td>
                     <td style="padding:8px 0; font-size:13px;">{{ order.logistics_company|default:'未填写' }}</td>
@@ -109,9 +110,8 @@
                     <td style="padding:8px 0; color:#888; font-size:13px;">物流单号</td>
                     <td style="padding:8px 0; font-size:13px; font-family:monospace;">{{ order.logistics_tracking_number|default:'未填写' }}</td>
                 </tr>
-                {% endif %}
                 <tr>
-                    <td style="padding:8px 0; color:#888; font-size:13px;">交付开始</td>
+                    <td style="padding:8px 0; color:#888; font-size:13px;">发货时间</td>
                     <td style="padding:8px 0; font-size:13px;">{{ order.shipping_date|date:'Y-m-d H:i:s'|default:'未发货' }}</td>
                 </tr>
                 <tr>
@@ -119,9 +119,6 @@
                     <td style="padding:8px 0; font-size:13px;">{{ order.delivery_date|date:'Y-m-d H:i:s'|default:'未送达' }}</td>
                 </tr>
             </table>
-            {% else %}
-            <div style="text-align:center; padding:30px 0; color:#bbb; font-size:13px;">暂无交付信息</div>
-            {% endif %}
         </div>
     </div>
 

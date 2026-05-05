@@ -2,116 +2,130 @@
 
 {% block content %}
 <div class="card">
-    <h2>更新订单状态</h2>
-
-    <div style="margin-top: 16px; padding: 14px 16px; border-radius: 8px; background: #f8fafc; color: #555; font-size: 14px; line-height: 1.7;">
-        <div><strong>认养费用：</strong>¥{{ order.total_amount }}</div>
-        <div><strong>基础照料服务费：</strong>¥{{ order.care_fee_amount }}{% if order.daily_care_fee %}<span style="color:#999; margin-left:6px;">¥{{ order.daily_care_fee }}/天/只</span>{% endif %}</div>
-        <div><strong>当前状态：</strong>{{ order.get_status_display }}</div>
-        {% if can_edit_daily_care_fee %}
-        <div style="color:#5c6bc0;">当前订单仍在认养中，可以单独调整本订单基础照料费；用户申请交付后将锁定结算金额。</div>
-        {% endif %}
-        {% if order.status == 'awaiting_delivery' %}
-        <div style="color:#16a085;">用户已结清服务费，可选择“交付中”并选择物流配送或线下交付。</div>
-        {% elif order.status == 'settlement_pending' %}
-        <div style="color:#f39c12;">用户已申请交付，正在等待支付基础照料服务费。</div>
-        {% endif %}
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px;margin-bottom:18px;">
+        <div>
+            <h2 style="margin:0 0 6px;">订单交付处理</h2>
+            <div style="font-size:13px;color:#888;">订单号：<span style="font-family:monospace;color:#555;">{{ order.order_no }}</span></div>
+        </div>
+        <span style="padding:5px 12px;border-radius:14px;font-size:12px;font-weight:600;color:white;background:{% if order.status == 'awaiting_delivery' %}#16a085{% elif order.status == 'shipping' %}#3498db{% elif order.status == 'settlement_pending' %}#f39c12{% elif order.status == 'completed' %}#27ae60{% else %}#95a5a6{% endif %};">{{ order.get_status_display }}</span>
     </div>
-    
-    <form method="post" style="margin-top: 20px;">
-        {% csrf_token %}
-        
-        <div class="form-group">
-            <label for="status">订单状态</label>
-            <select name="status" id="status" required>
-                <option value="pending" {% if order.status == 'pending' %}selected{% endif %}>待支付</option>
-                <option value="{{ adopting_status_value }}" {% if order.status == 'paid' or order.status == 'adopting' or order.status == 'ready_to_ship' %}selected{% endif %}>认养中</option>
-                <option value="settlement_pending" {% if order.status == 'settlement_pending' %}selected{% endif %}>待结算服务费</option>
-                <option value="awaiting_delivery" {% if order.status == 'awaiting_delivery' %}selected{% endif %}>待交付</option>
-                <option value="shipping" {% if order.status == 'shipping' %}selected{% endif %}>交付中</option>
-                <option value="completed" {% if order.status == 'completed' %}selected{% endif %}>已完成</option>
-                <option value="cancelled" {% if order.status == 'cancelled' %}selected{% endif %}>已取消</option>
-            </select>
+
+    <div style="display:grid;grid-template-columns:1.1fr 1fr;gap:18px;margin-bottom:20px;">
+        <div style="padding:16px 18px;border-radius:10px;background:#f8fafc;border:1px solid #eef1f5;">
+            <h3 style="margin:0 0 14px;font-size:16px;color:#333;">用户收货信息</h3>
+            <div style="display:grid;grid-template-columns:86px 1fr;row-gap:10px;font-size:14px;line-height:1.6;">
+                <div style="color:#888;">收货人</div>
+                <div style="font-weight:600;color:#333;">{{ order.receiver_name|default:'未填写' }}</div>
+                <div style="color:#888;">手机号</div>
+                <div style="font-weight:600;color:#333;">{{ order.receiver_phone|default:'未填写' }}</div>
+                <div style="color:#888;">收货地址</div>
+                <div style="color:#333;word-break:break-all;">{{ order.shipping_address|default:'未填写' }}</div>
+            </div>
+            {% if not order.receiver_name or not order.receiver_phone or not order.shipping_address %}
+            <div style="margin-top:12px;color:#e67e22;font-size:13px;">用户还没有完整填写收货信息，建议先联系用户确认。</div>
+            {% endif %}
         </div>
 
-        <div class="form-group">
-            <label for="daily_care_fee">本订单基础照料费（元/天/只）</label>
-            <input type="number" name="daily_care_fee" id="daily_care_fee" step="0.01" min="0" value="{{ order.daily_care_fee }}" {% if not can_edit_daily_care_fee %}disabled{% endif %}>
-            <span style="font-size:12px;color:#999;">
-                {% if can_edit_daily_care_fee %}
-                只影响当前订单；不会改变养殖户默认值或羊只档案设置。
-                {% else %}
-                该订单已进入结算/交付阶段，服务费标准已锁定。
-                {% endif %}
-            </span>
+        <div style="padding:16px 18px;border-radius:10px;background:#fff;border:1px solid #eef1f5;">
+            <h3 style="margin:0 0 14px;font-size:16px;color:#333;">费用信息</h3>
+            <div style="display:grid;grid-template-columns:110px 1fr;row-gap:10px;font-size:14px;line-height:1.6;">
+                <div style="color:#888;">认养费用</div>
+                <div style="font-weight:600;color:#e74c3c;">¥{{ order.total_amount }}</div>
+                <div style="color:#888;">基础照料费</div>
+                <div style="font-weight:600;color:#f39c12;">¥{{ order.care_fee_amount }}{% if order.daily_care_fee %}<span style="color:#999;font-weight:400;margin-left:6px;">¥{{ order.daily_care_fee }}/天/只</span>{% endif %}</div>
+                <div style="color:#888;">当前状态</div>
+                <div>{{ order.get_status_display }}</div>
+            </div>
+            {% if order.status == 'awaiting_delivery' %}
+            <div style="margin-top:12px;color:#16a085;font-size:13px;">用户已结清服务费，可以直接填写物流信息并发货。</div>
+            {% elif order.status == 'settlement_pending' %}
+            <div style="margin-top:12px;color:#f39c12;font-size:13px;">用户已申请交付，正在等待支付基础照料服务费。</div>
+            {% endif %}
         </div>
-        
-        <div class="form-group" id="logistics-info" style="{% if order.status != 'shipping' %}display: none;{% endif %}">
-            <h4>交付方式</h4>
-            <p style="margin: 0 0 12px; color: #777; font-size: 13px;">选择“交付中”时，请先选择交付方式。物流配送会在小程序显示“已发货”，线下交付会显示“交付中”。</p>
-            <div style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:18px;">
-                <label style="display:flex; align-items:center; gap:8px; padding:10px 14px; border:1px solid #ddd; border-radius:8px; cursor:pointer;">
-                    <input type="radio" name="delivery_method" value="logistics" {% if order.delivery_method != 'offline' %}checked{% endif %}>
-                    物流配送
-                </label>
-                <label style="display:flex; align-items:center; gap:8px; padding:10px 14px; border:1px solid #ddd; border-radius:8px; cursor:pointer;">
-                    <input type="radio" name="delivery_method" value="offline" {% if order.delivery_method == 'offline' %}checked{% endif %}>
-                    线下交付
-                </label>
+    </div>
+
+    {% if order.status == 'awaiting_delivery' %}
+    <div style="padding:18px;border-radius:10px;background:#f7fbf7;border:1px solid #dcefe0;margin-bottom:18px;">
+        <h3 style="margin:0 0 14px;font-size:17px;color:#16831c;">快捷发货</h3>
+        <form method="post">
+            {% csrf_token %}
+            <input type="hidden" name="status" value="shipping">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+                <div class="form-group" style="margin:0;">
+                    <label for="quick_logistics_company">物流公司</label>
+                    <input type="text" name="logistics_company" id="quick_logistics_company" value="{{ order.logistics_company }}" placeholder="例如：顺丰速运 / 中通快递" required>
+                </div>
+                <div class="form-group" style="margin:0;">
+                    <label for="quick_logistics_tracking_number">物流单号</label>
+                    <input type="text" name="logistics_tracking_number" id="quick_logistics_tracking_number" value="{{ order.logistics_tracking_number }}" placeholder="请输入物流单号" required>
+                </div>
+            </div>
+            <div style="margin-top:16px;display:flex;align-items:center;gap:12px;">
+                <button type="submit" class="btn btn-success" style="padding:10px 24px;">确认发货</button>
+                <span style="font-size:13px;color:#777;">发货后小程序将显示“已发货”，用户可查看物流公司和单号。</span>
+            </div>
+        </form>
+    </div>
+    {% endif %}
+
+    <details style="margin-top:8px;">
+        <summary style="cursor:pointer;color:#777;font-size:14px;">高级状态调整</summary>
+        <form method="post" style="margin-top:16px;padding:16px;border:1px solid #eee;border-radius:10px;background:#fafafa;">
+            {% csrf_token %}
+
+            <div class="form-group">
+                <label for="status">订单状态</label>
+                <select name="status" id="status" required>
+                    <option value="pending" {% if order.status == 'pending' %}selected{% endif %}>待支付</option>
+                    <option value="{{ adopting_status_value }}" {% if order.status == 'paid' or order.status == 'adopting' or order.status == 'ready_to_ship' %}selected{% endif %}>认养中</option>
+                    <option value="settlement_pending" {% if order.status == 'settlement_pending' %}selected{% endif %}>待结算服务费</option>
+                    <option value="awaiting_delivery" {% if order.status == 'awaiting_delivery' %}selected{% endif %}>待交付</option>
+                    <option value="shipping" {% if order.status == 'shipping' %}selected{% endif %}>已发货</option>
+                    <option value="completed" {% if order.status == 'completed' %}selected{% endif %}>已完成</option>
+                    <option value="cancelled" {% if order.status == 'cancelled' %}selected{% endif %}>已取消</option>
+                </select>
             </div>
 
-            <div id="logistics-fields">
+            <div class="form-group">
+                <label for="daily_care_fee">本订单基础照料费（元/天/只）</label>
+                <input type="number" name="daily_care_fee" id="daily_care_fee" step="0.01" min="0" value="{{ order.daily_care_fee }}" {% if not can_edit_daily_care_fee %}disabled{% endif %}>
+                <span style="font-size:12px;color:#999;">
+                    {% if can_edit_daily_care_fee %}
+                    只影响当前订单；不会改变养殖户默认值或羊只档案设置。
+                    {% else %}
+                    该订单已进入结算/交付阶段，服务费标准已锁定。
+                    {% endif %}
+                </span>
+            </div>
+
+            <div class="form-group" id="logistics-info" style="{% if order.status != 'shipping' %}display:none;{% endif %}">
+                <h4 style="margin:0 0 10px;">物流信息</h4>
                 <div class="form-group">
-                <label for="logistics_company">物流公司</label>
-                <input type="text" name="logistics_company" id="logistics_company" value="{{ order.logistics_company }}" placeholder="请输入物流公司名称">
+                    <label for="logistics_company">物流公司</label>
+                    <input type="text" name="logistics_company" id="logistics_company" value="{{ order.logistics_company }}" placeholder="请输入物流公司名称">
                 </div>
                 <div class="form-group">
-                <label for="logistics_tracking_number">物流单号</label>
-                <input type="text" name="logistics_tracking_number" id="logistics_tracking_number" value="{{ order.logistics_tracking_number }}" placeholder="请输入物流单号">
+                    <label for="logistics_tracking_number">物流单号</label>
+                    <input type="text" name="logistics_tracking_number" id="logistics_tracking_number" value="{{ order.logistics_tracking_number }}" placeholder="请输入物流单号">
                 </div>
             </div>
 
-            <div id="offline-fields">
-                <div class="form-group">
-                    <label for="offline_delivery_location">线下交付地点</label>
-                    <input type="text" name="offline_delivery_location" id="offline_delivery_location" value="{{ order.offline_delivery_location }}" placeholder="请输入线下交付地点">
-                </div>
-                <div class="form-group">
-                    <label for="offline_delivery_note">线下交付说明</label>
-                    <textarea name="offline_delivery_note" id="offline_delivery_note" rows="3" placeholder="例如：请提前联系养殖户确认交付时间">{{ order.offline_delivery_note }}</textarea>
-                </div>
+            <div style="margin-top:22px;">
+                <button type="submit" class="btn btn-success">保存调整</button>
+                <a href="{% url 'order_detail' order.pk %}" class="btn" style="margin-left:10px;">取消</a>
             </div>
-        </div>
-        
-        <div style="margin-top: 30px;">
-            <button type="submit" class="btn btn-success">保存更新</button>
-            <a href="{% url 'order_detail' order.pk %}" class="btn" style="margin-left: 10px;">取消</a>
-        </div>
-    </form>
+        </form>
+    </details>
 </div>
 
 <script>
-    function updateDeliveryMethodFields() {
-        const selected = document.querySelector('input[name="delivery_method"]:checked');
-        const method = selected ? selected.value : 'logistics';
-        document.getElementById('logistics-fields').style.display = method === 'logistics' ? 'block' : 'none';
-        document.getElementById('offline-fields').style.display = method === 'offline' ? 'block' : 'none';
+    const statusSelect = document.getElementById('status');
+    if (statusSelect) {
+        statusSelect.addEventListener('change', function() {
+            const logisticsInfo = document.getElementById('logistics-info');
+            if (!logisticsInfo) return;
+            logisticsInfo.style.display = this.value === 'shipping' ? 'block' : 'none';
+        });
     }
-
-    // 选择“交付中”时显示交付信息
-    document.getElementById('status').addEventListener('change', function() {
-        const logisticsInfo = document.getElementById('logistics-info');
-        if (this.value === 'shipping') {
-            logisticsInfo.style.display = 'block';
-        } else {
-            logisticsInfo.style.display = 'none';
-        }
-    });
-
-    document.querySelectorAll('input[name="delivery_method"]').forEach(function(input) {
-        input.addEventListener('change', updateDeliveryMethodFields);
-    });
-
-    updateDeliveryMethodFields();
 </script>
 {% endblock %}
