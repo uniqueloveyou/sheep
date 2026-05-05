@@ -12,7 +12,6 @@ from sheep_management.models import (
     CartItem,
     FeedingRecord,
     GrowthRecord,
-    KnowledgeDocument,
     Order,
     OrderItem,
     QAAlias,
@@ -69,7 +68,6 @@ class Command(BaseCommand):
             sheep_list = self._seed_sheep(users)
             self._seed_trace_records(sheep_list, vaccines)
             self._seed_orders(users, sheep_list)
-            self._seed_knowledge()
 
         if not options["skip_qrcode"]:
             self._generate_qrcodes(sheep_list)
@@ -91,7 +89,6 @@ class Command(BaseCommand):
         Order.objects.filter(user__in=demo_users).delete()
         demo_sheep.delete()
         demo_users.delete()
-        KnowledgeDocument.objects.filter(title__startswith="演示数据：").delete()
         QAPair.objects.filter(question__startswith="演示：").delete()
 
     def _seed_users(self):
@@ -329,38 +326,6 @@ class Command(BaseCommand):
             quantity=1,
             price=sheep_list[1].price,
         )
-
-    def _seed_knowledge(self):
-        docs = [
-            (
-                "演示数据：盐池滩羊领养流程",
-                "消费者可在小程序中浏览羊只档案，查看耳标、体重、出生日期、牧场信息和价格；提交领养订单后，订单会进入养殖户和后台管理列表。",
-                "trading",
-                "领养流程,订单,消费者,盐池滩羊",
-            ),
-            (
-                "演示数据：扫码溯源展示内容",
-                "扫码进入溯源页后，应展示羊只基础档案、成长体重变化、饲喂记录、疫苗接种记录和所属养殖主体，便于答辩时说明数据闭环。",
-                "product",
-                "二维码,溯源,成长记录,疫苗记录",
-            ),
-            (
-                "演示数据：盐池滩羊养殖说明",
-                "盐池滩羊以天然草场放牧和标准化补饲结合为主，常见饲喂包括紫花苜蓿、青贮玉米、燕麦草、矿物质盐砖等。",
-                "breeding",
-                "盐池滩羊,饲喂,养殖,牧场",
-            ),
-        ]
-        for title, content, category, keywords in docs:
-            KnowledgeDocument.objects.update_or_create(
-                title=title,
-                defaults={
-                    "content": content,
-                    "category": category,
-                    "keywords": keywords,
-                    "is_active": True,
-                },
-            )
 
         category, _ = QACategory.objects.get_or_create(
             code="demo_trace",
