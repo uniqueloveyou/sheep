@@ -144,7 +144,11 @@ function buildOrderDetailFromItem(item) {
       gender: sheep.gender,
       weight: sheep.weight,
       health_status: sheep.health_status || '健康',
-      price: item.price || sheep.price || 0
+      price: item.price || sheep.price || 0,
+      breeder_id: sheep.breeder_id || item.breeder_id || '',
+      breeder_name: sheep.breeder_name || item.breeder_name || '',
+      breeder_mobile: sheep.breeder_mobile || item.breeder_mobile || '',
+      farm_name: sheep.farm_name || item.farm_name || ''
     }]
   };
 }

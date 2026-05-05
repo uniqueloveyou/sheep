@@ -71,7 +71,7 @@
         </view>
     </block>
 
-    <view class="checkout-bar-wrapper" wx:if="{{cartItems.length > 0}}">
+    <view class="checkout-bar-wrapper" wx:if="{{hasCartItems}}">
         <view class="checkout-bar">
             <!-- 左侧：全选 + 合计 -->
             <view class="bar-left">

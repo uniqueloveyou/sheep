@@ -363,7 +363,7 @@ class CommerceService:
                 order__user=user,
                 order__status__in=CommerceService.ADOPTED_ORDER_STATUSES,
             )
-            .select_related("sheep", "order")
+            .select_related("sheep__owner", "order")
             .order_by("-order__created_at")
         )
 
@@ -424,6 +424,10 @@ class CommerceService:
                         "age_display": sheep.age_display,
                         "price": float(sheep.price),
                         "image": sheep.image.url if sheep.image else "",
+                        "breeder_id": sheep.owner_id,
+                        "breeder_name": sheep.owner.nickname or sheep.owner.username if sheep.owner else "",
+                        "breeder_mobile": sheep.owner.mobile if sheep.owner else "",
+                        "farm_name": sheep.farm_name or "",
                     },
                     "logistics_company": order_item.order.logistics_company or "",
                     "logistics_tracking_number": order_item.order.logistics_tracking_number or "",
@@ -514,7 +518,7 @@ class CommerceService:
 
         result = []
         for order in orders:
-            items = order.items.select_related("sheep").all()
+            items = order.items.select_related("sheep__owner").all()
             adoption_days, estimated_care_fee = CommerceService._calculate_care_fee(order)
             result.append(
                 {
@@ -561,6 +565,12 @@ class CommerceService:
                             "weight": float(item.sheep.current_weight),
                             "health_status": item.sheep.health_status,
                             "price": float(item.price),
+                            "breeder_id": item.sheep.owner_id,
+                            "breeder_name": item.sheep.owner.nickname or item.sheep.owner.username
+                            if item.sheep.owner
+                            else "",
+                            "breeder_mobile": item.sheep.owner.mobile if item.sheep.owner else "",
+                            "farm_name": item.sheep.farm_name or "",
                         }
                         for item in items
                     ],
@@ -824,7 +834,7 @@ class CommerceService:
 
     @staticmethod
     def _build_order(order):
-        items = order.items.select_related("sheep").all()
+        items = order.items.select_related("sheep__owner").all()
         adoption_days, estimated_care_fee = CommerceService._calculate_care_fee(order)
         return {
             "id": order.id,
@@ -871,6 +881,12 @@ class CommerceService:
                     "weight": float(item.sheep.current_weight),
                     "health_status": item.sheep.health_status,
                     "price": float(item.price),
+                    "breeder_id": item.sheep.owner_id,
+                    "breeder_name": item.sheep.owner.nickname or item.sheep.owner.username
+                    if item.sheep.owner
+                    else "",
+                    "breeder_mobile": item.sheep.owner.mobile if item.sheep.owner else "",
+                    "farm_name": item.sheep.farm_name or "",
                 }
                 for item in items
             ],

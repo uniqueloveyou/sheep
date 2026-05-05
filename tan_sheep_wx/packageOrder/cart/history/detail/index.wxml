@@ -27,8 +27,25 @@
         <text class="item-attr">性别：{{subItem.gender || '未记录'}}</text>
         <text class="item-attr">当前体重：{{subItem.weightText}}</text>
         <text class="item-attr">健康状态：{{subItem.healthStatus}}</text>
+        <text class="item-attr">养殖户：{{subItem.breederNameText}}</text>
       </view>
       <text class="item-price">{{subItem.priceText}}</text>
+    </view>
+  </view>
+
+  <view class="section" wx:if="{{order.breeders.length}}">
+    <view class="header-row">
+      <text class="title">养殖户信息</text>
+    </view>
+    <view class="breeder-card" wx:for="{{order.breeders}}" wx:key="id" wx:for-item="breeder">
+      <view class="breeder-main">
+        <text class="breeder-name">{{breeder.name}}</text>
+        <text class="breeder-meta">负责羊只 {{breeder.sheepCount}} 只</text>
+      </view>
+      <view class="breeder-info">
+        <text class="breeder-phone">{{breeder.mobile}}</text>
+        <text class="breeder-farm">{{breeder.farmName}}</text>
+      </view>
     </view>
   </view>
 

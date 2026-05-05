@@ -7,6 +7,7 @@ Page({
         totalPrice: 0,
         selectedCount: 0,
         allSelected: false,
+        hasCartItems: false,
     },
 
     onShow: function () {
@@ -73,18 +74,25 @@ Page({
                         };
                     });
 
-                    that.setData({ cartItems });
-                    that._updateSelection();
+                    if (cartItems.length === 0) {
+                        wx.removeStorageSync('checkoutItems');
+                    }
+                    that.setData({
+                        cartItems,
+                        ...that._getSelectionState(cartItems)
+                    });
                 })
                 .catch((error) => {
                     wx.hideLoading();
                     console.error('[购物车] 从服务器加载失败:', error);
-                    that.setData({ cartItems: [], totalPrice: 0 });
+                    wx.removeStorageSync('checkoutItems');
+                    that.setData(that._getEmptyCartState());
                     wx.showToast({ title: '加载失败', icon: 'none' });
                 });
         } else {
             // 未登录，提示登录
-            this.setData({ cartItems: [], totalPrice: 0 });
+            wx.removeStorageSync('checkoutItems');
+            this.setData(this._getEmptyCartState());
         }
     },
 
@@ -101,8 +109,10 @@ Page({
             item.total_price = (item.price || 0) * (item.quantity || 1);
         });
 
-        const totalPrice = cartItems.reduce((sum, item) => sum + (item.total_price || item.price || 0), 0);
-        this.setData({ cartItems, totalPrice });
+        this.setData({
+            cartItems,
+            ...this._getSelectionState(cartItems)
+        });
     },
 
     deleteItem: function (e) {
@@ -126,6 +136,14 @@ Page({
                         .then((res) => {
                             wx.hideLoading();
                             console.log('[购物车] 删除成功:', res);
+                            const remainingItems = (that.data.cartItems || []).filter(item => String(item.cart_item_id) !== String(cartItemId));
+                            if (remainingItems.length === 0) {
+                                wx.removeStorageSync('checkoutItems');
+                            }
+                            that.setData({
+                                cartItems: remainingItems,
+                                ...that._getSelectionState(remainingItems)
+                            });
                             that.loadCartItems(); // 重新加载
                             wx.showToast({ title: '已删除', icon: 'success' });
                         })
@@ -142,33 +160,53 @@ Page({
     // 单个商品切换选中状态
     toggleSelect: function (e) {
         const index = e.currentTarget.dataset.index;
-        const cartItems = this.data.cartItems;
+        const cartItems = (this.data.cartItems || []).slice();
+        if (!cartItems[index]) return;
         cartItems[index].selected = !cartItems[index].selected;
-        this.setData({ cartItems });
-        this._updateSelection();
+        this.setData({
+            cartItems,
+            ...this._getSelectionState(cartItems)
+        });
     },
 
     // 全选 / 取消全选
     toggleSelectAll: function () {
         const allSelected = !this.data.allSelected;
-        const cartItems = this.data.cartItems.map(item => ({
+        const cartItems = (this.data.cartItems || []).map(item => ({
             ...item,
             selected: allSelected
         }));
-        this.setData({ cartItems, allSelected });
-        this._updateSelection(false); // allSelected 已经手动设置，不需要重算
+        this.setData({
+            cartItems,
+            ...this._getSelectionState(cartItems, allSelected)
+        });
     },
 
     // 重新计算选中数量和总价
-    _updateSelection: function (recalcAllSelected) {
-        const cartItems = this.data.cartItems;
+    _getSelectionState: function (cartItems, allSelectedOverride) {
+        cartItems = cartItems || [];
         const selectedItems = cartItems.filter(item => item.selected);
         const totalPrice = selectedItems.reduce((sum, item) => sum + (item.total_price || 0), 0);
         const selectedCount = selectedItems.length;
-        const allSelected = recalcAllSelected === false
-            ? this.data.allSelected
+        const allSelected = typeof allSelectedOverride === 'boolean'
+            ? allSelectedOverride
             : (cartItems.length > 0 && selectedCount === cartItems.length);
-        this.setData({ totalPrice, selectedCount, allSelected });
+        return {
+            totalPrice,
+            selectedCount,
+            allSelected,
+            hasCartItems: cartItems.length > 0
+        };
+    },
+
+    _getEmptyCartState: function () {
+        return {
+            cartItems: [],
+            totalPrice: 0,
+            selectedCount: 0,
+            allSelected: false,
+            hasCartItems: false
+        };
     },
 
     viewOrderDetail: function (e) {
@@ -181,11 +219,15 @@ Page({
     checkout: function () {
         const token = wx.getStorageSync('token');
         if (!token) { wx.showToast({ title: '请先登录', icon: 'none' }); return; }
-        if (this.data.cartItems.length === 0) { wx.showToast({ title: '购物车为空', icon: 'none' }); return; }
-        if (this.data.selectedCount === 0) { wx.showToast({ title: '请先选择要结算的羊只', icon: 'none' }); return; }
+        const selectedItems = (this.data.cartItems || []).filter(item => item.selected && item.cart_item_id);
+        if (!this.data.hasCartItems || this.data.cartItems.length === 0) {
+            wx.removeStorageSync('checkoutItems');
+            wx.showToast({ title: '购物车为空', icon: 'none' });
+            return;
+        }
+        if (selectedItems.length === 0) { wx.showToast({ title: '请先选择要结算的羊只', icon: 'none' }); return; }
 
         // 将选中商品存入缓存，跳转到订单确认页
-        const selectedItems = this.data.cartItems.filter(item => item.selected);
         wx.setStorageSync('checkoutItems', selectedItems);
         wx.navigateTo({ url: '/packageOrder/cart/checkout' });
     },

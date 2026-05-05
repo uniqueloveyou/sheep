@@ -139,6 +139,48 @@ page {
   line-height: 1.35;
 }
 
+.breeder-card {
+  display: flex;
+  justify-content: space-between;
+  gap: 20rpx;
+  padding: 18rpx 0;
+  border-bottom: 1rpx solid #f2f2f2;
+}
+
+.breeder-card:last-child {
+  border-bottom: 0;
+}
+
+.breeder-main,
+.breeder-info {
+  display: flex;
+  flex-direction: column;
+  gap: 8rpx;
+}
+
+.breeder-info {
+  align-items: flex-end;
+  text-align: right;
+  max-width: 55%;
+}
+
+.breeder-name {
+  font-size: 28rpx;
+  color: #222;
+  font-weight: 600;
+}
+
+.breeder-meta,
+.breeder-farm {
+  font-size: 23rpx;
+  color: #888;
+}
+
+.breeder-phone {
+  font-size: 25rpx;
+  color: #333;
+}
+
 .trace-copy {
   font-size: 25rpx;
   color: #777;

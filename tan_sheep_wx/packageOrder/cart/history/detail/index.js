@@ -36,8 +36,29 @@ function normalizeItem(item) {
   return Object.assign({}, item, {
     weightText: item.weight ? `${item.weight} kg` : '未记录',
     healthStatus: item.health_status || item.healthStatus || '健康',
+    breederNameText: item.breeder_name || '未填写',
+    breederMobileText: item.breeder_mobile || '未填写',
+    farmNameText: item.farm_name || '未填写',
     priceText: price > 0 ? `¥${formatAmount(price)}` : '已包含在认养费用中'
   });
+}
+
+function buildBreederList(items) {
+  const breederMap = {};
+  (items || []).forEach(item => {
+    const key = item.breeder_id || item.breeder_name || 'unknown';
+    if (!breederMap[key]) {
+      breederMap[key] = {
+        id: item.breeder_id || key,
+        name: item.breeder_name || '未填写',
+        mobile: item.breeder_mobile || '未填写',
+        farmName: item.farm_name || '未填写',
+        sheepCount: 0
+      };
+    }
+    breederMap[key].sheepCount += 1;
+  });
+  return Object.keys(breederMap).map(key => breederMap[key]);
 }
 
 function normalizeOrder(order) {
@@ -67,6 +88,7 @@ function normalizeOrder(order) {
 
   return Object.assign({}, order, {
     items,
+    breeders: buildBreederList(items),
     status_display: statusDisplay,
     statusClass: getStatusClass(order.status),
     totalAmountText: formatAmount(order.total_amount),
