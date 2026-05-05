@@ -7,7 +7,7 @@ import json
 import re
 from datetime import datetime, date
 from django.utils import timezone
-from ..models import User, Sheep, VaccinationHistory, GrowthRecord, FeedingRecord, CartItem, PromotionActivity, Coupon, BreederFollow
+from ..models import User, Sheep, VaccinationHistory, GrowthRecord, FeedingRecord, CartItem, Coupon, BreederFollow
 from ..utils import generate_token, verify_token
 import requests
 from ..services.sheep_service import SheepService, SheepError
@@ -523,7 +523,7 @@ def api_search_goods(request):
                         Q(length__gte=num_value-5, length__lte=num_value+5)
                     )[:10]
             except ValueError:
-                # 文本搜索：性别字段（支持中文关键词）
+                # 文本搜索：耳标编号 或 性别
                 gender_map = {
                     '公': 1, 'male': 1, '1': 1,
                     '母': 0, 'female': 0, '0': 0
@@ -532,7 +532,8 @@ def api_search_goods(request):
                 if gender_value is not None:
                     sheep_list = Sheep.objects.filter(gender=gender_value)[:10]
                 else:
-                    sheep_list = Sheep.objects.none()
+                    # 按耳标编号搜索
+                    sheep_list = Sheep.objects.filter(ear_tag__icontains=keyword)[:10]
             
             # 计算价格：根据体重计算（单价约 8-10元/kg）
             PRICE_PER_KG = 8.5  # 每公斤价格
@@ -549,8 +550,8 @@ def api_search_goods(request):
                     'description': f'性别: {sheep.get_gender_display()}, 羊龄: {sheep.age_display}, 体重: {sheep.current_weight}kg, 体高: {sheep.current_height}cm, 体长: {sheep.current_length}cm',
                     'price': calculated_price,
                     'daily_care_fee': float(sheep.effective_daily_care_fee),
-                    'image': '/images/icons/function/f1.png',
-                    'gender': sheep.get_gender_display(),  # 显示为中文
+                    'image': sheep.image.url if sheep.image else '/images/icons/function/f1.png',
+                    'gender': sheep.get_gender_display(),
                     'weight': float(sheep.current_weight),
                     'height': float(sheep.current_height),
                     'length': float(sheep.current_length),
@@ -580,7 +581,7 @@ def api_search_goods(request):
                     'title': f'养殖户: {breeder.nickname or breeder.username}',
                     'description': f'联系电话: {breeder.mobile or ""}, 羊只总数: {Sheep.objects.filter(owner=breeder).count()}只',
                     'price': 0,
-                    'image': '/images/icons/function/f8.png',
+                    'image': breeder.avatar_url or '/images/icons/function/f8.png',
                     'phone': breeder.mobile or '',
                     'sheep_count': Sheep.objects.filter(owner=breeder).count(),
                     'gender': breeder.get_gender_display() if breeder.gender is not None else ''
@@ -588,30 +589,7 @@ def api_search_goods(request):
         except Exception as e:
             print(f'搜索养殖户时出错: {str(e)}')
         
-        # 3. 搜索优惠活动
-        try:
-            activities = PromotionActivity.objects.filter(
-                Q(title__icontains=keyword) |
-                Q(description__icontains=keyword)
-            ).filter(status='active')[:10]
-            
-            for activity in activities:
-                result.append({
-                    'type': 'activity',
-                    'id': activity.id,
-                    'name': activity.title,
-                    'title': activity.title,
-                    'description': activity.description or '',
-                    'price': 0,
-                    'image': activity.image_url or '/images/icons/function/f4.png',
-                    'activity_type': activity.activity_type,
-                    'discount_rate': float(activity.discount_rate) if activity.discount_rate else None,
-                    'discount_amount': float(activity.discount_amount) if activity.discount_amount else None
-                })
-        except Exception as e:
-            print(f'搜索优惠活动时出错: {str(e)}')
-        
-        # 4. 搜索优惠券
+        # 3. 搜索优惠券
         try:
             now = timezone.now()
             coupons = Coupon.objects.filter(

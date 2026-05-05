@@ -121,66 +121,13 @@ Page({
         wx.hideLoading();
         console.error('搜索请求失败:', err);
 
-        // 如果后端服务未启动，使用模拟数据
         this.setData({
-          resultList: this.getMockResults(keyword),
-          originalResults: this.getMockResults(keyword),
+          resultList: [],
+          originalResults: [],
           hasSearched: true,
           searchKeyword: keyword
         });
       });
-  },
-
-  // 获取模拟搜索结果（用于测试）
-  getMockResults(keyword) {
-    const mockData = [
-      {
-        id: 1,
-        name: '优质滩羊',
-        title: '优质滩羊',
-        gender: '雄性',
-        weight: 45.5,
-        height: 65,
-        length: 95,
-        price: 380,
-        image: '/images/default.png',
-        description: '健康优质的滩羊，适合领养'
-      },
-      {
-        id: 2,
-        name: '标准滩羊',
-        title: '标准滩羊',
-        gender: '雌性',
-        weight: 42.3,
-        height: 62,
-        length: 90,
-        price: 350,
-        image: '/images/default.png',
-        description: '标准体型滩羊，性格温顺'
-      },
-      {
-        id: 3,
-        name: '大型滩羊',
-        title: '大型滩羊',
-        gender: '雄性',
-        weight: 48.2,
-        height: 68,
-        length: 98,
-        price: 420,
-        image: '/images/default.png',
-        description: '体型较大的滩羊，适合大型养殖'
-      }
-    ];
-
-    // 根据关键词过滤
-    if (keyword) {
-      return mockData.filter(item =>
-        item.name.includes(keyword) ||
-        item.description.includes(keyword) ||
-        item.gender.includes(keyword)
-      );
-    }
-    return mockData;
   },
 
   // 通过历史记录搜索
@@ -284,16 +231,14 @@ Page({
     const that = this;
     wx.showModal({
       title: '扫码溯源',
-      content: '请选择测试方式：\n\n• 手动输入：适用于开发调试\n• 扫码：适用于真机测试',
-      confirmText: '手动输入',
-      cancelText: '扫码',
+      content: '扫码或手动输入耳标编号',
+      confirmText: '扫码',
+      cancelText: '手动输入',
       success: (res) => {
         if (res.confirm) {
-          // 手动输入耳标编号（开发调试用）
-          that.manualInputEarTag();
-        } else if (res.cancel) {
-          // 调用真实扫码功能
           that.realScanCode();
+        } else if (res.cancel) {
+          that.manualInputEarTag();
         }
       }
     });
@@ -306,7 +251,6 @@ Page({
     wx.showModal({
       title: '输入耳标编号',
       editable: true,
-      placeholderText: '例如：TY-2026-001',
       success: (inputRes) => {
         if (inputRes.confirm && inputRes.content) {
           const earTag = API.normalizeEarTag(inputRes.content);
@@ -507,20 +451,14 @@ Page({
 
     let url = '';
     if (type === 'sheep') {
-      // 跳转到羊只详情页
-      url = `/pages/goodsdetail/goodsdetail?id=${id}`;
+      // 跳转到溯源详情页，展示完整的羊只信息
+      url = `/packageSearch/trace/detail?id=${id}`;
     } else if (type === 'breeder') {
       // 跳转到养殖户详情页
-      url = `/pages/breeder/my3/my3?id=${id}`;
-    } else if (type === 'activity') {
-      // 跳转到优惠活动页面
-      url = `/pages/promotion/index`;
-    } else if (type === 'coupon') {
-      // 跳转到优惠券页面
-      url = `/pages/promotion/index`;
+      url = `/pages/breeder/my1/my1?id=${id}`;
     } else {
-      // 默认跳转到羊只详情页
-      url = `/pages/goodsdetail/goodsdetail?id=${id}`;
+      // 默认跳转到羊只溯源详情页
+      url = `/packageSearch/trace/detail?id=${id}`;
     }
 
     wx.navigateTo({
