@@ -9,11 +9,25 @@ from ..models import Sheep, GrowthRecord, FeedingRecord, VaccinationHistory, Vac
 from ..permissions import ROLE_ADMIN, ROLE_BREEDER
 
 
+ADOPTED_ORDER_STATUSES = [
+    'paid',
+    'adopting',
+    'ready_to_ship',
+    'settlement_pending',
+    'awaiting_delivery',
+    'shipping',
+    'completed',
+]
+
+
 @login_required
 def sheep_list(request):
     """羊只列表 - 带多条件筛选"""
     is_admin = request.user.role == ROLE_ADMIN
     page_number = request.GET.get('page', 1)
+    adoption_tab = request.GET.get('adoption_tab', 'available')
+    if adoption_tab not in {'available', 'adopted'}:
+        adoption_tab = 'available'
     
     # 获取筛选参数
     search = request.GET.get('search', '')
@@ -45,23 +59,38 @@ def sheep_list(request):
     if gender:
         sheep_list = sheep_list.filter(gender=int(gender))
 
+    adopted_sheep_ids = list(
+        OrderItem.objects.filter(
+            sheep__in=sheep_list,
+            order__status__in=ADOPTED_ORDER_STATUSES,
+        ).values_list('sheep_id', flat=True).distinct()
+    )
+    available_count = sheep_list.exclude(id__in=adopted_sheep_ids).count()
+    adopted_count = sheep_list.filter(id__in=adopted_sheep_ids).count()
+
+    if adoption_tab == 'adopted':
+        sheep_list = sheep_list.filter(id__in=adopted_sheep_ids)
+    else:
+        sheep_list = sheep_list.exclude(id__in=adopted_sheep_ids)
+
     # 默认按最新羊只排序，并做分页
     sheep_queryset = sheep_list.order_by('-id')
     paginator = Paginator(sheep_queryset, 10)
     page_obj = paginator.get_page(page_number)
     current_sheep_list = list(page_obj.object_list)
 
-    # 批量查询当前页每只羊的领养人（已支付/配送中/完成的订单）
+    # 批量查询当前页每只羊的认养订单信息
     sheep_ids = [s.id for s in current_sheep_list]
-    adopter_map = {}
+    adoption_map = {}
     for oi in OrderItem.objects.filter(
         sheep_id__in=sheep_ids,
-        order__status__in=['paid', 'adopting', 'ready_to_ship', 'shipping', 'completed']
-    ).select_related('order__user'):
-        adopter_map[oi.sheep_id] = oi.order.user
+        order__status__in=ADOPTED_ORDER_STATUSES
+    ).select_related('order__user', 'order').order_by('-order__created_at'):
+        adoption_map.setdefault(oi.sheep_id, oi.order)
 
     for s in current_sheep_list:
-        s.adopter = adopter_map.get(s.id)  # None 表示未领养
+        s.adoption_order = adoption_map.get(s.id)
+        s.adopter = s.adoption_order.user if s.adoption_order else None
 
     # 获取筛选选项
     health_choices = Sheep.HEALTH_STATUS_CHOICES
@@ -79,6 +108,10 @@ def sheep_list(request):
         'health_status': health_status,
         'gender': gender,
         'owner_filter': owner_filter,
+        'adoption_tab': adoption_tab,
+        'available_count': available_count,
+        'adopted_count': adopted_count,
+        'table_colspan': 10 if is_admin and adoption_tab == 'available' else (9 if adoption_tab == 'available' else 11),
         'health_choices': health_choices,
         'gender_choices': gender_choices,
         'is_admin': is_admin,

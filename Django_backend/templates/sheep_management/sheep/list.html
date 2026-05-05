@@ -8,10 +8,22 @@
         <h2 style="margin: 0;">🐑 羊只档案管理</h2>
         <a href="{% url 'sheep_create' %}" class="btn">➕ 添加羊只</a>
     </div>
+
+    <div style="display:flex; gap:12px; margin-bottom:20px; border-bottom:1px solid #eee;">
+        <a href="?adoption_tab=available&search={{ search|urlencode }}&health_status={{ health_status|urlencode }}&gender={{ gender|urlencode }}{% if is_admin %}&owner={{ owner_filter|urlencode }}{% endif %}"
+           style="text-decoration:none; padding:12px 18px; border-radius:8px 8px 0 0; font-weight:600; color:{% if adoption_tab == 'available' %}#2e7d32{% else %}#777{% endif %}; background:{% if adoption_tab == 'available' %}#eef8f0{% else %}transparent{% endif %}; border-bottom:3px solid {% if adoption_tab == 'available' %}#2e7d32{% else %}transparent{% endif %};">
+            可领养羊只 <span style="color:#999; font-weight:400;">{{ available_count }}</span>
+        </a>
+        <a href="?adoption_tab=adopted&search={{ search|urlencode }}&health_status={{ health_status|urlencode }}&gender={{ gender|urlencode }}{% if is_admin %}&owner={{ owner_filter|urlencode }}{% endif %}"
+           style="text-decoration:none; padding:12px 18px; border-radius:8px 8px 0 0; font-weight:600; color:{% if adoption_tab == 'adopted' %}#2e7d32{% else %}#777{% endif %}; background:{% if adoption_tab == 'adopted' %}#eef8f0{% else %}transparent{% endif %}; border-bottom:3px solid {% if adoption_tab == 'adopted' %}#2e7d32{% else %}transparent{% endif %};">
+            已领养羊只 <span style="color:#999; font-weight:400;">{{ adopted_count }}</span>
+        </a>
+    </div>
     
     <!-- 筛选区域 -->
     <div class="filter-bar">
         <form method="get" style="display: flex; gap: 15px; flex-wrap: wrap; align-items: center;">
+            <input type="hidden" name="adoption_tab" value="{{ adoption_tab }}">
             <input type="text" name="search" placeholder="搜索ID或耳标号..." value="{{ search }}" style="width: 200px;">
             
             {% if is_admin %}
@@ -38,10 +50,16 @@
             </select>
             
             <button type="submit" class="btn">🔍 筛选</button>
-            <a href="{% url 'sheep_list' %}" class="btn" style="background: #95a5a6;">重置</a>
+            <a href="{% url 'sheep_list' %}?adoption_tab={{ adoption_tab }}" class="btn" style="background: #95a5a6;">重置</a>
         </form>
     </div>
     
+    {% if adoption_tab == 'adopted' %}
+    <div style="margin:0 0 14px; padding:12px 14px; background:#f8fafc; color:#666; border-radius:8px; font-size:13px;">
+        已领养羊只用于查看认养人、订单状态和交付处理；日常生长、喂养、疫苗记录仍可从“查看羊只”进入维护。
+    </div>
+    {% endif %}
+
     <table>
         <thead>
             <tr>
@@ -52,9 +70,14 @@
                 <th>羊龄</th>
                 <th>健康状态</th>
                 <th>体重(kg)</th>
+                {% if adoption_tab == 'available' %}
                 <th>价格（元）</th>
-                <th>领养人</th>
                 {% if is_admin %}<th>所属养殖户</th>{% endif %}
+                {% else %}
+                <th>认养人</th>
+                <th>订单状态</th>
+                <th>认养时间</th>
+                {% endif %}
                 <th>操作</th>
             </tr>
         </thead>
@@ -78,29 +101,56 @@
                     </span>
                 </td>
                 <td>{{ sheep.current_weight }}</td>
+                {% if adoption_tab == 'available' %}
                 <td><strong style="color: #e74c3c;">¥ {{ sheep.price }}</strong></td>
+                {% if is_admin %}<td>{{ sheep.owner.nickname|default:sheep.owner.username }}</td>{% endif %}
+                {% else %}
                 <td>
-                    {% if sheep.adopter %}
-                        <span style="color: #27ae60; font-weight: bold;">{{ sheep.adopter.nickname|default:sheep.adopter.username }}</span>
-                    {% else %}
-                        <span style="color: #bbb;">未领养</span>
+                    <span style="color: #27ae60; font-weight: bold;">{{ sheep.adopter.nickname|default:sheep.adopter.username }}</span>
+                    {% if sheep.adopter.mobile %}
+                    <div style="font-size:11px; color:#999; margin-top:2px;">{{ sheep.adopter.mobile }}</div>
                     {% endif %}
                 </td>
-                {% if is_admin %}<td>{{ sheep.owner.nickname|default:sheep.owner.username }}</td>{% endif %}
+                <td>
+                    <span style="padding:4px 10px; border-radius:12px; font-size:12px; font-weight:600; color:white;
+                        background:{% if sheep.adoption_order.status == 'settlement_pending' %}#f39c12{% elif sheep.adoption_order.status == 'awaiting_delivery' %}#16a085{% elif sheep.adoption_order.status == 'shipping' %}#9b59b6{% elif sheep.adoption_order.status == 'completed' %}#27ae60{% else %}#3498db{% endif %};">
+                        {{ sheep.adoption_order.get_status_display }}
+                    </span>
+                    <div style="font-size:11px; color:#aaa; margin-top:4px; font-family:monospace;">{{ sheep.adoption_order.order_no }}</div>
+                </td>
+                <td>
+                    {% if sheep.adoption_order.adoption_start_time %}
+                        {{ sheep.adoption_order.adoption_start_time|date:'Y-m-d H:i' }}
+                    {% elif sheep.adoption_order.pay_time %}
+                        {{ sheep.adoption_order.pay_time|date:'Y-m-d H:i' }}
+                    {% else %}
+                        —
+                    {% endif %}
+                </td>
+                {% endif %}
                 <td>
                     <a href="{% url 'sheep_detail' sheep.pk %}" class="btn" style="padding: 5px 10px; font-size: 12px;">查看</a>
+                    {% if adoption_tab == 'available' %}
                     <a href="{% url 'sheep_edit' sheep.pk %}" class="btn" style="padding: 5px 10px; font-size: 12px; background: #f39c12;">编辑</a>
+                    {% else %}
+                    <a href="{% url 'order_detail' sheep.adoption_order.pk %}" class="btn" style="padding: 5px 10px; font-size: 12px; background:#5c6bc0;">查看订单</a>
+                    {% if sheep.adoption_order.status == 'awaiting_delivery' %}
+                    <a href="{% url 'order_update_status' sheep.adoption_order.pk %}" class="btn" style="padding: 5px 10px; font-size: 12px; background:#16a085;">处理交付</a>
+                    {% endif %}
+                    {% endif %}
                 </td>
             </tr>
             {% empty %}
             <tr>
-                <td colspan="{% if is_admin %}11{% else %}10{% endif %}" style="text-align: center; padding: 40px;">
+                <td colspan="{{ table_colspan }}" style="text-align: center; padding: 40px;">
                     <div style="color: #999;">
                         <div style="font-size: 48px; margin-bottom: 10px;">🐑</div>
-                        <div>暂无羊只数据</div>
+                        <div>{% if adoption_tab == 'adopted' %}暂无已领养羊只{% else %}暂无可领养羊只{% endif %}</div>
+                        {% if adoption_tab == 'available' %}
                         <div style="margin-top: 10px;">
                             <a href="{% url 'sheep_create' %}" class="btn">添加第一只羊</a>
                         </div>
+                        {% endif %}
                     </div>
                 </td>
             </tr>
@@ -116,14 +166,14 @@
         <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
             {% if page_obj.number > 1 %}
             <a class="btn" style="padding:6px 12px;font-size:12px;background:#95a5a6;"
-               href="?page=1&search={{ search|urlencode }}&health_status={{ health_status|urlencode }}&gender={{ gender|urlencode }}{% if is_admin %}&owner={{ owner_filter|urlencode }}{% endif %}">
+               href="?page=1&adoption_tab={{ adoption_tab }}&search={{ search|urlencode }}&health_status={{ health_status|urlencode }}&gender={{ gender|urlencode }}{% if is_admin %}&owner={{ owner_filter|urlencode }}{% endif %}">
                 首页
             </a>
             {% endif %}
 
             {% if page_obj.has_previous %}
             <a class="btn" style="padding:6px 12px;font-size:12px;background:#95a5a6;"
-               href="?page={{ page_obj.previous_page_number }}&search={{ search|urlencode }}&health_status={{ health_status|urlencode }}&gender={{ gender|urlencode }}{% if is_admin %}&owner={{ owner_filter|urlencode }}{% endif %}">
+               href="?page={{ page_obj.previous_page_number }}&adoption_tab={{ adoption_tab }}&search={{ search|urlencode }}&health_status={{ health_status|urlencode }}&gender={{ gender|urlencode }}{% if is_admin %}&owner={{ owner_filter|urlencode }}{% endif %}">
                 上一页
             </a>
             {% endif %}
@@ -134,7 +184,7 @@
                     <span class="btn" style="padding:6px 12px;font-size:12px;background:#2e7d32;">{{ num }}</span>
                     {% else %}
                     <a class="btn" style="padding:6px 12px;font-size:12px;background:#ecf0f1;color:#333;"
-                       href="?page={{ num }}&search={{ search|urlencode }}&health_status={{ health_status|urlencode }}&gender={{ gender|urlencode }}{% if is_admin %}&owner={{ owner_filter|urlencode }}{% endif %}">
+                       href="?page={{ num }}&adoption_tab={{ adoption_tab }}&search={{ search|urlencode }}&health_status={{ health_status|urlencode }}&gender={{ gender|urlencode }}{% if is_admin %}&owner={{ owner_filter|urlencode }}{% endif %}">
                         {{ num }}
                     </a>
                     {% endif %}
@@ -143,14 +193,14 @@
 
             {% if page_obj.has_next %}
             <a class="btn" style="padding:6px 12px;font-size:12px;"
-               href="?page={{ page_obj.next_page_number }}&search={{ search|urlencode }}&health_status={{ health_status|urlencode }}&gender={{ gender|urlencode }}{% if is_admin %}&owner={{ owner_filter|urlencode }}{% endif %}">
+               href="?page={{ page_obj.next_page_number }}&adoption_tab={{ adoption_tab }}&search={{ search|urlencode }}&health_status={{ health_status|urlencode }}&gender={{ gender|urlencode }}{% if is_admin %}&owner={{ owner_filter|urlencode }}{% endif %}">
                 下一页
             </a>
             {% endif %}
 
             {% if page_obj.number < page_obj.paginator.num_pages %}
             <a class="btn" style="padding:6px 12px;font-size:12px;background:#95a5a6;"
-               href="?page={{ page_obj.paginator.num_pages }}&search={{ search|urlencode }}&health_status={{ health_status|urlencode }}&gender={{ gender|urlencode }}{% if is_admin %}&owner={{ owner_filter|urlencode }}{% endif %}">
+               href="?page={{ page_obj.paginator.num_pages }}&adoption_tab={{ adoption_tab }}&search={{ search|urlencode }}&health_status={{ health_status|urlencode }}&gender={{ gender|urlencode }}{% if is_admin %}&owner={{ owner_filter|urlencode }}{% endif %}">
                 尾页
             </a>
             {% endif %}
