@@ -1,5 +1,5 @@
 """订单管理视图"""
-from decimal import Decimal
+from decimal import Decimal, InvalidOperation
 
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
@@ -11,6 +11,7 @@ from ..services.commerce_service import CommerceService, CommerceError
 
 
 ACTIVE_ORDER_STATUS_ALIASES = {'paid', 'adopting', 'ready_to_ship'}
+CARE_FEE_EDITABLE_STATUSES = {'paid', 'adopting', 'ready_to_ship'}
 
 
 def _attach_order_finance(order):
@@ -125,6 +126,16 @@ def order_update_status(request, pk):
             'offline_delivery_note': request.POST.get('offline_delivery_note', ''),
         }
         try:
+            if order.status in CARE_FEE_EDITABLE_STATUSES:
+                fee_raw = request.POST.get('daily_care_fee', '')
+                if fee_raw != '':
+                    try:
+                        daily_care_fee = Decimal(str(fee_raw)).quantize(Decimal('0.01'))
+                    except (InvalidOperation, TypeError, ValueError) as exc:
+                        raise CommerceError('请输入正确的订单基础照料费。') from exc
+                    if daily_care_fee < 0:
+                        raise CommerceError('订单基础照料费不能小于 0。')
+                    order.daily_care_fee = daily_care_fee
             if user.role != ROLE_ADMIN:
                 owner_ids = set(order.items.values_list('sheep__owner_id', flat=True))
                 if owner_ids != {user.id}:
@@ -162,5 +173,6 @@ def order_update_status(request, pk):
         'order': order,
         'is_admin': user.role == ROLE_ADMIN,
         'adopting_status_value': adopting_status_value,
+        'can_edit_daily_care_fee': order.status in CARE_FEE_EDITABLE_STATUSES,
     }
     return render(request, 'sheep_management/order/update_status.html', context)

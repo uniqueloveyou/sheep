@@ -51,8 +51,11 @@ Page({
         API.request(`/api/sheep/${sheepId}`, 'GET')
             .then((res) => {
                 console.log('[获取羊只详情] 返回数据:', res);
+                var rawDailyCareFee = parseFloat(res && res.daily_care_fee);
+                var sheepDetail = res || {};
+                sheepDetail.dailyCareFeeText = isNaN(rawDailyCareFee) ? '10.00' : rawDailyCareFee.toFixed(2);
                 that.setData({
-                    sheepDetail: res
+                    sheepDetail: sheepDetail
                 });
             })
             .catch((error) => {

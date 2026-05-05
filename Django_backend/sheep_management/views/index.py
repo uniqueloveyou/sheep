@@ -1,5 +1,8 @@
 """首页视图"""
-from django.shortcuts import render
+from decimal import Decimal, InvalidOperation
+
+from django.contrib import messages
+from django.shortcuts import render, redirect
 from django.utils import timezone
 from django.db.models import Sum, Count
 from ..models import Sheep, GrowthRecord, FeedingRecord, VaccinationHistory, User, Order, OrderItem, EnvironmentAlert
@@ -126,5 +129,30 @@ def _breeder_dashboard(request, user):
         'upcoming_vaccinations': upcoming_vaccinations[:3],
         'alert_count': environment_alerts.count(),
         'environment_alerts': environment_alerts,
+        'default_daily_care_fee': user.default_daily_care_fee,
     }
     return render(request, 'sheep_management/index.html', context)
+
+
+@login_required
+def update_default_care_fee(request):
+    if request.user.role != ROLE_BREEDER:
+        messages.error(request, '只有养殖户可以设置默认基础照料费。')
+        return redirect('index')
+    if request.method != 'POST':
+        return redirect('index')
+
+    try:
+        fee = Decimal(str(request.POST.get('default_daily_care_fee', ''))).quantize(Decimal('0.01'))
+    except (InvalidOperation, TypeError, ValueError):
+        messages.error(request, '请输入正确的基础照料费。')
+        return redirect('index')
+
+    if fee < 0:
+        messages.error(request, '基础照料费不能小于 0。')
+        return redirect('index')
+
+    request.user.default_daily_care_fee = fee
+    request.user.save(update_fields=['default_daily_care_fee'])
+    messages.success(request, '默认基础照料费已更新，后续新认养订单将按新标准锁定。')
+    return redirect('index')

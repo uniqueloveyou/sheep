@@ -187,6 +187,12 @@
   margin-left: auto;
 }
 
+.item-care-fee {
+  font-size: 24rpx;
+  color: #e64340;
+  font-weight: 500;
+}
+
 .item-desc {
   font-size: 24rpx;
   color: #999;

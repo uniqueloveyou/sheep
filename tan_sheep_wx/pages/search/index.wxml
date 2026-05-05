@@ -90,6 +90,7 @@
             <text wx:if="{{item.code}}" class="info-tag">优惠码：{{item.code}}</text>
             <text wx:if="{{item.price > 0}}" class="item-price">¥{{item.price}}</text>
           </view>
+          <view wx:if="{{item.type === 'sheep' && item.dailyCareFeeText}}" class="item-care-fee">基础照料费 ¥{{item.dailyCareFeeText}}/天/只</view>
           <view wx:if="{{item.description}}" class="item-desc">{{item.description}}</view>
         </view>
         <van-icon name="arrow" size="32rpx" color="#ccc"></van-icon>

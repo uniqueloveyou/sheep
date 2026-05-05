@@ -52,6 +52,10 @@ Page({
                         if (imageUrl && !imageUrl.startsWith('http://') && !imageUrl.startsWith('https://')) {
                             imageUrl = baseUrl + imageUrl;
                         }
+                        const rawDailyCareFee = item.daily_care_fee !== undefined && item.daily_care_fee !== null
+                            ? item.daily_care_fee
+                            : sheep.daily_care_fee;
+                        const dailyCareFee = parseFloat(rawDailyCareFee);
                         return {
                             id: sheep.id || item.sheep_id || item.id,
                             cart_item_id: item.id, // 购物车记录ID，用于删除
@@ -62,6 +66,8 @@ Page({
                             length: sheep.length || 0,
                             quantity: qty,
                             price: unitPrice,
+                            daily_care_fee: isNaN(dailyCareFee) ? 10 : dailyCareFee,
+                            dailyCareFeeText: isNaN(dailyCareFee) ? '10.00' : dailyCareFee.toFixed(2),
                             total_price: unitPrice * qty,
                             selected: true  // 默认全选
                         };

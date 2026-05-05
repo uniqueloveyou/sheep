@@ -6,13 +6,14 @@
 import io
 import re
 from datetime import date
+from decimal import Decimal
 
 import qrcode
 from django.conf import settings
 from django.core.files.base import ContentFile
 from django.db.models import Q
 
-from ..models import Sheep, VaccinationHistory, GrowthRecord, FeedingRecord
+from ..models import Sheep, VaccinationHistory, GrowthRecord, FeedingRecord, OrderItem
 
 
 # 溯源页面的服务器基础地址（可在 settings.py 中覆盖）
@@ -30,6 +31,7 @@ class SheepError(Exception):
 
 class SheepService:
     EAR_TAG_PATTERN = re.compile(r'^[A-Za-z0-9_-]{1,50}$')
+    CARE_FEE_EDITABLE_ORDER_STATUSES = {'paid', 'adopting', 'ready_to_ship'}
     """羊只相关业务逻辑"""
 
     # ========================
@@ -91,6 +93,7 @@ class SheepService:
                 'age_weeks': sheep.age_weeks,
                 'age_display': sheep.age_display,
                 'price': float(sheep.price),
+                'daily_care_fee': float(sheep.effective_daily_care_fee),
             })
         return result
 
@@ -119,6 +122,7 @@ class SheepService:
             'age_weeks': sheep.age_weeks,
             'age_display': sheep.age_display,
             'price': float(sheep.price),
+            'daily_care_fee': float(sheep.effective_daily_care_fee),
             'ear_tag': sheep.ear_tag or '',
             'qr_code': sheep.qr_code.url if sheep.qr_code else '',
             'farm_name': sheep.farm_name or '宁夏盐池滩羊核心产区',  # 如果真实农场没填给个默认
@@ -293,6 +297,7 @@ class SheepService:
                 birth_date=data.get('birth_date'),
                 farm_name=data.get('farm_name'),
                 price=float(data.get('price', 0)),
+                daily_care_fee=data.get('daily_care_fee') or None,
                 owner=owner
             )
 
@@ -327,11 +332,13 @@ class SheepService:
             raise SheepError('无权修改其他养殖户的羊只', code=403, http_status=403)
 
         # 更新字段
-        update_fields = ['ear_tag', 'gender', 'health_status', 'weight', 'height', 'length', 'birth_date', 'farm_name', 'price']
+        update_fields = ['ear_tag', 'gender', 'health_status', 'weight', 'height', 'length', 'birth_date', 'farm_name', 'price', 'daily_care_fee']
         for field in update_fields:
             if field in data:
                 if field in ['gender', 'weight', 'height', 'length', 'price']:
                     setattr(sheep, field, float(data[field]) if field != 'gender' else int(data[field]))
+                elif field == 'daily_care_fee':
+                    setattr(sheep, field, data[field] or None)
                 else:
                     setattr(sheep, field, data[field])
 
@@ -339,7 +346,42 @@ class SheepService:
             sheep.image = image
 
         sheep.save()
+        SheepService.sync_editable_orders_daily_care_fee(sheep)
         return SheepService.get_sheep_by_id(sheep.id)
+
+    @staticmethod
+    def sync_editable_orders_daily_care_fee(sheep):
+        """
+        羊只基础照料费变更后，同步到仍处于认养中、未结算的订单。
+        已进入结算/交付阶段的订单费用保持锁定。
+        """
+        order_ids = list(
+            OrderItem.objects.filter(
+                sheep=sheep,
+                order__status__in=SheepService.CARE_FEE_EDITABLE_ORDER_STATUSES,
+            ).values_list('order_id', flat=True).distinct()
+        )
+        if not order_ids:
+            return
+
+        order_items = (
+            OrderItem.objects.filter(order_id__in=order_ids)
+            .select_related('order', 'sheep__owner')
+            .order_by('order_id')
+        )
+        items_by_order = {}
+        for item in order_items:
+            items_by_order.setdefault(item.order_id, []).append(item)
+
+        for items in items_by_order.values():
+            fees = [Decimal(str(item.sheep.effective_daily_care_fee)) for item in items]
+            if not fees:
+                continue
+            daily_care_fee = (sum(fees, Decimal('0')) / Decimal(len(fees))).quantize(Decimal('0.01'))
+            order = items[0].order
+            if order.daily_care_fee != daily_care_fee:
+                order.daily_care_fee = daily_care_fee
+                order.save(update_fields=['daily_care_fee'])
 
     @staticmethod
     def delete_sheep(sheep_id, owner):
@@ -383,6 +425,7 @@ class SheepService:
                 'age_display': sheep.age_display,
                 'farm_name': sheep.farm_name or '',
                 'price': float(sheep.price),
+                'daily_care_fee': float(sheep.effective_daily_care_fee),
                 'image': sheep.image.url if sheep.image else '',
                 'video': sheep.video.url if getattr(sheep, 'video', None) else '',
             })
@@ -510,6 +553,7 @@ class SheepService:
                 'age_weeks': sheep.age_weeks,
                 'age_display': sheep.age_display,
                 'price': float(sheep.price),
+                'daily_care_fee': float(sheep.effective_daily_care_fee),
                 'image': sheep.image.url if sheep.image else '',
                 'farm_name': sheep.farm_name or '宁夏盐池滩羊核心产区',
                 'breeder_name': sheep.owner.nickname or sheep.owner.username if sheep.owner else '官方牧场',

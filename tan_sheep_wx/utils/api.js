@@ -418,9 +418,10 @@ function getOrderHistory(token) {
   return request('/api/orders?token=' + token, 'GET')
 }
 
-function requestEndAdoption(token, orderId) {
+function requestEndAdoption(token, orderId, deliveryInfo = {}) {
   return request(`/api/orders/${orderId}/request-end`, 'POST', {
-    token: token
+    token: token,
+    ...deliveryInfo
   })
 }
 

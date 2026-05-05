@@ -255,7 +255,12 @@ def api_request_end_adoption(request, order_id):
     try:
         data = json.loads(request.body or "{}")
         token = data.get('token', '') or _get_token(request)
-        result = CommerceService.request_end_adoption(token, order_id)
+        delivery_info = {
+            'receiver_name': data.get('receiver_name', ''),
+            'receiver_phone': data.get('receiver_phone', ''),
+            'shipping_address': data.get('shipping_address', ''),
+        }
+        result = CommerceService.request_end_adoption(token, order_id, delivery_info)
         return JsonResponse({'code': 0, 'msg': '已申请结束认养，请结算周期服务费', 'data': result})
     except CommerceError as e:
         return _error_response(e)

@@ -243,7 +243,9 @@ def api_get_sheep_by_id(request, sheep_id=None):
                 'gender': sheep.get_gender_display(),  # 显示为中文
                 'weight': float(sheep.current_weight),
                 'height': float(sheep.current_height),
-                'length': float(sheep.current_length)
+                'length': float(sheep.current_length),
+                'price': float(sheep.price),
+                'daily_care_fee': float(sheep.effective_daily_care_fee),
             }
             return JsonResponse(result, status=200)
         except Sheep.DoesNotExist:
@@ -546,6 +548,7 @@ def api_search_goods(request):
                     'title': f'羊只#{sheep.id} - {sheep.get_gender_display()}',
                     'description': f'性别: {sheep.get_gender_display()}, 羊龄: {sheep.age_display}, 体重: {sheep.current_weight}kg, 体高: {sheep.current_height}cm, 体长: {sheep.current_length}cm',
                     'price': calculated_price,
+                    'daily_care_fee': float(sheep.effective_daily_care_fee),
                     'image': '/images/icons/function/f1.png',
                     'gender': sheep.get_gender_display(),  # 显示为中文
                     'weight': float(sheep.current_weight),

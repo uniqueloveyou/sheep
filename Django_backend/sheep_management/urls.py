@@ -49,6 +49,7 @@ urlpatterns = [
     # 其他业务接口
     # ==========================
     path('', views.index, name='index'),
+    path('breeder/default-care-fee/', views.update_default_care_fee, name='update_default_care_fee'),
 
     # 羊只API（已迁移到 api/sheep_api.py）
     path('api/sheep/search', sheep_api.api_search_sheep, name='api_search_sheep'),

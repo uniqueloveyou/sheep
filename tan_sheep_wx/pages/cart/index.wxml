@@ -53,6 +53,7 @@
                             <text class="tag">{{item.gender}}</text>
                             <text class="tag">{{item.weight}} kg</text>
                         </view>
+                        <view class="care-fee">基础照料费 ¥{{item.dailyCareFeeText}}/天/只</view>
 
                         <view class="cart-footer">
                             <view class="price-box">

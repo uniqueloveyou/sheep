@@ -116,6 +116,7 @@ Page({
         if (!res || typeof res !== 'object') {
           return;
         }
+        const rawDailyCareFee = parseFloat(res.daily_care_fee);
         const sheepDetail = {
           id: res.id || sheepId,
           ear_tag: res.ear_tag || '',
@@ -126,6 +127,7 @@ Page({
           birth_date: res.birth_date || '',
           age_display: res.age_display || '未设置',
           price: res.price ? parseFloat(res.price).toFixed(2) : '0.00',
+          daily_care_fee: isNaN(rawDailyCareFee) ? '10.00' : rawDailyCareFee.toFixed(2),
           farm_name: res.farm_name || '宁夏盐池滩羊核心产区',
           breeder_name: res.breeder_name || '官方牧场',
           image: res.image || ''

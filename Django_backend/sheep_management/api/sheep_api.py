@@ -149,6 +149,7 @@ def api_create_sheep(request):
             'birth_date': request.POST.get('birth_date'),
             'farm_name': request.POST.get('farm_name'),
             'price': request.POST.get('price'),
+            'daily_care_fee': request.POST.get('daily_care_fee'),
         }
         
         # 处理文件上传
@@ -190,6 +191,7 @@ def api_update_sheep(request, sheep_id):
             'birth_date': request.POST.get('birth_date'),
             'farm_name': request.POST.get('farm_name'),
             'price': request.POST.get('price'),
+            'daily_care_fee': request.POST.get('daily_care_fee'),
         }
         
         # 处理文件上传

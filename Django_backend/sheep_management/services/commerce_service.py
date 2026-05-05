@@ -241,6 +241,7 @@ class CommerceService:
             discount_amount = min(discount_amount, applicable_amount, total_amount)
 
         final_amount = max(total_amount - discount_amount, Decimal("0"))
+        order_daily_care_fee = CommerceService._resolve_order_daily_care_fee(cart_items)
 
         if payment_method == "balance":
             if user.balance < final_amount:
@@ -262,7 +263,7 @@ class CommerceService:
             status=order_status,
             pay_time=pay_time,
             adoption_start_time=pay_time,
-            daily_care_fee=CommerceService.DEFAULT_DAILY_CARE_FEE,
+            daily_care_fee=order_daily_care_fee,
             receiver_name=receiver_name,
             receiver_phone=receiver_phone,
             shipping_address=shipping_address,
@@ -282,7 +283,7 @@ class CommerceService:
 
     @staticmethod
     @transaction.atomic
-    def request_end_adoption(token, order_id):
+    def request_end_adoption(token, order_id, delivery_info=None):
         user = CommerceService._resolve_user(token)
         try:
             order = Order.objects.select_for_update().get(pk=order_id, user=user)
@@ -292,16 +293,39 @@ class CommerceService:
         if order.status not in {"paid", "adopting", "ready_to_ship"}:
             raise CommerceError("当前认养状态不能申请结束。")
 
+        delivery_info = delivery_info or {}
+        receiver_name = (delivery_info.get("receiver_name") or order.receiver_name or "").strip()
+        receiver_phone = (delivery_info.get("receiver_phone") or order.receiver_phone or "").strip()
+        shipping_address = (delivery_info.get("shipping_address") or order.shipping_address or "").strip()
+        if not receiver_name:
+            raise CommerceError("请填写收货人姓名。")
+        if not receiver_phone:
+            raise CommerceError("请填写联系电话。")
+        if not shipping_address:
+            raise CommerceError("请填写收货地址。")
+
         now = timezone.now()
         order.adoption_start_time = order.adoption_start_time or order.pay_time or order.created_at or now
         order.end_requested_at = now
         care_fee_amount = CommerceService._calculate_care_fee(order, now)[1]
         order.care_fee_amount = care_fee_amount
+        order.receiver_name = receiver_name
+        order.receiver_phone = receiver_phone
+        order.shipping_address = shipping_address
+        order.delivery_method = "logistics"
+        order.offline_delivery_location = ""
+        order.offline_delivery_note = ""
         order.status = "settlement_pending"
         order.save(update_fields=[
             "adoption_start_time",
             "end_requested_at",
             "care_fee_amount",
+            "receiver_name",
+            "receiver_phone",
+            "shipping_address",
+            "delivery_method",
+            "offline_delivery_location",
+            "offline_delivery_note",
             "status",
         ])
         return CommerceService._build_order(order)
@@ -677,6 +701,18 @@ class CommerceService:
         return days, amount
 
     @staticmethod
+    def _resolve_sheep_daily_care_fee(sheep):
+        return Decimal(str(sheep.effective_daily_care_fee))
+
+    @staticmethod
+    def _resolve_order_daily_care_fee(cart_items):
+        fees = [CommerceService._resolve_sheep_daily_care_fee(item.sheep) for item in cart_items]
+        if not fees:
+            return CommerceService.DEFAULT_DAILY_CARE_FEE
+        average_fee = sum(fees, Decimal("0")) / Decimal(len(fees))
+        return average_fee.quantize(Decimal("0.01"))
+
+    @staticmethod
     def _has_active_adoption(sheep_id, exclude_user_id=None):
         qs = OrderItem.objects.filter(
             sheep_id=sheep_id,
@@ -771,11 +807,13 @@ class CommerceService:
                 "height": float(sheep.current_height),
                 "length": float(sheep.current_length),
                 "price": float(sheep.price),
+                "daily_care_fee": float(sheep.effective_daily_care_fee),
                 "image": sheep.image.url if sheep.image else "",
                 "owner_id": sheep.owner_id,
             },
             "quantity": item.quantity,
             "price": float(item.price),
+            "daily_care_fee": float(sheep.effective_daily_care_fee),
             "reservation_expires_at": (
                 item.updated_at + timedelta(minutes=CommerceService.CART_RESERVATION_MINUTES)
             ).strftime("%Y-%m-%d %H:%M:%S")

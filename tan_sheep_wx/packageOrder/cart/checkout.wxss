@@ -77,6 +77,7 @@
 .goods-info { flex: 1; }
 .goods-name { font-size: 26rpx; color: #333; display: block; margin-bottom: 6rpx; }
 .goods-attr { font-size: 22rpx; color: #999; }
+.goods-care-fee { display: block; margin-top: 6rpx; font-size: 22rpx; color: #e64340; }
 .goods-price { font-size: 28rpx; color: #e64340; font-weight: 600; }
 
 .coupon-loading,

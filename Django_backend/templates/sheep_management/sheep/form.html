@@ -67,6 +67,11 @@
                 <label>价格（元）</label>
                 <input type="number" name="price" step="0.01" min="0" value="{% if sheep %}{{ sheep.price }}{% else %}0{% endif %}" placeholder="请输入销售价格">
             </div>
+            <div class="form-group">
+                <label>基础照料费（元/天/只）</label>
+                <input type="number" name="daily_care_fee" step="0.01" min="0" value="{% if sheep and sheep.daily_care_fee %}{{ sheep.daily_care_fee }}{% endif %}" placeholder="留空则使用养殖户默认服务费">
+                <span style="font-size:12px;color:#999;">用户下单时会把当前服务费锁定到订单中。</span>
+            </div>
         </div>
 
         <!-- 图片上传区域 -->

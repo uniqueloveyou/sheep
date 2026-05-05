@@ -284,13 +284,19 @@ page {
   align-items: flex-start;
 }
 
+.sheep-media {
+  width: 132rpx !important;
+  max-width: 132rpx;
+  margin-right: 24rpx;
+  flex-shrink: 0;
+}
+
 .sheep-avatar {
   width: 132rpx;
   height: 132rpx;
   border-radius: 12rpx;
   background-color: #f5f5f5;
-  margin-right: 24rpx;
-  flex-shrink: 0;
+  display: block;
 }
 
 .sheep-info {
@@ -331,8 +337,8 @@ page {
 }
 
 .card-lower {
-  margin-top: 20rpx;
-  padding-left: 156rpx;
+  margin-top: 24rpx;
+  padding-left: 0;
 }
 
 .trace-line {
@@ -411,39 +417,198 @@ page {
 }
 
 .adoption-action-row {
-  margin-top: 18rpx;
-  display: flex;
-  justify-content: flex-end;
-  gap: 12rpx;
+  width: 132rpx;
+  margin-top: 10rpx;
+  text-align: center;
 }
 
-.adoption-action-btn {
+button.adoption-action-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   margin: 0;
-  padding: 0 34rpx;
-  min-width: 230rpx;
-  height: 58rpx;
-  line-height: 58rpx;
-  border-radius: 30rpx;
-  font-size: 24rpx;
+  padding: 0;
+  width: 112rpx !important;
+  min-width: 0 !important;
+  max-width: 112rpx;
+  height: 40rpx;
+  line-height: 38rpx;
+  border-radius: 20rpx;
+  font-size: 18rpx;
   color: #16831c;
   background: #f0faf1;
   border: 1rpx solid #bfe8c4;
+  box-sizing: border-box;
+  white-space: nowrap;
 }
 
-.adoption-action-btn.primary {
+button.adoption-action-btn::after {
+  border: none;
+}
+
+button.adoption-action-btn.primary {
   color: #fff;
   background: #16831c;
   border-color: #16831c;
 }
 
-.adoption-action-btn.secondary {
+button.adoption-action-btn.secondary {
   color: #1268a8;
   background: #eef7ff;
   border-color: #cfe7fa;
 }
 
-.adoption-action-btn.disabled {
+button.adoption-action-btn.disabled {
   color: #8a8f96;
   background: #f3f4f5;
   border-color: #edf0f2;
+}
+
+/* ===== 申请交付弹窗 ===== */
+.delivery-modal-mask {
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  z-index: 999;
+  background: rgba(0, 0, 0, 0.48);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.delivery-modal {
+  width: 100%;
+  max-height: 88vh;
+  background: #fff;
+  border-radius: 28rpx 28rpx 0 0;
+  padding: 28rpx 32rpx calc(28rpx + env(safe-area-inset-bottom));
+  box-sizing: border-box;
+}
+
+.delivery-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 22rpx;
+}
+
+.delivery-modal-title {
+  font-size: 34rpx;
+  color: #222;
+  font-weight: 700;
+}
+
+.delivery-modal-close {
+  width: 56rpx;
+  height: 56rpx;
+  line-height: 52rpx;
+  text-align: center;
+  font-size: 44rpx;
+  color: #999;
+}
+
+.delivery-fee-panel {
+  background: #f7fbf7;
+  border: 1rpx solid #dcefe0;
+  border-radius: 16rpx;
+  padding: 20rpx 22rpx;
+  margin-bottom: 24rpx;
+}
+
+.delivery-fee-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 25rpx;
+  color: #5e6872;
+  line-height: 1.6;
+}
+
+.delivery-fee-row.strong {
+  margin-top: 6rpx;
+  font-size: 29rpx;
+  color: #16831c;
+  font-weight: 700;
+}
+
+.delivery-fee-tip {
+  display: block;
+  margin-top: 12rpx;
+  font-size: 22rpx;
+  color: #8a8f96;
+  line-height: 1.5;
+}
+
+.delivery-form {
+  border-top: 1rpx solid #f2f3f5;
+}
+
+.delivery-field {
+  min-height: 92rpx;
+  display: flex;
+  align-items: center;
+  border-bottom: 1rpx solid #f2f3f5;
+}
+
+.delivery-label {
+  width: 140rpx;
+  flex-shrink: 0;
+  font-size: 26rpx;
+  color: #555;
+}
+
+.delivery-input,
+.delivery-picker-value,
+.delivery-textarea {
+  flex: 1;
+  font-size: 26rpx;
+  color: #222;
+}
+
+.delivery-picker-value.placeholder {
+  color: #b6bcc4;
+}
+
+.address-field {
+  align-items: flex-start;
+  padding: 24rpx 0;
+}
+
+.delivery-textarea {
+  min-height: 80rpx;
+  line-height: 1.5;
+}
+
+.delivery-modal-actions {
+  display: flex;
+  align-items: center;
+  gap: 18rpx;
+  margin-top: 28rpx;
+}
+
+.delivery-cancel-btn,
+.delivery-submit-btn {
+  flex: 1;
+  height: 82rpx;
+  line-height: 82rpx;
+  border-radius: 42rpx;
+  font-size: 28rpx;
+  margin: 0;
+}
+
+.delivery-cancel-btn {
+  color: #555;
+  background: #f4f5f7;
+}
+
+.delivery-submit-btn {
+  color: #fff;
+  background: #16831c;
+}
+
+.delivery-cancel-btn::after,
+.delivery-submit-btn::after {
+  border: none;
 }

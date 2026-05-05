@@ -341,6 +341,21 @@
         </a>
     </div>
 
+    <div class="section-card">
+        <div class="sec-head">
+            <h3>💰 默认基础照料费</h3>
+        </div>
+        <form method="post" action="{% url 'update_default_care_fee' %}" style="display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap;">
+            {% csrf_token %}
+            <div style="flex:1;min-width:220px;">
+                <label style="display:block;font-size:13px;color:#666;margin-bottom:6px;">默认服务费（元/天/只）</label>
+                <input type="number" name="default_daily_care_fee" step="0.01" min="0" value="{{ default_daily_care_fee }}" style="width:100%;padding:9px 12px;border:1px solid #ddd;border-radius:6px;">
+                <div style="font-size:12px;color:#999;margin-top:6px;">没有单独设置服务费的羊只，会在新认养订单中使用这个默认值。已产生订单不自动变更。</div>
+            </div>
+            <button type="submit" class="btn" style="height:40px;">保存默认服务费</button>
+        </form>
+    </div>
+
     <!-- ── 快速操作 ── -->
     <div class="section-card">
         <div class="sec-head"><h3>⚡ 快速操作</h3></div>

@@ -19,6 +19,10 @@
             <view wx:elif="{{adoptStatus === 'adopted_by_others'}}" class="status-badge badge-sold">⚠️ 已售出</view>
         </view>
         <view class="product-title">宁夏盐池滩羊 · 精品认养</view>
+        <view class="care-fee-line">
+            <text class="care-fee-label">基础照料费</text>
+            <text class="care-fee-value">¥{{sheepDetail.daily_care_fee || '10.00'}}/天/只</text>
+        </view>
         <view class="tags-row">
             <text class="tag">产地直供</text>
             <text class="tag">生态散养</text>

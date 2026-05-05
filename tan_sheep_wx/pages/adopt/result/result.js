@@ -22,6 +22,8 @@ Page({
                     if (item.image && !item.image.startsWith('http://') && !item.image.startsWith('https://')) {
                         item.image = baseUrl + item.image;
                     }
+                    const rawDailyCareFee = parseFloat(item.daily_care_fee);
+                    item.dailyCareFeeText = isNaN(rawDailyCareFee) ? '10.00' : rawDailyCareFee.toFixed(2);
                 });
                 this.setData({
                     sheepList: sheepList || [],

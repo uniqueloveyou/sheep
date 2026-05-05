@@ -20,6 +20,7 @@
                     <text class="detail-item">{{item.height}}cm</text>
                     <text class="detail-item">{{item.length}}cm</text>
                 </view>
+                <view class="care-fee">基础照料费 ¥{{item.dailyCareFeeText || '10.00'}}/天/只</view>
             </view>
             <view class="sheep-action">
                 <text class="action-arrow">›</text>

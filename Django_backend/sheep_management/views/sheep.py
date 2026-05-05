@@ -7,6 +7,7 @@ from django.utils import timezone
 from django.core.paginator import Paginator
 from ..models import Sheep, GrowthRecord, FeedingRecord, VaccinationHistory, VaccineType, EnvironmentAlert, User, OrderItem
 from ..permissions import ROLE_ADMIN, ROLE_BREEDER
+from ..services.sheep_service import SheepService
 
 
 ADOPTED_ORDER_STATUSES = [
@@ -91,6 +92,7 @@ def sheep_list(request):
     for s in current_sheep_list:
         s.adoption_order = adoption_map.get(s.id)
         s.adopter = s.adoption_order.user if s.adoption_order else None
+        s.uses_default_care_fee = s.daily_care_fee is None
 
     # 获取筛选选项
     health_choices = Sheep.HEALTH_STATUS_CHOICES
@@ -111,7 +113,7 @@ def sheep_list(request):
         'adoption_tab': adoption_tab,
         'available_count': available_count,
         'adopted_count': adopted_count,
-        'table_colspan': 10 if is_admin and adoption_tab == 'available' else (9 if adoption_tab == 'available' else 11),
+        'table_colspan': 11 if is_admin and adoption_tab == 'available' else (10 if adoption_tab == 'available' else 12),
         'health_choices': health_choices,
         'gender_choices': gender_choices,
         'is_admin': is_admin,
@@ -254,6 +256,7 @@ def sheep_create(request):
             length=float(request.POST.get('length')),
             birth_date=request.POST.get('birth_date') or None,
             price=float(request.POST.get('price', 0)),
+            daily_care_fee=request.POST.get('daily_care_fee') or None,
             owner=owner,
         )
         if request.FILES.get('image'):
@@ -300,9 +303,11 @@ def sheep_edit(request, pk):
         sheep.length = float(request.POST.get('length'))
         sheep.birth_date = request.POST.get('birth_date') or None
         sheep.price = float(request.POST.get('price', 0))
+        sheep.daily_care_fee = request.POST.get('daily_care_fee') or None
         if request.FILES.get('image'):
             sheep.image = request.FILES['image']
         sheep.save()
+        SheepService.sync_editable_orders_daily_care_fee(sheep)
         messages.success(request, '羊只信息更新成功！')
         return redirect('sheep_detail', pk=sheep.pk)
     

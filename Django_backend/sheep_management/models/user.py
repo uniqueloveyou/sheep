@@ -24,6 +24,12 @@ class User(AbstractUser):
     avatar_url = models.CharField(max_length=500, null=True, blank=True, verbose_name='头像URL')
     mobile = models.CharField(max_length=20, null=True, blank=True, verbose_name='手机号')
     balance = models.DecimalField(max_digits=10, decimal_places=2, default=0.00, verbose_name='账户余额（元）')
+    default_daily_care_fee = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=10.00,
+        verbose_name='默认每日基础照料费',
+    )
     gender = models.IntegerField(choices=GENDER_CHOICES, null=True, blank=True, verbose_name='性别')
     description = models.CharField(max_length=200, null=True, blank=True, verbose_name='个人简介')
     birthday = models.DateField(null=True, blank=True, verbose_name='生日')

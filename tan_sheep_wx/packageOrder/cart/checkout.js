@@ -25,7 +25,17 @@ Page({
   },
 
   async onLoad(options) {
-    const items = wx.getStorageSync('checkoutItems') || [];
+    const items = (wx.getStorageSync('checkoutItems') || []).map(item => {
+      const rawDailyCareFee = item.daily_care_fee !== undefined && item.daily_care_fee !== null
+        ? item.daily_care_fee
+        : item.sheep && item.sheep.daily_care_fee;
+      const dailyCareFee = parseFloat(rawDailyCareFee);
+      return {
+        ...item,
+        daily_care_fee: isNaN(dailyCareFee) ? 10 : dailyCareFee,
+        dailyCareFeeText: isNaN(dailyCareFee) ? '10.00' : dailyCareFee.toFixed(2)
+      };
+    });
     const totalPrice = this.calculateItemsTotal(items);
     const preferredCouponId = options.user_coupon_id ? Number(options.user_coupon_id) : null;
     const selectedCartItemIds = items

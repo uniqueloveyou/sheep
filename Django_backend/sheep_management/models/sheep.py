@@ -43,6 +43,13 @@ class Sheep(models.Model):
         verbose_name='所属养殖户'
     )
     price = models.DecimalField(max_digits=10, decimal_places=2, default=0, verbose_name='价格（元）')
+    daily_care_fee = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        verbose_name='每日基础照料费',
+    )
     qr_code = models.ImageField(upload_to='qrcodes/', null=True, blank=True, verbose_name='二维码')
     class Meta:
         db_table = 'sheep'
@@ -100,6 +107,13 @@ class Sheep(models.Model):
     def current_length(self):
         latest = self.latest_growth_record
         return latest.length if latest else self.length
+
+    @property
+    def effective_daily_care_fee(self):
+        if self.daily_care_fee is not None:
+            return self.daily_care_fee
+        owner_fee = getattr(self.owner, 'default_daily_care_fee', None)
+        return owner_fee if owner_fee is not None else 10
 
     def save(self, *args, **kwargs):
         if not self.ear_tag:

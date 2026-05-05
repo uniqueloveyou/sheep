@@ -8,6 +8,9 @@
         <div><strong>认养费用：</strong>¥{{ order.total_amount }}</div>
         <div><strong>基础照料服务费：</strong>¥{{ order.care_fee_amount }}{% if order.daily_care_fee %}<span style="color:#999; margin-left:6px;">¥{{ order.daily_care_fee }}/天/只</span>{% endif %}</div>
         <div><strong>当前状态：</strong>{{ order.get_status_display }}</div>
+        {% if can_edit_daily_care_fee %}
+        <div style="color:#5c6bc0;">当前订单仍在认养中，可以单独调整本订单基础照料费；用户申请交付后将锁定结算金额。</div>
+        {% endif %}
         {% if order.status == 'awaiting_delivery' %}
         <div style="color:#16a085;">用户已结清服务费，可选择“交付中”并选择物流配送或线下交付。</div>
         {% elif order.status == 'settlement_pending' %}
@@ -29,6 +32,18 @@
                 <option value="completed" {% if order.status == 'completed' %}selected{% endif %}>已完成</option>
                 <option value="cancelled" {% if order.status == 'cancelled' %}selected{% endif %}>已取消</option>
             </select>
+        </div>
+
+        <div class="form-group">
+            <label for="daily_care_fee">本订单基础照料费（元/天/只）</label>
+            <input type="number" name="daily_care_fee" id="daily_care_fee" step="0.01" min="0" value="{{ order.daily_care_fee }}" {% if not can_edit_daily_care_fee %}disabled{% endif %}>
+            <span style="font-size:12px;color:#999;">
+                {% if can_edit_daily_care_fee %}
+                只影响当前订单；不会改变养殖户默认值或羊只档案设置。
+                {% else %}
+                该订单已进入结算/交付阶段，服务费标准已锁定。
+                {% endif %}
+            </span>
         </div>
         
         <div class="form-group" id="logistics-info" style="{% if order.status != 'shipping' %}display: none;{% endif %}">

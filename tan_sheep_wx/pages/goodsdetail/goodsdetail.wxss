@@ -21,6 +21,11 @@
     color: #d44d44; 
   }
 
+.sheep-care-fee {
+    font-weight: 500;
+    color: #d44d44;
+}
+
 .sheep-button {
     margin-top: 15px;
     background-color: #4CAF50;
@@ -133,14 +138,13 @@
     font-size: 16px;
     border-radius: 8px;
   }
-  
+
   .add-to-cart {
     background-color: #f5a623;
     color: white;
   }
-  
+
   .buy-now {
     background-color: #ff4c4c;
     color: white;
   }
-  

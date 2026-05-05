@@ -106,6 +106,10 @@ Page({
       .then((res) => {
         wx.hideLoading();
         const results = Array.isArray(res) ? res : [];
+        results.forEach((item) => {
+          const rawDailyCareFee = parseFloat(item && item.daily_care_fee);
+          item.dailyCareFeeText = isNaN(rawDailyCareFee) ? '' : rawDailyCareFee.toFixed(2);
+        });
         this.setData({
           resultList: results,
           originalResults: results,

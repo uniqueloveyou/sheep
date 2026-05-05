@@ -167,6 +167,13 @@ page {
     border-radius: 6rpx;
 }
 
+.care-fee {
+    margin-top: 10rpx;
+    font-size: 23rpx;
+    color: #E64340;
+    font-weight: 500;
+}
+
 .cart-footer {
     display: flex;
     justify-content: space-between;

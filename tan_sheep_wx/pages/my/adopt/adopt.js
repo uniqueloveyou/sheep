@@ -171,7 +171,19 @@ Page({
     otherList: [],
     otherExpanded: false,
     loading: false,
-    traceUnreadCount: 0
+    traceUnreadCount: 0,
+    showDeliveryModal: false,
+    deliverySubmitting: false,
+    deliveryForm: {
+      orderId: null,
+      adoptionDays: 1,
+      dailyFeeText: '0.00',
+      estimatedFeeText: '0.00',
+      receiverName: '',
+      receiverPhone: '',
+      region: [],
+      detailAddress: ''
+    }
   },
 
   onShow() {
@@ -324,26 +336,94 @@ Page({
     const adoptionDays = e.currentTarget.dataset.adoptionDays || 1;
     const dailyFeeText = e.currentTarget.dataset.dailyFeeText || '0.00';
     const estimatedFeeText = e.currentTarget.dataset.estimatedFeeText || '0.00';
-    const token = wx.getStorageSync('token');
-    if (!token || !orderId) return;
+    if (!orderId) return;
 
-    wx.showModal({
-      title: '申请交付',
-      content: `已认养 ${adoptionDays} 天，基础照料费 ¥${dailyFeeText}/天/只，预计需结算 ¥${estimatedFeeText}。申请后将停止继续计费，支付服务费后进入待交付。`,
-      success: async (res) => {
-        if (!res.confirm) return;
-        try {
-          wx.showLoading({ title: '提交中...', mask: true });
-          await API.requestEndAdoption(token, orderId);
-          wx.hideLoading();
-          wx.showToast({ title: '待支付服务费', icon: 'success' });
-          this.loadMySheep();
-        } catch (err) {
-          wx.hideLoading();
-          wx.showToast({ title: err.message || '申请失败', icon: 'none' });
-        }
+    const lastAddress = wx.getStorageSync('lastShippingInfo') || {};
+    this.setData({
+      showDeliveryModal: true,
+      deliverySubmitting: false,
+      deliveryForm: {
+        orderId,
+        adoptionDays,
+        dailyFeeText,
+        estimatedFeeText,
+        receiverName: lastAddress.receiverName || '',
+        receiverPhone: lastAddress.receiverPhone || '',
+        region: [],
+        detailAddress: ''
       }
     });
+  },
+
+  closeDeliveryModal() {
+    if (this.data.deliverySubmitting) return;
+    this.setData({ showDeliveryModal: false });
+  },
+
+  stopModalTap() {},
+
+  onDeliveryNameInput(e) {
+    this.setData({ 'deliveryForm.receiverName': e.detail.value });
+  },
+
+  onDeliveryPhoneInput(e) {
+    this.setData({ 'deliveryForm.receiverPhone': e.detail.value });
+  },
+
+  onDeliveryRegionChange(e) {
+    this.setData({ 'deliveryForm.region': e.detail.value || [] });
+  },
+
+  onDeliveryAddressInput(e) {
+    this.setData({ 'deliveryForm.detailAddress': e.detail.value });
+  },
+
+  async submitDeliveryApplication() {
+    const form = this.data.deliveryForm || {};
+    const token = wx.getStorageSync('token');
+    const receiverName = String(form.receiverName || '').trim();
+    const receiverPhone = String(form.receiverPhone || '').trim();
+    const region = form.region || [];
+    const detailAddress = String(form.detailAddress || '').trim();
+
+    if (!token || !form.orderId) return;
+    if (!receiverName) {
+      wx.showToast({ title: '请填写收货人姓名', icon: 'none' });
+      return;
+    }
+    if (!/^1\d{10}$/.test(receiverPhone)) {
+      wx.showToast({ title: '请填写正确手机号', icon: 'none' });
+      return;
+    }
+    if (!region.length) {
+      wx.showToast({ title: '请选择省市区', icon: 'none' });
+      return;
+    }
+    if (!detailAddress) {
+      wx.showToast({ title: '请填写详细地址', icon: 'none' });
+      return;
+    }
+
+    const shippingAddress = `${region.join(' ')} ${detailAddress}`;
+    this.setData({ deliverySubmitting: true });
+    try {
+      await API.requestEndAdoption(token, form.orderId, {
+        receiver_name: receiverName,
+        receiver_phone: receiverPhone,
+        shipping_address: shippingAddress
+      });
+      wx.setStorageSync('lastShippingInfo', {
+        receiverName,
+        receiverPhone,
+        shippingAddress
+      });
+      this.setData({ showDeliveryModal: false, deliverySubmitting: false });
+      wx.showToast({ title: '待支付服务费', icon: 'success' });
+      this.loadMySheep();
+    } catch (err) {
+      this.setData({ deliverySubmitting: false });
+      wx.showToast({ title: err.message || '申请失败', icon: 'none' });
+    }
   },
 
   payCareFee(e) {

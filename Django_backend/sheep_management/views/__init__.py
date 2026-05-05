@@ -3,7 +3,7 @@
 认证相关 API 已迁移到 api/auth_api.py
 羊只相关 API 已迁移到 api/sheep_api.py
 """
-from .index import index
+from .index import index, update_default_care_fee
 from .sheep import (
     sheep_list, sheep_detail, sheep_create, sheep_edit, sheep_delete,
     sheep_add_growth, sheep_delete_growth,
@@ -54,6 +54,7 @@ from .follow_api import api_breeder_follow, api_breeder_unfollow, api_breeder_fo
 
 __all__ = [
     'index',
+    'update_default_care_fee',
     'sheep_list', 'sheep_detail', 'sheep_create', 'sheep_edit', 'sheep_delete',
     'sheep_add_growth', 'sheep_delete_growth',
     'sheep_add_feeding', 'sheep_delete_feeding',

@@ -29,6 +29,7 @@
       <view class="goods-info">
         <text class="goods-name">滩羊 #{{item.id}}</text>
         <text class="goods-attr">{{item.gender}} {{item.weight}} kg</text>
+        <text class="goods-care-fee">基础照料费 ¥{{item.dailyCareFeeText || '10.00'}}/天/只</text>
       </view>
       <view class="goods-price">¥{{item.price}}</view>
     </view>
