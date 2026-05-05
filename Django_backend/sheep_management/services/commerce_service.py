@@ -1,7 +1,7 @@
 import re
 import uuid
 from datetime import timedelta
-from decimal import Decimal
+from decimal import Decimal, ROUND_CEILING
 
 from django.db import transaction
 from django.db.models import Count, Max
@@ -291,8 +291,9 @@ class CommerceService:
         now = timezone.now()
         order.adoption_start_time = order.adoption_start_time or order.pay_time or order.created_at or now
         order.end_requested_at = now
-        order.care_fee_amount = Decimal("0")
-        order.status = "awaiting_delivery"
+        care_fee_amount = CommerceService._calculate_care_fee(order, now)[1]
+        order.care_fee_amount = care_fee_amount
+        order.status = "settlement_pending"
         order.save(update_fields=[
             "adoption_start_time",
             "end_requested_at",
@@ -341,6 +342,7 @@ class CommerceService:
         result = []
         for order_item in order_items:
             sheep = order_item.sheep
+            adoption_days, estimated_care_fee = CommerceService._calculate_care_fee(order_item.order)
             result.append(
                 {
                     "id": order_item.id,
@@ -353,6 +355,8 @@ class CommerceService:
                     "price": float(order_item.price),
                     "daily_care_fee": float(order_item.order.daily_care_fee or 0),
                     "care_fee_amount": float(order_item.order.care_fee_amount or 0),
+                    "estimated_care_fee": float(estimated_care_fee),
+                    "adoption_days": adoption_days,
                     "end_requested_at": order_item.order.end_requested_at.strftime("%Y-%m-%d %H:%M")
                     if order_item.order.end_requested_at
                     else "",
@@ -369,6 +373,8 @@ class CommerceService:
                         "weight": float(sheep.current_weight),
                         "height": float(sheep.current_height),
                         "length": float(sheep.current_length),
+                        "age_weeks": sheep.age_weeks,
+                        "age_display": sheep.age_display,
                         "price": float(sheep.price),
                         "image": sheep.image.url if sheep.image else "",
                     },
@@ -452,6 +458,7 @@ class CommerceService:
         result = []
         for order in orders:
             items = order.items.select_related("sheep").all()
+            adoption_days, estimated_care_fee = CommerceService._calculate_care_fee(order)
             result.append(
                 {
                     "id": order.id,
@@ -460,6 +467,8 @@ class CommerceService:
                     "final_amount": float((order.total_amount or Decimal("0")) + (order.care_fee_amount or Decimal("0"))),
                     "daily_care_fee": float(order.daily_care_fee or 0),
                     "care_fee_amount": float(order.care_fee_amount or 0),
+                    "estimated_care_fee": float(estimated_care_fee),
+                    "adoption_days": adoption_days,
                     "adoption_start_time": order.adoption_start_time.strftime("%Y-%m-%d %H:%M")
                     if order.adoption_start_time
                     else "",
@@ -598,6 +607,26 @@ class CommerceService:
         return receiver_name, receiver_phone, shipping_address
 
     @staticmethod
+    def _calculate_care_fee(order, end_time=None):
+        start_time = order.adoption_start_time or order.pay_time or order.created_at
+        if not start_time:
+            return 0, Decimal("0.00")
+
+        end_time = end_time or order.end_requested_at or timezone.now()
+        if end_time <= start_time:
+            days = 1
+        else:
+            seconds = Decimal(str((end_time - start_time).total_seconds()))
+            days = int((seconds / Decimal("86400")).to_integral_value(rounding=ROUND_CEILING))
+            days = max(days, 1)
+
+        daily_fee = order.daily_care_fee or CommerceService.DEFAULT_DAILY_CARE_FEE
+        sheep_count = order.items.count() if order.pk else 1
+        sheep_count = max(sheep_count, 1)
+        amount = (Decimal(days) * daily_fee * Decimal(sheep_count)).quantize(Decimal("0.01"))
+        return days, amount
+
+    @staticmethod
     def _has_active_adoption(sheep_id, exclude_user_id=None):
         qs = OrderItem.objects.filter(
             sheep_id=sheep_id,
@@ -702,6 +731,7 @@ class CommerceService:
     @staticmethod
     def _build_order(order):
         items = order.items.select_related("sheep").all()
+        adoption_days, estimated_care_fee = CommerceService._calculate_care_fee(order)
         return {
             "id": order.id,
             "order_no": order.order_no,
@@ -709,6 +739,8 @@ class CommerceService:
             "final_amount": float((order.total_amount or Decimal("0")) + (order.care_fee_amount or Decimal("0"))),
             "daily_care_fee": float(order.daily_care_fee or 0),
             "care_fee_amount": float(order.care_fee_amount or 0),
+            "estimated_care_fee": float(estimated_care_fee),
+            "adoption_days": adoption_days,
             "adoption_start_time": order.adoption_start_time.strftime("%Y-%m-%d %H:%M:%S")
             if order.adoption_start_time
             else "",

@@ -30,14 +30,41 @@
                 </tr>
                 {% endif %}
                 <tr>
-                    <td style="padding:8px 0; color:#888; font-size:13px;">总金额</td>
-                    <td style="padding:8px 0; font-size:16px; font-weight:700; color:#e74c3c;">¥{{ order.total_amount }}</td>
+                    <td style="padding:8px 0; color:#888; font-size:13px;">认养费用</td>
+                    <td style="padding:8px 0; font-size:15px; font-weight:700; color:#e74c3c;">¥{{ order.total_amount }}</td>
                 </tr>
+                <tr>
+                    <td style="padding:8px 0; color:#888; font-size:13px;">基础照料服务费</td>
+                    <td style="padding:8px 0; font-size:15px; font-weight:700; color:{% if order.has_care_fee %}#f39c12{% else %}#999{% endif %};">
+                        ¥{{ order.care_fee_display }}
+                        {% if order.daily_care_fee %}
+                        <span style="font-size:12px; color:#aaa; font-weight:400; margin-left:6px;">¥{{ order.daily_care_fee }}/天/只</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <td style="padding:8px 0; color:#888; font-size:13px;">合计金额</td>
+                    <td style="padding:8px 0; font-size:17px; font-weight:800; color:#e74c3c;">¥{{ order.final_amount_display }}</td>
+                </tr>
+                {% if order.adoption_start_time or order.end_requested_at or order.care_fee_paid_at %}
+                <tr>
+                    <td style="padding:8px 0; color:#888; font-size:13px;">认养开始</td>
+                    <td style="padding:8px 0; font-size:13px;">{{ order.adoption_start_time|date:'Y-m-d H:i:s'|default:'未记录' }}</td>
+                </tr>
+                <tr>
+                    <td style="padding:8px 0; color:#888; font-size:13px;">申请交付</td>
+                    <td style="padding:8px 0; font-size:13px;">{{ order.end_requested_at|date:'Y-m-d H:i:s'|default:'未申请' }}</td>
+                </tr>
+                <tr>
+                    <td style="padding:8px 0; color:#888; font-size:13px;">服务费支付</td>
+                    <td style="padding:8px 0; font-size:13px;">{{ order.care_fee_paid_at|date:'Y-m-d H:i:s'|default:'未支付' }}</td>
+                </tr>
+                {% endif %}
                 <tr>
                     <td style="padding:8px 0; color:#888; font-size:13px;">状态</td>
                     <td style="padding:8px 0;">
                         <span style="padding:4px 12px; border-radius:12px; font-size:12px; font-weight:500; color:white;
-                            background:{% if order.status == 'pending' %}#f39c12{% elif order.status == 'paid' %}#3498db{% elif order.status == 'shipping' %}#9b59b6{% elif order.status == 'completed' %}#27ae60{% else %}#95a5a6{% endif %};">
+                            background:{% if order.status == 'pending' %}#f39c12{% elif order.status == 'paid' or order.status == 'adopting' or order.status == 'ready_to_ship' %}#3498db{% elif order.status == 'settlement_pending' %}#f39c12{% elif order.status == 'awaiting_delivery' %}#16a085{% elif order.status == 'shipping' %}#9b59b6{% elif order.status == 'completed' %}#27ae60{% else %}#95a5a6{% endif %};">
                             {{ order.get_status_display }}
                         </span>
                     </td>

@@ -10,8 +10,8 @@ function getDisplayStatus(status) {
     paid: '认养中',
     adopting: '认养中',
     ready_to_ship: '认养中',
-    settlement_pending: '认养中',
-    awaiting_delivery: '认养中',
+    settlement_pending: '待结算',
+    awaiting_delivery: '待交付',
     shipping: '交付中',
     completed: '已完成',
     cancelled: '已取消'
@@ -21,6 +21,8 @@ function getDisplayStatus(status) {
 
 function getStatusClass(status) {
   if (status === 'pending') return 'status-pending';
+  if (status === 'settlement_pending') return 'status-settlement';
+  if (status === 'awaiting_delivery') return 'status-awaiting';
   if (status === 'shipping') return 'status-shipping';
   if (status === 'completed') return 'status-completed';
   if (status === 'cancelled') return 'status-cancelled';

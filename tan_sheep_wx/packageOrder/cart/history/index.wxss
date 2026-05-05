@@ -50,10 +50,16 @@ page {
 
 .status-paid,
 .status-adopting,
-.status-ready_to_ship,
-.status-settlement_pending,
-.status-awaiting_delivery {
+.status-ready_to_ship {
   color: #4CAF50;
+}
+
+.status-settlement_pending {
+  color: #b35a00;
+}
+
+.status-awaiting_delivery {
+  color: #1268a8;
 }
 
 .status-pending {

@@ -5,8 +5,8 @@ const STATUS_LABELS = {
   paid: '认养中',
   adopting: '认养中',
   ready_to_ship: '认养中',
-  settlement_pending: '认养中',
-  awaiting_delivery: '认养中',
+  settlement_pending: '待结算',
+  awaiting_delivery: '待交付',
   shipping: '交付中',
   completed: '已完成',
   cancelled: '已取消'

@@ -15,7 +15,7 @@
     </div>
 
     <!-- 统计卡片 -->
-    <div style="display:grid; grid-template-columns:repeat(6,1fr); gap:14px; margin-bottom:24px;">
+    <div style="display:grid; grid-template-columns:repeat(8,1fr); gap:14px; margin-bottom:24px;">
         <a href="?status=" style="text-decoration:none;">
             <div style="background:#fff; border-radius:10px; padding:16px 10px; text-align:center; box-shadow:0 1px 6px rgba(0,0,0,.08); border-bottom: 3px solid {% if not status_filter %}#5c6bc0{% else %}#e0e0e0{% endif %};">
                 <div style="font-size:24px; font-weight:700; color:#5c6bc0;">{{ stats.total }}</div>
@@ -31,13 +31,25 @@
         <a href="?status=paid" style="text-decoration:none;">
             <div style="background:#fff; border-radius:10px; padding:16px 10px; text-align:center; box-shadow:0 1px 6px rgba(0,0,0,.08); border-bottom:3px solid {% if status_filter == 'paid' %}#3498db{% else %}#e0e0e0{% endif %};">
                 <div style="font-size:24px; font-weight:700; color:#3498db;">{{ stats.paid }}</div>
-                <div style="font-size:12px; color:#666; margin-top:4px;">已付款</div>
+                <div style="font-size:12px; color:#666; margin-top:4px;">认养中</div>
+            </div>
+        </a>
+        <a href="?status=settlement_pending" style="text-decoration:none;">
+            <div style="background:#fff; border-radius:10px; padding:16px 10px; text-align:center; box-shadow:0 1px 6px rgba(0,0,0,.08); border-bottom:3px solid {% if status_filter == 'settlement_pending' %}#f39c12{% else %}#e0e0e0{% endif %};">
+                <div style="font-size:24px; font-weight:700; color:#f39c12;">{{ stats.settlement_pending }}</div>
+                <div style="font-size:12px; color:#666; margin-top:4px;">待结算</div>
+            </div>
+        </a>
+        <a href="?status=awaiting_delivery" style="text-decoration:none;">
+            <div style="background:#fff; border-radius:10px; padding:16px 10px; text-align:center; box-shadow:0 1px 6px rgba(0,0,0,.08); border-bottom:3px solid {% if status_filter == 'awaiting_delivery' %}#16a085{% else %}#e0e0e0{% endif %};">
+                <div style="font-size:24px; font-weight:700; color:#16a085;">{{ stats.awaiting_delivery }}</div>
+                <div style="font-size:12px; color:#666; margin-top:4px;">待交付</div>
             </div>
         </a>
         <a href="?status=shipping" style="text-decoration:none;">
             <div style="background:#fff; border-radius:10px; padding:16px 10px; text-align:center; box-shadow:0 1px 6px rgba(0,0,0,.08); border-bottom:3px solid {% if status_filter == 'shipping' %}#9b59b6{% else %}#e0e0e0{% endif %};">
                 <div style="font-size:24px; font-weight:700; color:#9b59b6;">{{ stats.shipping }}</div>
-                <div style="font-size:12px; color:#666; margin-top:4px;">配送中</div>
+                <div style="font-size:12px; color:#666; margin-top:4px;">交付中</div>
             </div>
         </a>
         <a href="?status=completed" style="text-decoration:none;">
@@ -77,7 +89,9 @@
                     {% if is_admin %}
                     <th style="padding:14px 16px; text-align:left; font-size:13px; color:#666; border-bottom:1px solid #eee;">购买用户</th>
                     {% endif %}
-                    <th style="padding:14px 16px; text-align:left; font-size:13px; color:#666; border-bottom:1px solid #eee;">总金额</th>
+                    <th style="padding:14px 16px; text-align:left; font-size:13px; color:#666; border-bottom:1px solid #eee;">认养费用</th>
+                    <th style="padding:14px 16px; text-align:left; font-size:13px; color:#666; border-bottom:1px solid #eee;">服务费</th>
+                    <th style="padding:14px 16px; text-align:left; font-size:13px; color:#666; border-bottom:1px solid #eee;">合计</th>
                     <th style="padding:14px 16px; text-align:left; font-size:13px; color:#666; border-bottom:1px solid #eee;">状态</th>
                     <th style="padding:14px 16px; text-align:left; font-size:13px; color:#666; border-bottom:1px solid #eee;">创建时间</th>
                     <th style="padding:14px 16px; text-align:left; font-size:13px; color:#666; border-bottom:1px solid #eee;">操作</th>
@@ -96,9 +110,11 @@
                     </td>
                     {% endif %}
                     <td style="padding:14px 16px; font-size:14px; font-weight:600; color:#e74c3c;">¥{{ order.total_amount }}</td>
+                    <td style="padding:14px 16px; font-size:14px; font-weight:600; color:{% if order.has_care_fee %}#f39c12{% else %}#999{% endif %};">¥{{ order.care_fee_display }}</td>
+                    <td style="padding:14px 16px; font-size:14px; font-weight:700; color:#e74c3c;">¥{{ order.final_amount_display }}</td>
                     <td style="padding:14px 16px;">
                         <span style="padding:4px 10px; border-radius:12px; font-size:12px; font-weight:500; color:white;
-                            background:{% if order.status == 'pending' %}#f39c12{% elif order.status == 'paid' %}#3498db{% elif order.status == 'shipping' %}#9b59b6{% elif order.status == 'completed' %}#27ae60{% else %}#95a5a6{% endif %};">
+                            background:{% if order.status == 'pending' %}#f39c12{% elif order.status == 'paid' or order.status == 'adopting' or order.status == 'ready_to_ship' %}#3498db{% elif order.status == 'settlement_pending' %}#f39c12{% elif order.status == 'awaiting_delivery' %}#16a085{% elif order.status == 'shipping' %}#9b59b6{% elif order.status == 'completed' %}#27ae60{% else %}#95a5a6{% endif %};">
                             {{ order.get_status_display }}
                         </span>
                     </td>
@@ -112,7 +128,7 @@
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="{% if is_admin %}6{% else %}5{% endif %}" style="text-align:center; padding:60px; color:#aaa;">
+                    <td colspan="{% if is_admin %}8{% else %}7{% endif %}" style="text-align:center; padding:60px; color:#aaa;">
                         <div style="font-size:48px; margin-bottom:12px;">📭</div>
                         <div>{% if search %}未找到匹配的订单{% else %}暂无订单数据{% endif %}</div>
                     </td>

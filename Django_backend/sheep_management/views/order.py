@@ -1,4 +1,6 @@
 """订单管理视图"""
+from decimal import Decimal
+
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
 from django.db.models import Q
@@ -6,6 +8,18 @@ from django.core.paginator import Paginator
 from ..models import Order, OrderItem
 from ..permissions import login_required, ROLE_ADMIN, ROLE_BREEDER
 from ..services.commerce_service import CommerceService, CommerceError
+
+
+ACTIVE_ORDER_STATUS_ALIASES = {'paid', 'adopting', 'ready_to_ship'}
+
+
+def _attach_order_finance(order):
+    """Attach display-only finance fields used by backend templates."""
+    care_fee_amount = order.care_fee_amount or Decimal('0')
+    order.final_amount_display = (order.total_amount or Decimal('0')) + care_fee_amount
+    order.care_fee_display = care_fee_amount
+    order.has_care_fee = care_fee_amount > 0
+    return order
 
 
 @login_required
@@ -22,7 +36,9 @@ def order_list(request):
         # 养殖户：订单里含有自己旗下羊只的才显示
         orders = Order.objects.filter(items__sheep__owner=user).distinct()
 
-    if status_filter:
+    if status_filter == 'paid':
+        orders = orders.filter(status__in=['paid', 'adopting', 'ready_to_ship'])
+    elif status_filter:
         orders = orders.filter(status=status_filter)
 
     if search:
@@ -36,6 +52,8 @@ def order_list(request):
     orders = orders.order_by('-created_at')
     paginator = Paginator(orders, 10)
     page_obj = paginator.get_page(page_number)
+    for order in page_obj.object_list:
+        _attach_order_finance(order)
 
     query_params = request.GET.copy()
     query_params.pop('page', None)
@@ -78,6 +96,7 @@ def order_detail(request, pk):
         order = get_object_or_404(Order, pk=pk)
     else:
         order = get_object_or_404(Order, pk=pk, items__sheep__owner=user)
+    _attach_order_finance(order)
 
     context = {'order': order, 'is_admin': user.role == ROLE_ADMIN}
     return render(request, 'sheep_management/order/detail.html', context)
@@ -96,6 +115,8 @@ def order_update_status(request, pk):
 
     if request.method == 'POST':
         status = request.POST.get('status')
+        if status == 'adopting' and order.status in ACTIVE_ORDER_STATUS_ALIASES:
+            status = order.status
         logistics_info = {
             'logistics_company': request.POST.get('logistics_company', ''),
             'logistics_tracking_number': request.POST.get('logistics_tracking_number', ''),
@@ -123,5 +144,10 @@ def order_update_status(request, pk):
         messages.success(request, '订单状态更新成功！')
         return redirect('order_detail', pk=order.pk)
 
-    context = {'order': order, 'is_admin': user.role == ROLE_ADMIN}
+    adopting_status_value = order.status if order.status in ACTIVE_ORDER_STATUS_ALIASES else 'adopting'
+    context = {
+        'order': order,
+        'is_admin': user.role == ROLE_ADMIN,
+        'adopting_status_value': adopting_status_value,
+    }
     return render(request, 'sheep_management/order/update_status.html', context)

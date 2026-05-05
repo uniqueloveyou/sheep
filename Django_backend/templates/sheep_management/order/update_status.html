@@ -3,6 +3,17 @@
 {% block content %}
 <div class="card">
     <h2>更新订单状态</h2>
+
+    <div style="margin-top: 16px; padding: 14px 16px; border-radius: 8px; background: #f8fafc; color: #555; font-size: 14px; line-height: 1.7;">
+        <div><strong>认养费用：</strong>¥{{ order.total_amount }}</div>
+        <div><strong>基础照料服务费：</strong>¥{{ order.care_fee_amount }}{% if order.daily_care_fee %}<span style="color:#999; margin-left:6px;">¥{{ order.daily_care_fee }}/天/只</span>{% endif %}</div>
+        <div><strong>当前状态：</strong>{{ order.get_status_display }}</div>
+        {% if order.status == 'awaiting_delivery' %}
+        <div style="color:#16a085;">用户已结清服务费，可选择“交付中”并填写物流信息。</div>
+        {% elif order.status == 'settlement_pending' %}
+        <div style="color:#f39c12;">用户已申请交付，正在等待支付基础照料服务费。</div>
+        {% endif %}
+    </div>
     
     <form method="post" style="margin-top: 20px;">
         {% csrf_token %}
@@ -11,8 +22,10 @@
             <label for="status">订单状态</label>
             <select name="status" id="status" required>
                 <option value="pending" {% if order.status == 'pending' %}selected{% endif %}>待支付</option>
-                <option value="paid" {% if order.status == 'paid' %}selected{% endif %}>已支付/认养中</option>
-                <option value="shipping" {% if order.status == 'shipping' %}selected{% endif %}>已发货</option>
+                <option value="{{ adopting_status_value }}" {% if order.status == 'paid' or order.status == 'adopting' or order.status == 'ready_to_ship' %}selected{% endif %}>认养中</option>
+                <option value="settlement_pending" {% if order.status == 'settlement_pending' %}selected{% endif %}>待结算服务费</option>
+                <option value="awaiting_delivery" {% if order.status == 'awaiting_delivery' %}selected{% endif %}>待交付</option>
+                <option value="shipping" {% if order.status == 'shipping' %}selected{% endif %}>交付中</option>
                 <option value="completed" {% if order.status == 'completed' %}selected{% endif %}>已完成</option>
                 <option value="cancelled" {% if order.status == 'cancelled' %}selected{% endif %}>已取消</option>
             </select>
@@ -20,6 +33,7 @@
         
         <div class="form-group" id="logistics-info" style="{% if order.status != 'shipping' %}display: none;{% endif %}">
             <h4>物流信息</h4>
+            <p style="margin: 0 0 12px; color: #777; font-size: 13px;">选择“交付中”时，请填写物流公司和物流单号。</p>
             <div class="form-group">
                 <label for="logistics_company">物流公司</label>
                 <input type="text" name="logistics_company" id="logistics_company" value="{{ order.logistics_company }}" placeholder="请输入物流公司名称">
@@ -38,7 +52,7 @@
 </div>
 
 <script>
-    // 当状态选择为shipping时显示物流信息
+    // 选择“交付中”时显示物流信息
     document.getElementById('status').addEventListener('change', function() {
         const logisticsInfo = document.getElementById('logistics-info');
         if (this.value === 'shipping') {
