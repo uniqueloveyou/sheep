@@ -240,6 +240,17 @@ class Order(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='创建时间')
     pay_time = models.DateTimeField(null=True, blank=True, verbose_name='支付时间')
 
+    # 模拟结算字段
+    breeder_earnings = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, verbose_name='养殖户应得金额')
+    platform_fee = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, verbose_name='平台服务费')
+    settlement_status = models.CharField(
+        max_length=20,
+        choices=[('pending', '待结算'), ('settled', '已结算')],
+        default='pending',
+        verbose_name='结算状态',
+    )
+    settled_at = models.DateTimeField(null=True, blank=True, verbose_name='结算时间')
+
     class Meta:
         db_table = 'orders'
         verbose_name = '订单'

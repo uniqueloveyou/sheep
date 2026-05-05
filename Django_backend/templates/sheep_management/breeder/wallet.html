@@ -1,0 +1,74 @@
+{% extends 'sheep_management/base.html' %}
+
+{% block page_title %}我的钱包{% endblock %}
+
+{% block content %}
+<div class="card" style="max-width: 1000px; margin: 0 auto;">
+    <h2 style="margin-top: 0; margin-bottom: 8px;">💰 我的钱包</h2>
+    <p style="color:#777; margin-bottom: 22px;">查看收入与提现记录。</p>
+
+    <!-- 钱包概览 -->
+    <div style="display:flex; gap:16px; margin-bottom:24px; flex-wrap:wrap;">
+        <div style="flex:1; min-width:200px; background:linear-gradient(135deg,#667eea,#764ba2); padding:20px 24px; border-radius:12px; color:#fff;">
+            <div style="font-size:13px; opacity:.85; margin-bottom:4px;">可提现余额</div>
+            <div style="font-size:28px; font-weight:bold;">¥{{ wallet.balance|floatformat:2 }}</div>
+        </div>
+        <div style="flex:1; min-width:200px; background:linear-gradient(135deg,#f093fb,#f5576c); padding:20px 24px; border-radius:12px; color:#fff;">
+            <div style="font-size:13px; opacity:.85; margin-bottom:4px;">累计收入</div>
+            <div style="font-size:28px; font-weight:bold;">¥{{ wallet.total_earned|floatformat:2 }}</div>
+        </div>
+        <div style="flex:1; min-width:200px; background:linear-gradient(135deg,#4facfe,#00f2fe); padding:20px 24px; border-radius:12px; color:#fff;">
+            <div style="font-size:13px; opacity:.85; margin-bottom:4px;">已结算订单</div>
+            <div style="font-size:28px; font-weight:bold;">{{ settled_orders }}</div>
+        </div>
+    </div>
+
+    <!-- 提现操作 -->
+    <div style="margin-bottom:24px;">
+        <a href="{% url 'breeder_withdraw' %}" class="btn" style="display:inline-block; background:#27ae60; color:#fff; padding:10px 28px; border-radius:8px; font-size:15px; text-decoration:none;">
+            📤 申请提现
+        </a>
+    </div>
+
+    <!-- 提现记录 -->
+    <h3 style="margin-bottom:12px;">提现记录</h3>
+    <table style="width:100%;">
+        <thead>
+            <tr>
+                <th>申请时间</th>
+                <th>金额</th>
+                <th>收款银行</th>
+                <th>卡号后四位</th>
+                <th>状态</th>
+                <th>备注</th>
+                <th>处理时间</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for w in withdrawals %}
+            <tr>
+                <td>{{ w.created_at }}</td>
+                <td><strong>¥{{ w.amount|floatformat:2 }}</strong></td>
+                <td>{{ w.bank_name }}</td>
+                <td>****{{ w.bank_card_no|slice:"-4:" }}</td>
+                <td>
+                    {% if w.status == 'pending' %}
+                    <span style="padding:2px 8px; border-radius:10px; background:#f39c12; color:#fff; font-size:12px;">待审核</span>
+                    {% elif w.status == 'approved' %}
+                    <span style="padding:2px 8px; border-radius:10px; background:#27ae60; color:#fff; font-size:12px;">已通过</span>
+                    {% elif w.status == 'rejected' %}
+                    <span style="padding:2px 8px; border-radius:10px; background:#e74c3c; color:#fff; font-size:12px;">已拒绝</span>
+                    {% endif %}
+                </td>
+                <td style="color:#888; font-size:13px;">{{ w.remark|default:'—' }}</td>
+                <td style="color:#888; font-size:13px;">{{ w.processed_at|default:'—' }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="7" style="text-align:center; padding:30px; color:#999;">暂无提现记录</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

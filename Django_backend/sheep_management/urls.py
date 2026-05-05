@@ -4,6 +4,7 @@ from .api import auth_api  # 认证 API（已重构）
 from .api import user_api  # 用户 API
 from .api import sheep_api  # 羊只 API（已重构）
 from .api import commerce_api  # 商业模块 API（购物车）
+from .api import wallet_api  # 钱包/提现 API
 from . import views  # 复用旧视图中的工具接口
 
 urlpatterns = [
@@ -214,6 +215,23 @@ urlpatterns = [
     path('api/orders/<int:order_id>/request-end', commerce_api.api_request_end_adoption, name='api_request_end_adoption'),
     path('api/orders/<int:order_id>/pay-care-fee', commerce_api.api_pay_care_fee, name='api_pay_care_fee'),
     path('api/breeder/orders', commerce_api.api_breeder_orders, name='api_breeder_orders'),
-    path('api/breeder/orders/<int:order_id>/status', commerce_api.api_update_order_status, name='api_update_order_status')]
+    path('api/breeder/orders/<int:order_id>/status', commerce_api.api_update_order_status, name='api_update_order_status'),
+
+    # ==========================
+    # 钱包/提现路由
+    # ==========================
+    # Web 页面
+    path('breeder/wallet/', views.breeder_wallet, name='breeder_wallet'),
+    path('breeder/wallet/withdraw/', views.breeder_withdraw, name='breeder_withdraw'),
+    path('admin/withdrawals/', views.admin_withdrawal_list, name='admin_withdrawal_list'),
+    path('admin/withdrawals/<int:withdrawal_id>/process/', views.admin_process_withdrawal, name='admin_process_withdrawal'),
+
+    # API 接口
+    path('api/breeder/wallet', wallet_api.api_breeder_wallet, name='api_breeder_wallet'),
+    path('api/breeder/withdraw', wallet_api.api_breeder_withdraw, name='api_breeder_withdraw'),
+    path('api/breeder/withdraw/history', wallet_api.api_breeder_withdraw_history, name='api_breeder_withdraw_history'),
+    path('api/admin/withdrawals', wallet_api.api_admin_withdrawals, name='api_admin_withdrawals'),
+    path('api/admin/withdrawals/<int:withdrawal_id>/process', wallet_api.api_admin_process_withdrawal, name='api_admin_process_withdrawal'),
+]
 
 

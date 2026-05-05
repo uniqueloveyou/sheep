@@ -24,6 +24,8 @@ class User(AbstractUser):
     avatar_url = models.CharField(max_length=500, null=True, blank=True, verbose_name='头像URL')
     mobile = models.CharField(max_length=20, null=True, blank=True, verbose_name='手机号')
     balance = models.DecimalField(max_digits=10, decimal_places=2, default=0.00, verbose_name='账户余额（元）')
+    breeder_balance = models.DecimalField(max_digits=10, decimal_places=2, default=0.00, verbose_name='养殖户可提现余额（元）')
+    total_earned = models.DecimalField(max_digits=12, decimal_places=2, default=0.00, verbose_name='养殖户累计收入（元）')
     default_daily_care_fee = models.DecimalField(
         max_digits=10,
         decimal_places=2,

@@ -1,0 +1,82 @@
+{% extends 'sheep_management/base.html' %}
+
+{% block page_title %}提现审核{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h2 style="margin-top: 0; margin-bottom: 8px;">💰 提现审核</h2>
+    <p style="color:#777; margin-bottom: 22px;">审核养殖户的提现申请。</p>
+
+    <!-- 状态筛选 -->
+    <div style="margin-bottom:16px; display:flex; gap:8px;">
+        <a href="?status=pending" class="btn" style="padding:6px 16px; border-radius:6px; text-decoration:none; {% if current_status == 'pending' %}background:#f39c12; color:#fff;{% else %}background:#f0f0f0; color:#333;{% endif %}">待审核</a>
+        <a href="?status=approved" class="btn" style="padding:6px 16px; border-radius:6px; text-decoration:none; {% if current_status == 'approved' %}background:#27ae60; color:#fff;{% else %}background:#f0f0f0; color:#333;{% endif %}">已通过</a>
+        <a href="?status=rejected" class="btn" style="padding:6px 16px; border-radius:6px; text-decoration:none; {% if current_status == 'rejected' %}background:#e74c3c; color:#fff;{% else %}background:#f0f0f0; color:#333;{% endif %}">已拒绝</a>
+        <a href="?" class="btn" style="padding:6px 16px; border-radius:6px; text-decoration:none; {% if not current_status %}background:#555; color:#fff;{% else %}background:#f0f0f0; color:#333;{% endif %}">全部</a>
+    </div>
+
+    <table style="width:100%;">
+        <thead>
+            <tr>
+                <th>申请时间</th>
+                <th>养殖户</th>
+                <th>手机号</th>
+                <th>金额</th>
+                <th>收款信息</th>
+                <th>状态</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for w in withdrawals %}
+            <tr>
+                <td style="font-size:13px;">{{ w.created_at }}</td>
+                <td>{{ w.breeder.nickname|default:w.breeder.username }}</td>
+                <td>{{ w.breeder.mobile|default:'—' }}</td>
+                <td><strong>¥{{ w.amount|floatformat:2 }}</strong></td>
+                <td style="font-size:13px;">
+                    {{ w.bank_name }}<br>
+                    {{ w.bank_card_no }}<br>
+                    <span style="color:#888;">{{ w.account_holder }}</span>
+                </td>
+                <td>
+                    {% if w.status == 'pending' %}
+                    <span style="padding:2px 8px; border-radius:10px; background:#f39c12; color:#fff; font-size:12px;">待审核</span>
+                    {% elif w.status == 'approved' %}
+                    <span style="padding:2px 8px; border-radius:10px; background:#27ae60; color:#fff; font-size:12px;">已通过</span>
+                    {% elif w.status == 'rejected' %}
+                    <span style="padding:2px 8px; border-radius:10px; background:#e74c3c; color:#fff; font-size:12px;">已拒绝</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if w.status == 'pending' %}
+                    <form method="post" action="{% url 'admin_process_withdrawal' w.id %}" style="display:inline;">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="approved">
+                        <button type="submit" class="btn" style="padding:4px 12px; background:#27ae60; color:#fff; border:none; border-radius:4px; cursor:pointer; font-size:12px;">通过</button>
+                    </form>
+                    <form method="post" action="{% url 'admin_process_withdrawal' w.id %}" style="display:inline; margin-left:4px;">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="rejected">
+                        <input type="text" name="remark" placeholder="拒绝原因" style="width:100px; padding:4px 6px; border:1px solid #ddd; border-radius:4px; font-size:12px;">
+                        <button type="submit" class="btn" style="padding:4px 12px; background:#e74c3c; color:#fff; border:none; border-radius:4px; cursor:pointer; font-size:12px;">拒绝</button>
+                    </form>
+                    {% elif w.remark %}
+                    <span style="color:#888; font-size:13px;">{{ w.remark }}</span>
+                    {% endif %}
+                    {% if w.processed_at %}
+                    <div style="font-size:11px; color:#999; margin-top:4px;">{{ w.processed_at }}</div>
+                    {% endif %}
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="7" style="text-align:center; padding:30px; color:#999;">
+                    {% if current_status == 'pending' %}暂无待审核的提现申请{% else %}暂无提现记录{% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

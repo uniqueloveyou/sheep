@@ -18,6 +18,7 @@ from ..models import (
     VaccinationHistory,
 )
 from .user_service import UserError, UserService
+from .wallet_service import WalletService
 
 
 class CommerceError(Exception):
@@ -279,6 +280,14 @@ class CommerceService:
             OrderItem.objects.create(order=order, sheep=item.sheep, price=item.price)
 
         CartItem.objects.filter(id__in=[item.id for item in cart_items]).delete()
+
+        # 下单即结算到养殖户钱包
+        if order_status == "adopting":
+            try:
+                WalletService.settle_order(order.id)
+            except Exception:
+                pass  # 结算失败不影响下单
+
         return CommerceService._build_order(order)
 
     @staticmethod
@@ -353,6 +362,13 @@ class CommerceService:
         order.status = "awaiting_delivery"
         order.care_fee_paid_at = timezone.now()
         order.save(update_fields=["status", "care_fee_paid_at"])
+
+        # 照料费到账养殖户钱包
+        try:
+            WalletService.settle_care_fee(order.id)
+        except Exception:
+            pass
+
         return CommerceService._build_order(order)
 
     @staticmethod
@@ -677,6 +693,7 @@ class CommerceService:
         elif status == "completed" and not order.delivery_date:
             order.delivery_date = timezone.now()
         order.save()
+
         return CommerceService._build_order(order)
 
     @staticmethod

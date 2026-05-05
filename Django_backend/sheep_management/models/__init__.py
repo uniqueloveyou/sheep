@@ -7,6 +7,7 @@ from .knowledge import KnowledgeDocument
 from .qa import QALog
 from .faq import QACategory, QAPair, QAAlias, QARelated, QAAnswerDetail
 from .news import News
+from .withdrawal import Withdrawal
 
 __all__ = [
     'Sheep',
@@ -33,5 +34,6 @@ __all__ = [
     'QARelated',
     'QAAnswerDetail',
     'News',
+    'Withdrawal',
 ]
 

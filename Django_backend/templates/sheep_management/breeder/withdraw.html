@@ -1,0 +1,58 @@
+{% extends 'sheep_management/base.html' %}
+
+{% block page_title %}申请提现{% endblock %}
+
+{% block content %}
+<div class="card" style="max-width: 600px; margin: 0 auto;">
+    <h2 style="margin-top: 0; margin-bottom: 8px;">📤 申请提现</h2>
+    <p style="color:#777; margin-bottom: 22px;">当前可提现余额：<strong style="color:#27ae60; font-size:18px;">¥{{ wallet.balance|floatformat:2 }}</strong></p>
+
+    {% if wallet.balance <= 0 %}
+    <div style="background:#fff3cd; border:1px solid #ffc107; padding:14px; border-radius:8px; color:#856404; margin-bottom:16px;">
+        当前无可提现余额，无法提现。
+    </div>
+    {% endif %}
+
+    <form method="post">
+        {% csrf_token %}
+
+        <div style="margin-bottom:16px;">
+            <label style="display:block; margin-bottom:4px; font-weight:600;">提现金额（元）</label>
+            <input type="number" name="amount" step="0.01" min="1" max="{{ wallet.balance }}"
+                   style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px; font-size:15px;"
+                   placeholder="输入提现金额" required
+                   {% if wallet.balance <= 0 %}disabled{% endif %}>
+        </div>
+
+        <div style="margin-bottom:16px;">
+            <label style="display:block; margin-bottom:4px; font-weight:600;">开户银行</label>
+            <input type="text" name="bank_name"
+                   style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px; font-size:15px;"
+                   placeholder="如：中国农业银行" required
+                   {% if wallet.balance <= 0 %}disabled{% endif %}>
+        </div>
+
+        <div style="margin-bottom:16px;">
+            <label style="display:block; margin-bottom:4px; font-weight:600;">银行卡号</label>
+            <input type="text" name="bank_card_no"
+                   style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px; font-size:15px;"
+                   placeholder="输入银行卡号" required
+                   {% if wallet.balance <= 0 %}disabled{% endif %}>
+        </div>
+
+        <div style="margin-bottom:24px;">
+            <label style="display:block; margin-bottom:4px; font-weight:600;">开户人姓名</label>
+            <input type="text" name="account_holder"
+                   style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px; font-size:15px;"
+                   placeholder="输入开户人姓名" required
+                   {% if wallet.balance <= 0 %}disabled{% endif %}>
+        </div>
+
+        <button type="submit" class="btn" style="background:#27ae60; color:#fff; padding:10px 28px; border:none; border-radius:8px; font-size:15px; cursor:pointer;"
+                {% if wallet.balance <= 0 %}disabled{% endif %}>
+            提交提现申请
+        </button>
+        <a href="{% url 'breeder_wallet' %}" style="margin-left:12px; color:#666;">返回钱包</a>
+    </form>
+</div>
+{% endblock %}
