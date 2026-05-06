@@ -550,7 +550,7 @@ def api_search_goods(request):
                     'description': f'性别: {sheep.get_gender_display()}, 羊龄: {sheep.age_display}, 体重: {sheep.current_weight}kg, 体高: {sheep.current_height}cm, 体长: {sheep.current_length}cm',
                     'price': calculated_price,
                     'daily_care_fee': float(sheep.effective_daily_care_fee),
-                    'image': sheep.image.url if sheep.image else '/images/icons/function/f1.png',
+                    'image': f'/api/sheep/{sheep.id}/image' if sheep.image else '/images/icons/function/f1.png',
                     'gender': sheep.get_gender_display(),
                     'weight': float(sheep.current_weight),
                     'height': float(sheep.current_height),

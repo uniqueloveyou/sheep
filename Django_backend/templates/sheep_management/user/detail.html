@@ -59,18 +59,6 @@
             <td>{{ target_user.get_gender_display|default:"未知" }}</td>
         </tr>
         <tr>
-            <th>国家</th>
-            <td>{{ target_user.country|default:"未设置" }}</td>
-        </tr>
-        <tr>
-            <th>省份</th>
-            <td>{{ target_user.province|default:"未设置" }}</td>
-        </tr>
-        <tr>
-            <th>城市</th>
-            <td>{{ target_user.city|default:"未设置" }}</td>
-        </tr>
-        <tr>
             <th>创建时间</th>
             <td>{{ target_user.created_at|date:"Y-m-d H:i:s" }}</td>
         </tr>

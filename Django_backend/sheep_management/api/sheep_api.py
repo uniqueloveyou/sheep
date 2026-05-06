@@ -71,6 +71,29 @@ def api_get_sheep_by_id(request, sheep_id=None):
 
 @csrf_exempt
 @require_http_methods(["GET"])
+def api_sheep_image(request, sheep_id):
+    """
+    羊只图片代理
+    解决小程序无法直接加载 R2 域名图片的问题
+    GET /api/sheep/<sheep_id>/image
+    """
+    from django.http import HttpResponse
+    from ..models import Sheep
+    try:
+        sheep = Sheep.objects.get(pk=sheep_id)
+    except Sheep.DoesNotExist:
+        return JsonResponse({'code': 404, 'msg': '羊只不存在'}, status=404)
+    if not sheep.image:
+        return JsonResponse({'code': 404, 'msg': '该羊只无图片'}, status=404)
+    try:
+        content = sheep.image.read()
+        return HttpResponse(content, content_type='image/jpeg')
+    except Exception:
+        return JsonResponse({'code': 500, 'msg': '图片读取失败'}, status=500)
+
+
+@csrf_exempt
+@require_http_methods(["GET"])
 def api_get_vaccine_records(request, sheep_id):
     """
     获取羊只疫苗接种记录
@@ -326,7 +349,7 @@ def api_public_sheep_trace(request, sheep_id):
             'weight': float(sheep.current_weight),
             'height': float(sheep.current_height),
             'length': float(sheep.current_length),
-            'image': request.build_absolute_uri(sheep.image.url) if sheep.image else '',
+            'image': request.build_absolute_uri(f'/api/sheep/{sheep.id}/image') if sheep.image else '',
             'qr_code': _build_public_qrcode_url(request, sheep.id),
             'breeder': {
                 'id': sheep.owner.id,

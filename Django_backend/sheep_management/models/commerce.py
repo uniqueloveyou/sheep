@@ -21,58 +21,6 @@ class CartItem(models.Model):
         return f"{self.user} - {self.sheep} - {self.quantity}件"
 
 
-class PromotionActivity(models.Model):
-    """优惠活动表"""
-    ACTIVITY_TYPE_CHOICES = [
-        ('flash_sale', '限时抢购'),
-        ('package', '套餐活动'),
-        ('discount', '折扣活动'),
-    ]
-
-    STATUS_CHOICES = [
-        ('draft', '草稿'),
-        ('active', '进行中'),
-        ('ended', '已结束'),
-        ('cancelled', '已取消'),
-    ]
-
-    title = models.CharField(max_length=200, verbose_name='活动标题')
-    description = models.TextField(null=True, blank=True, verbose_name='活动描述')
-    activity_type = models.CharField(max_length=20, choices=ACTIVITY_TYPE_CHOICES, verbose_name='活动类型')
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='draft', verbose_name='状态')
-    image_url = models.CharField(max_length=500, null=True, blank=True, verbose_name='活动图片')
-
-    # 活动时间
-    start_time = models.DateTimeField(verbose_name='开始时间')
-    end_time = models.DateTimeField(verbose_name='结束时间')
-
-    # 活动规则
-    discount_rate = models.FloatField(null=True, blank=True, verbose_name='折扣率（0-1）')
-    discount_amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, verbose_name='折扣金额')
-    min_purchase_amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, default=0, verbose_name='最低消费金额')
-    max_discount_amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, verbose_name='最大折扣金额')
-
-    # 限制条件
-    total_limit = models.IntegerField(null=True, blank=True, verbose_name='总限购数量')
-    user_limit = models.IntegerField(null=True, blank=True, default=1, verbose_name='每用户限购数量')
-    sold_count = models.IntegerField(default=0, verbose_name='已售数量')
-
-    # 关联商品（可选，如果为空则适用于所有商品）
-    applicable_sheep_ids = models.TextField(null=True, blank=True, verbose_name='适用羊只ID列表（JSON格式）')
-
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name='创建时间')
-    updated_at = models.DateTimeField(auto_now=True, verbose_name='更新时间')
-
-    class Meta:
-        db_table = 'promotion_activities'
-        verbose_name = '优惠活动'
-        verbose_name_plural = '优惠活动'
-        ordering = ['-start_time']
-
-    def __str__(self):
-        return f"{self.title} - {self.get_status_display()}"
-
-
 class Coupon(models.Model):
     """优惠券表"""
     COUPON_TYPE_CHOICES = [

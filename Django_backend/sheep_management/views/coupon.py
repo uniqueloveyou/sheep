@@ -13,7 +13,7 @@ from django.views.decorators.http import require_http_methods
 from django.db.models import Q, Count
 from django.core.paginator import Paginator
 
-from ..models import Coupon, UserCoupon, PromotionActivity, User
+from ..models import Coupon, UserCoupon, User
 from ..permissions import ROLE_ADMIN, ROLE_BREEDER
 
 

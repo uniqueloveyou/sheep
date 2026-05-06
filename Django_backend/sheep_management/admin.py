@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Sheep, GrowthRecord, FeedingRecord, VaccineType, VaccinationHistory, User, MonitorDevice, CartItem, Order, OrderItem, PromotionActivity, Coupon, UserCoupon, BreederFollow
+from .models import Sheep, GrowthRecord, FeedingRecord, VaccineType, VaccinationHistory, User, MonitorDevice, CartItem, Order, OrderItem, Coupon, UserCoupon, BreederFollow
 from django.utils.html import format_html
 
 
@@ -96,9 +96,6 @@ class UserAdmin(admin.ModelAdmin):
         ('微信信息', {
             'fields': ('openid', 'unionid', 'avatar_url')
         }),
-        ('地址信息', {
-            'fields': ('country', 'province', 'city')
-        }),
         ('时间信息', {
             'fields': ('created_at', 'updated_at')
         }),
@@ -150,21 +147,6 @@ class OrderItemAdmin(admin.ModelAdmin):
     list_per_page = 20
 
 
-@admin.register(PromotionActivity)
-class PromotionActivityAdmin(admin.ModelAdmin):
-    list_display = ['id', 'title', 'activity_type', 'status', 'start_time', 'end_time', 'discount_rate', 'discount_amount', 'sold_count', 'total_limit']
-    list_filter = ['status', 'activity_type', 'start_time']
-    search_fields = ['title', 'description']
-    list_editable = ['status']
-    date_hierarchy = 'start_time'
-    list_per_page = 20
-    fieldsets = (
-        ('基本信息', {'fields': ('title', 'description', 'activity_type', 'status', 'image_url')}),
-        ('优惠设置', {'fields': ('discount_rate', 'discount_amount', 'min_purchase_amount', 'max_discount_amount')}),
-        ('时间设置', {'fields': ('start_time', 'end_time')}),
-        ('数量限制', {'fields': ('total_limit', 'user_limit', 'sold_count')}),
-        ('适用范围', {'fields': ('applicable_sheep_ids',)}),
-    )
 
 
 @admin.register(Coupon)

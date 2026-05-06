@@ -60,6 +60,7 @@ urlpatterns = [
     path('api/sheep/count', sheep_api.api_count_sheep, name='api_count_sheep'),
     path('api/sheep/search-multi', sheep_api.api_search_sheep_multi, name='api_search_sheep_multi'),
     path('api/sheep/<int:sheep_id>', sheep_api.api_get_sheep_by_id, name='api_get_sheep_by_id'),
+    path('api/sheep/<int:sheep_id>/image', sheep_api.api_sheep_image, name='api_sheep_image'),
     path('search_sheep_by_id', sheep_api.api_get_sheep_by_id, name='search_sheep_by_id_compat'),
 
     # 疫苗记录API（已迁移到 api/sheep_api.py）
@@ -194,8 +195,6 @@ urlpatterns = [
     # ==========================
     # 优惠活动/优惠券接口
     # ==========================
-    path('api/promotions/activities', views.api_promotion_activities, name='api_promotion_activities'),
-    path('api/promotions/activities/<int:activity_id>', views.api_promotion_activity_detail, name='api_promotion_activity_detail'),
     path('api/promotions/coupons', views.api_coupons, name='api_coupons'),
     path('api/promotions/coupons/claim', views.api_claim_coupon, name='api_claim_coupon'),
     path('api/news/home', views.api_news_home, name='api_news_home'),

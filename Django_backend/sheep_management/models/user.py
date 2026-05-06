@@ -35,9 +35,6 @@ class User(AbstractUser):
     gender = models.IntegerField(choices=GENDER_CHOICES, null=True, blank=True, verbose_name='性别')
     description = models.CharField(max_length=200, null=True, blank=True, verbose_name='个人简介')
     birthday = models.DateField(null=True, blank=True, verbose_name='生日')
-    country = models.CharField(max_length=50, null=True, blank=True, verbose_name='国家')
-    province = models.CharField(max_length=50, null=True, blank=True, verbose_name='省份')
-    city = models.CharField(max_length=50, null=True, blank=True, verbose_name='城市')
     latitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True, verbose_name='纬度')
     longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True, verbose_name='经度')
 
