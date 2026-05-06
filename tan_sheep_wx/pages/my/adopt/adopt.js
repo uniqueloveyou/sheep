@@ -23,7 +23,6 @@ const TRACE_LABELS = {
   Vaccination: '疫苗记录'
 };
 const CAN_REQUEST_END_STATUSES = ['paid', 'adopting', 'ready_to_ship'];
-const ORDER_DETAIL_STATUSES = ['awaiting_delivery', 'shipping', 'completed'];
 
 function formatAmount(value) {
   const amount = Number(value || 0);
@@ -108,49 +107,6 @@ function getActionMeta(status) {
     return { text: '查看详情', type: 'detail', disabled: false };
   }
   return { text: '查看详情', type: 'detail', disabled: false };
-}
-
-function buildOrderDetailFromItem(item) {
-  const sheep = item.sheep || {};
-  return {
-    id: item.order_id,
-    order_no: item.order_no,
-    total_amount: item.total_amount || item.price || 0,
-    final_amount: item.final_amount || ((Number(item.total_amount || item.price || 0)) + Number(item.care_fee_amount || 0)),
-    daily_care_fee: item.daily_care_fee || 0,
-    care_fee_amount: item.care_fee_amount || 0,
-    adoption_days: item.adoption_days || 0,
-    adoption_start_time: item.adoption_start_time || '',
-    end_requested_at: item.end_requested_at || '',
-    care_fee_paid_at: item.care_fee_paid_at || '',
-    status: item.order_status_key,
-    status_display: item.order_status,
-    pay_time: item.pay_time || '',
-    shipping_date: item.shipping_date || '',
-    delivery_date: item.delivery_date || '',
-    delivery_method: item.delivery_method || 'logistics',
-    delivery_method_display: item.delivery_method_display || ((item.delivery_method === 'offline') ? '线下交付' : '物流配送'),
-    logistics_company: item.logistics_company || '',
-    logistics_tracking_number: item.logistics_tracking_number || '',
-    offline_delivery_location: item.offline_delivery_location || '',
-    offline_delivery_note: item.offline_delivery_note || '',
-    receiver_name: item.receiver_name || '',
-    receiver_phone: item.receiver_phone || '',
-    shipping_address: item.shipping_address || '',
-    created_at: item.created_at || item.pay_time || '',
-    items: [{
-      sheep_id: sheep.id,
-      ear_tag: sheep.ear_tag,
-      gender: sheep.gender,
-      weight: sheep.weight,
-      health_status: sheep.health_status || '健康',
-      price: item.price || sheep.price || 0,
-      breeder_id: sheep.breeder_id || item.breeder_id || '',
-      breeder_name: sheep.breeder_name || item.breeder_name || '',
-      breeder_mobile: sheep.breeder_mobile || item.breeder_mobile || '',
-      farm_name: sheep.farm_name || item.farm_name || ''
-    }]
-  };
 }
 
 function getTraceSeenMap() {
@@ -317,14 +273,6 @@ Page({
     const item = items.find(record => Number(record.id) === recordId);
     if (!item) {
       wx.showToast({ title: '认养信息不存在', icon: 'none' });
-      return;
-    }
-
-    if (ORDER_DETAIL_STATUSES.includes(item.order_status_key)) {
-      wx.setStorageSync('currentOrderDetail', buildOrderDetailFromItem(item));
-      wx.navigateTo({
-        url: `/packageOrder/cart/history/detail/index?order_id=${item.order_id}`
-      });
       return;
     }
 

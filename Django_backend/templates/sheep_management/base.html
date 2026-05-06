@@ -118,14 +118,15 @@
             top: 0;
             width: 250px;
             height: 100vh;
-            background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+            background: #ffffff;
+            border-right: 1px solid #e8e8e8;
             padding: 20px 0;
             overflow-y: auto;
             z-index: 999;
         }
         .sidebar-logo {
             padding: 0 20px 30px;
-            color: white;
+            color: #333;
             font-size: 20px;
             font-weight: 600;
             display: flex;
@@ -138,7 +139,7 @@
         .menu-item {
             display: block;
             padding: 12px 20px;
-            color: rgba(255,255,255,0.8);
+            color: #555;
             text-decoration: none;
             border-radius: 6px;
             margin-bottom: 5px;
@@ -148,12 +149,12 @@
             gap: 12px;
         }
         .menu-item:hover {
-            background: rgba(255,255,255,0.1);
-            color: white;
+            background: #f5f5f5;
+            color: #667eea;
         }
         .menu-item.active {
-            background: rgba(255,255,255,0.2);
-            color: white;
+            background: #f0f0ff;
+            color: #667eea;
         }
         .menu-icon {
             width: 20px;
@@ -162,7 +163,7 @@
         }
         .menu-divider {
             height: 1px;
-            background: rgba(255,255,255,0.1);
+            background: #e8e8e8;
             margin: 15px 20px;
         }
         
@@ -419,7 +420,7 @@
                 <svg class="menu-icon" viewBox="0 0 24 24">
                     <path d="M21 18v1c0 1.1-.9 2-2 2H5c-1.11 0-2-.9-2-2V5c0-1.1.89-2 2-2h14c1.1 0 2 .9 2 2v1h-9c-1.11 0-2 .9-2 2v8c0 1.1.89 2 2 2h9zm-9-2h10V8H12v8zm4-2.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/>
                 </svg>
-                <span>💰 我的钱包</span>
+                <span>我的钱包</span>
             </a>
             {% if user.role == 2 %}
             <a href="{% url 'news_list' %}" class="menu-item">

@@ -10,6 +10,8 @@ import os
 import random
 import time
 import requests
+import urllib3
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 import logging
 
 from ..utils import verify_token
@@ -361,9 +363,12 @@ def api_qa_ask(request):
             })
 
         logger.warning(f'[QA] DeepSeek失败: {llm_error_msg}，使用本地回答')
-        answer = get_local_answer(question)
+        question_lower = (question or '').lower()
+        # 尝试基于数据库的个性化回答
+        answer = _get_db_answer(question_lower, user_id)
+        if not answer:
+            answer = get_local_answer(question)
         success = True
-        fallback_used = True
         error_message = llm_error_msg or ''
         return build_response({
             'code': 0,
@@ -383,7 +388,8 @@ def api_qa_ask(request):
         return build_response({'code': 400, 'msg': '请求数据格式错误', 'data': None}, status=400)
     except Exception as e:
         logger.error(f'[QA] 接口异常: {str(e)}', exc_info=True)
-        answer = get_local_answer(question)
+        question_lower = (question or '').lower()
+        answer = _get_db_answer(question_lower, user_id) or get_local_answer(question)
         success = True
         fallback_used = True
         error_message = str(e)
@@ -447,6 +453,7 @@ def _call_deepseek(system_prompt, question):
                 'stream': False,
             },
             timeout=30,
+            verify=False,
         )
 
         if resp.status_code == 200:
@@ -469,6 +476,56 @@ def _call_deepseek(system_prompt, question):
     except Exception as e:
         logger.error(f'[QA] DeepSeek调用异常: {e}', exc_info=True)
         return None, str(e)
+
+
+def _get_db_answer(q, user_id):
+    """尝试用数据库数据回答个性化问题，外部 AI 不可用时使用"""
+    if not user_id:
+        return None
+    try:
+        user = User.objects.get(id=user_id)
+    except User.DoesNotExist:
+        return None
+
+    # 查登录用户的羊（养殖户查拥有的，消费者查认养的）
+    if user.role == 1:  # 养殖户
+        sheep_qs = Sheep.objects.filter(owner=user)
+    else:  # 消费者
+        sheep_ids = OrderItem.objects.filter(
+            order__user_id=user_id,
+            order__status__in=['paid', 'adopting', 'ready_to_ship']
+        ).values_list('sheep_id', flat=True)
+        sheep_qs = Sheep.objects.filter(id__in=sheep_ids)
+
+    total = sheep_qs.count()
+    nickname = user.nickname or user.username
+
+    if any(w in q for w in ['几只', '多少只', '几只羊', '数量']):
+        if total == 0:
+            return f'{nickname}，您目前还没有羊只在养。作为养殖户的话请去上传羊只，消费者的话请去领养页面挑选。'
+        male = sheep_qs.filter(gender=1).count()
+        female = sheep_qs.filter(gender=0).count()
+        return f'{nickname}，您目前有 {total} 只羊在养，其中公羊 {male} 只，母羊 {female} 只。'
+
+    if any(w in q for w in ['健康', '状态', '生病', '情况']):
+        if total == 0:
+            return f'{nickname}，您还没有羊只，无法查询健康状态。'
+        healthy = sheep_qs.filter(health_status='健康').count()
+        good = sheep_qs.filter(health_status='良好').count()
+        warning = sheep_qs.exclude(health_status__in=['健康', '良好']).count()
+        parts = [f'{nickname}，您共有 {total} 只羊：']
+        if healthy: parts.append(f'健康 {healthy} 只')
+        if good: parts.append(f'良好 {good} 只')
+        if warning: parts.append(f'需关注 {warning} 只')
+        return '，'.join(parts) + '。'
+
+    if any(w in q for w in ['体重', '多重', '重量']):
+        if total == 0:
+            return None
+        sheep = sheep_qs.order_by('?').first()
+        return f'{nickname}，以羊只 #{sheep.id}（{sheep.ear_tag or ""}）为例，当前体重 {sheep.current_weight}kg。'
+
+    return None
 
 
 def get_local_answer(question):
