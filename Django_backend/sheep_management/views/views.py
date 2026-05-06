@@ -8,7 +8,7 @@ import re
 from datetime import datetime, date
 from django.utils import timezone
 from ..models import User, Sheep, VaccinationHistory, GrowthRecord, FeedingRecord, CartItem, Coupon, BreederFollow
-from ..utils import generate_token, verify_token
+from ..utils import generate_token, get_r2_public_url, verify_token
 import requests
 from ..services.sheep_service import SheepService, SheepError
 
@@ -974,7 +974,7 @@ def api_get_sheep_by_ear_tag(request):
             'weight': float(sheep.current_weight),
             'height': float(sheep.current_height),
             'length': float(sheep.current_length),
-            'qr_code': request.build_absolute_uri(sheep.qr_code.url) if sheep.qr_code else None,
+            'qr_code': get_r2_public_url(sheep.qr_code.name) if sheep.qr_code else None,
             'breeder': {
                 'id': sheep.breeder.id if sheep.breeder else None,
                 'name': sheep.breeder.name if sheep.breeder else None,

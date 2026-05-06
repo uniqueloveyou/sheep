@@ -1,8 +1,6 @@
-import io
 from datetime import date, datetime, timedelta
 from decimal import Decimal
 
-from django.core.files.base import ContentFile
 from django.core.management import call_command
 from django.core.management.base import BaseCommand
 from django.db import transaction
@@ -362,32 +360,11 @@ class Command(BaseCommand):
             QAAlias.objects.get_or_create(qa_pair=qa, alias_question=question.replace("演示：", ""))
 
     def _generate_qrcodes(self, sheep_list):
-        try:
-            import qrcode
-        except ImportError:
-            self.stdout.write(self.style.WARNING("qrcode is not installed; QR generation skipped."))
-            return
+        from sheep_management.utils import generate_qr_code
 
         for sheep in sheep_list:
             try:
-                trace_url = f"{TRACE_BASE_URL}/trace/{sheep.id}/"
-                qr = qrcode.QRCode(
-                    version=None,
-                    error_correction=qrcode.constants.ERROR_CORRECT_M,
-                    box_size=10,
-                    border=4,
-                )
-                qr.add_data(trace_url)
-                qr.make(fit=True)
-                image = qr.make_image(fill_color="black", back_color="white")
-                buffer = io.BytesIO()
-                image.save(buffer, format="PNG")
-                buffer.seek(0)
-                sheep.qr_code.save(
-                    f"demo_qr_sheep_{sheep.id}.png",
-                    ContentFile(buffer.read()),
-                    save=True,
-                )
+                generate_qr_code(sheep)
             except Exception as exc:
                 self.stdout.write(
                     self.style.WARNING(f"QR generation failed for {sheep.ear_tag}: {exc}")

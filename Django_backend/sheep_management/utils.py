@@ -52,13 +52,15 @@ def verify_token(token):
 
 import qrcode
 from io import BytesIO
-from django.core.files import File
-import os
+import re
 
 
 def generate_qr_code(sheep):
     """
-    为羊只生成二维码并保存到 qr_code 字段
+    为羊只生成二维码并保存到 Cloudflare R2。
+
+    二维码内容为羊只耳标号，数据库 qr_code 字段只保存 R2 object key，
+    例如：qrcodes/sheep_1151_TY0072603060FYY.png。
 
     Args:
         sheep: Sheep 模型实例（需已保存，有 id）
@@ -80,19 +82,38 @@ def generate_qr_code(sheep):
     img.save(buffer, format='PNG')
     buffer.seek(0)
 
-    filename = f'sheep_{sheep.id}_{sheep.ear_tag}.png'
+    safe_ear_tag = re.sub(r'[^A-Za-z0-9_-]+', '_', sheep.ear_tag)
+    object_key = f'qrcodes/sheep_{sheep.id}_{safe_ear_tag}.png'
+    _upload_qr_code_to_r2(object_key, buffer.getvalue())
 
-    # 删除旧二维码文件（如果存在）
-    if sheep.qr_code:
-        try:
-            if os.path.isfile(sheep.qr_code.path):
-                os.remove(sheep.qr_code.path)
-        except Exception as e:
-            print(f"删除旧二维码失败: {e}")
-
-    # save=False 避免触发再次信号，用 save_base 只更新 qr_code 字段
-    from django.core.files.base import ContentFile
-    # save=False 避免触发保存
-    sheep.qr_code.save(filename, ContentFile(buffer.getvalue()), save=False)
-    # 使用标准的 save 方法
+    sheep.qr_code.name = object_key
     sheep.save(update_fields=['qr_code'])
+
+
+def _upload_qr_code_to_r2(object_key, content):
+    """Upload QR PNG bytes directly to Cloudflare R2."""
+    import boto3
+
+    client = boto3.client(
+        's3',
+        endpoint_url=f"https://{settings.R2_ACCOUNT_ID}.r2.cloudflarestorage.com",
+        aws_access_key_id=settings.R2_ACCESS_KEY_ID,
+        aws_secret_access_key=settings.R2_SECRET_ACCESS_KEY,
+        region_name=getattr(settings, 'AWS_S3_REGION_NAME', 'auto'),
+    )
+    client.put_object(
+        Bucket=settings.R2_BUCKET_NAME,
+        Key=object_key,
+        Body=content,
+        ContentType='image/png',
+        CacheControl='max-age=86400',
+    )
+
+
+def get_r2_public_url(object_key):
+    """Build public R2 URL for a stored object key."""
+    if not object_key:
+        return ''
+    if str(object_key).startswith(('http://', 'https://')):
+        return str(object_key)
+    return f"{settings.R2_PUBLIC_URL.rstrip('/')}/{str(object_key).lstrip('/')}"

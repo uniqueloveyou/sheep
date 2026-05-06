@@ -112,6 +112,8 @@ class SheepService:
         except Sheep.DoesNotExist:
             raise SheepError('羊只不存在', code=404, http_status=404)
 
+        from ..utils import get_r2_public_url
+
         return {
             'id': sheep.id,
             'gender': sheep.get_gender_display(),  # 显示为中文
@@ -124,7 +126,7 @@ class SheepService:
             'price': float(sheep.price),
             'daily_care_fee': float(sheep.effective_daily_care_fee),
             'ear_tag': sheep.ear_tag or '',
-            'qr_code': sheep.qr_code.url if sheep.qr_code else '',
+            'qr_code': get_r2_public_url(sheep.qr_code.name) if sheep.qr_code else '',
             'farm_name': sheep.farm_name or '宁夏盐池滩羊核心产区',  # 如果真实农场没填给个默认
             'breeder_name': sheep.owner.nickname or sheep.owner.username if sheep.owner else '官方牧场',
             'owner_id': sheep.owner.id if sheep.owner else None,  # 确保返回 owner_id
@@ -252,8 +254,9 @@ class SheepService:
 
         # 构造返回数据
         qr_code_url = None
-        if sheep.qr_code and build_absolute_uri:
-            qr_code_url = build_absolute_uri(sheep.qr_code.url)
+        if sheep.qr_code:
+            from ..utils import get_r2_public_url
+            qr_code_url = get_r2_public_url(sheep.qr_code.name)
 
         result = {
             'id': sheep.id,
@@ -567,28 +570,12 @@ class SheepService:
     @staticmethod
     def _generate_qr_code(sheep):
         """
-        为羊只生成溯源二维码，二维码内容为 H5 溯源页面 URL。
-        生成后保存到 sheep.qr_code 字段。
+        为羊只生成溯源二维码，二维码内容为耳标号。
+        生成后保存到 Cloudflare R2，并把 object key 写入 sheep.qr_code 字段。
         """
         try:
-            trace_url = f"{TRACE_BASE_URL}/trace/{sheep.id}/"
-
-            qr = qrcode.QRCode(
-                version=None,
-                error_correction=qrcode.constants.ERROR_CORRECT_M,
-                box_size=10,
-                border=4,
-            )
-            qr.add_data(trace_url)
-            qr.make(fit=True)
-            img = qr.make_image(fill_color='black', back_color='white')
-
-            buf = io.BytesIO()
-            img.save(buf, format='PNG')
-            buf.seek(0)
-
-            filename = f'qr_sheep_{sheep.id}.png'
-            sheep.qr_code.save(filename, ContentFile(buf.read()), save=True)
+            from ..utils import generate_qr_code
+            generate_qr_code(sheep)
         except Exception as e:
             # QR 生成失败不影响主流程
             import logging

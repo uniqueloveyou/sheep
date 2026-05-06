@@ -378,8 +378,8 @@
             <div style="flex: 0 0 300px;">
                 <h4 style="margin-bottom: 20px;">防伪溯源二维码</h4>
                 <div style="background: #f8f9fa; border-radius: 10px; padding: 20px; text-align: center;">
-                    {% if sheep.qr_code %}
-                    <img src="{{ sheep.qr_code.url }}" alt="羊只耳标二维码" style="width:200px;height:200px;object-fit:contain;margin-bottom:15px;">
+                    {% if qr_code_url %}
+                    <img src="{{ qr_code_url }}" alt="羊只耳标二维码" style="width:200px;height:200px;object-fit:contain;margin-bottom:15px;">
                     {% else %}
                     <div style="width:200px;height:200px;margin:0 auto 15px;display:flex;align-items:center;justify-content:center;background:#fff;color:#999;border:1px dashed #ddd;">
                         未生成二维码

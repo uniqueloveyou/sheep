@@ -3,10 +3,8 @@
 薄接口层：解析 HTTP 参数 → 调用 Service → 构建 JsonResponse
 """
 import json
-from io import BytesIO
 
-import qrcode
-from django.http import HttpResponse, JsonResponse
+from django.http import HttpResponseRedirect, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 
@@ -402,30 +400,24 @@ def api_public_sheep_trace(request, sheep_id):
 @require_http_methods(["GET"])
 def api_public_sheep_qrcode(request, sheep_id):
     """
-    动态生成羊只溯源二维码 PNG。
-    不依赖已上传到 R2/本地 media 的 qr_code 文件，保证小程序端身份标识稳定显示。
+    返回已保存到 Cloudflare R2 的羊只耳标二维码。
+    如果该羊还没有二维码，则先生成并上传到 R2。
     """
     try:
         from ..models import Sheep
+        from ..utils import generate_qr_code, get_r2_public_url
         try:
             sheep = Sheep.objects.get(pk=sheep_id)
         except Sheep.DoesNotExist:
             return JsonResponse({'code': 404, 'msg': '羊只不存在', 'data': None}, status=404)
 
-        trace_url = request.build_absolute_uri(f'/trace/{sheep.id}/')
-        qr = qrcode.QRCode(
-            version=None,
-            error_correction=qrcode.constants.ERROR_CORRECT_M,
-            box_size=10,
-            border=4,
-        )
-        qr.add_data(trace_url)
-        qr.make(fit=True)
-        img = qr.make_image(fill_color='black', back_color='white')
+        if not sheep.qr_code:
+            generate_qr_code(sheep)
 
-        buf = BytesIO()
-        img.save(buf, format='PNG')
-        return HttpResponse(buf.getvalue(), content_type='image/png')
+        if not sheep.qr_code:
+            return JsonResponse({'code': 500, 'msg': '二维码生成失败', 'data': None}, status=500)
+
+        return HttpResponseRedirect(get_r2_public_url(sheep.qr_code.name))
     except Exception as e:
         return JsonResponse({'code': 500, 'msg': str(e), 'data': None}, status=500)
 

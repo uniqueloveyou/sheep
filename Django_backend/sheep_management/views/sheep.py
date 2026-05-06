@@ -176,6 +176,9 @@ def sheep_detail(request, pk):
     if not sheep.qr_code:
         from ..utils import generate_qr_code
         generate_qr_code(sheep)
+
+    from ..utils import get_r2_public_url
+    qr_code_url = get_r2_public_url(sheep.qr_code.name) if sheep.qr_code else ''
     
     growth_records = sheep.growth_records.all().order_by('-record_date')
     feeding_records = sheep.feeding_records.all().order_by('-feed_date')
@@ -189,6 +192,7 @@ def sheep_detail(request, pk):
         'vaccination_records': vaccination_records,
         'vaccines': vaccines,
         'is_admin': is_admin,
+        'qr_code_url': qr_code_url,
     }
     return render(request, 'sheep_management/sheep/detail.html', context)
 
