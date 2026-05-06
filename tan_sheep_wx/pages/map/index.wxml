@@ -26,9 +26,6 @@
                 <text class="modal-label">名称：</text>{{selectedFarmer.name}}
             </view>
             <view class="modal-item">
-                <text class="modal-label">性别：</text>{{selectedFarmer.gender}}
-            </view>
-            <view class="modal-item">
                 <text class="modal-label">手机号：</text>{{selectedFarmer.phone}}
             </view>
             <view class="modal-item">
