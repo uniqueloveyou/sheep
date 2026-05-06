@@ -3,10 +3,10 @@
 策略：登录用户的羊只数据直接查库 → 塞进 system prompt → AI 必定能看到
 """
 from django.http import JsonResponse
+from django.conf import settings
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 import json
-import os
 import random
 import time
 import requests
@@ -89,23 +89,16 @@ def _safe_log_qa(
 # ============================================
 # DeepSeek API 配置
 # ============================================
-def _env_bool(name, default=False):
-    val = os.getenv(name)
-    if val is None:
-        return default
-    return str(val).strip().lower() in {'1', 'true', 'yes', 'y', 'on'}
-
-
-DEEPSEEK_API_KEY = os.getenv('DEEPSEEK_API_KEY', 'sk-f7dc7dcc84bc483587460b45d2adc98c').strip()
-DEEPSEEK_API_BASE = os.getenv('DEEPSEEK_API_BASE', 'https://api.deepseek.com').strip()
-DEEPSEEK_MODEL = os.getenv('DEEPSEEK_MODEL', 'deepseek-chat').strip()
+DEEPSEEK_API_KEY = settings.DEEPSEEK_API_KEY.strip()
+DEEPSEEK_API_BASE = settings.DEEPSEEK_API_BASE.strip()
+DEEPSEEK_MODEL = settings.DEEPSEEK_MODEL.strip()
 
 # ============================================
 # Mock 开关（True = 本地模拟，不实际调用 DeepSeek）
 # 用于 JMeter 压测，避免真实 API 调用带来的延迟和费用
 # 切换方式：将下面改为 False → 恢复真实 DeepSeek 调用
 # ============================================
-MOCK_DEEPSEEK = _env_bool('MOCK_DEEPSEEK', default=False)
+MOCK_DEEPSEEK = settings.MOCK_DEEPSEEK
 
 # ============================================
 # 基础系统提示词
@@ -560,3 +553,4 @@ def get_local_answer(question):
     
     else:
         return f'感谢您的提问！关于"{question}"的问题，我建议您：\n\n1. 查看小程序中的相关功能模块（如"生长周期"、"日常饲料"等）\n2. 咨询专业养殖户获取详细指导\n3. 联系客服获取更多帮助\n\n如果您有其他关于滩羊的问题，欢迎继续提问！'
+

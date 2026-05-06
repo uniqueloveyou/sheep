@@ -15,19 +15,51 @@ from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+PROJECT_ROOT = BASE_DIR.parent
+ENV_FILE = PROJECT_ROOT / '.env'
+
+
+def load_env_file(path):
+    """Load simple KEY=VALUE lines from .env without adding a dependency."""
+    if not path.exists():
+        return
+    for raw_line in path.read_text(encoding='utf-8').splitlines():
+        line = raw_line.strip()
+        if not line or line.startswith('#') or '=' not in line:
+            continue
+        key, value = line.split('=', 1)
+        key = key.strip()
+        value = value.strip().strip('"').strip("'")
+        os.environ.setdefault(key, value)
+
+
+load_env_file(ENV_FILE)
+
+
+def env(name, default=''):
+    return os.environ.get(name, default)
+
+
+def env_bool(name, default=False):
+    value = env(name, str(default)).strip().lower()
+    return value in ('1', 'true', 'yes', 'on')
+
+
+def env_list(name, default=''):
+    return [item.strip() for item in env(name, default).split(',') if item.strip()]
 
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-g!(8vj_8qpxkp9q#_9573#h@b#jgiyiyrlh1+g@am933xm@hd6'
+SECRET_KEY = env('DJANGO_SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = env_bool('DJANGO_DEBUG', True)
 
 # 允许局域网访问与小程序调试
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = env_list('DJANGO_ALLOWED_HOSTS', '*')
 
 
 # Application definition
@@ -83,16 +115,16 @@ WSGI_APPLICATION = 'Django_backend.wsgi.application'
 #       Windows PowerShell: $env:USE_LOCAL_DB="1"; python manage.py runserver
 #       Windows CMD:        set USE_LOCAL_DB=1 && python manage.py runserver
 
-if os.environ.get('USE_LOCAL_DB') == '1':
+if env('USE_LOCAL_DB') == '1':
     # ---- 本地数据库 ----
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.mysql',
-            'NAME': 'sheep_xdb',
-            'USER': 'root',           # 本地 MySQL 用户名，按实际修改
-            'PASSWORD': '123456',           # 本地 MySQL 密码，按实际修改
-            'HOST': '127.0.0.1',
-            'PORT': '3306',
+            'NAME': env('LOCAL_DB_NAME', 'sheep_xdb'),
+            'USER': env('LOCAL_DB_USER', 'root'),
+            'PASSWORD': env('LOCAL_DB_PASSWORD', ''),
+            'HOST': env('LOCAL_DB_HOST', '127.0.0.1'),
+            'PORT': env('LOCAL_DB_PORT', '3306'),
             'OPTIONS': {
                 'charset': 'utf8mb4',
             },
@@ -103,18 +135,18 @@ else:
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.mysql',
-            'NAME': 'sheep_xdb',
-            'USER': 'mxlsheep',
-            'PASSWORD': 'xUW8fnh1oylmTrK9',
-            'HOST': 'mysql3.sqlpub.com',
-            'PORT': '3308',
+            'NAME': env('DB_NAME', 'sheep_xdb'),
+            'USER': env('DB_USER'),
+            'PASSWORD': env('DB_PASSWORD'),
+            'HOST': env('DB_HOST'),
+            'PORT': env('DB_PORT', '3306'),
             'OPTIONS': {
                 'charset': 'utf8mb4',
-                'connect_timeout': 10,  # 连接超时时间（秒）
+                'connect_timeout': int(env('DB_CONNECT_TIMEOUT', '10')),
             },
             # 持久连接：每个 worker 保持连接 600 秒，避免每次请求重新握手
             # 免费 MySQL 延迟高，此项优化效果明显
-            'CONN_MAX_AGE': 600,
+            'CONN_MAX_AGE': int(env('DB_CONN_MAX_AGE', '600')),
         }
     }
 
@@ -175,15 +207,21 @@ AUTH_USER_MODEL = 'sheep_management.User'
 LOGIN_URL = '/login/'
 
 # 微信小程序配置
-WX_APP_ID = 'wx584a350ed4b974a0'
-WX_APP_SECRET = '11f0f8f7eed7e4cdc39ca4333bfd2134'
+WX_APP_ID = env('WX_APP_ID')
+WX_APP_SECRET = env('WX_APP_SECRET')
+
+# DeepSeek 智能问答配置
+DEEPSEEK_API_KEY = env('DEEPSEEK_API_KEY')
+DEEPSEEK_API_BASE = env('DEEPSEEK_API_BASE', 'https://api.deepseek.com')
+DEEPSEEK_MODEL = env('DEEPSEEK_MODEL', 'deepseek-chat')
+MOCK_DEEPSEEK = env_bool('MOCK_DEEPSEEK', False)
 
 # Cloudflare R2 配置
-R2_ACCOUNT_ID = '4b9f4af50152c4c4b85005817e83e269'           # Cloudflare 账户 ID
-R2_ACCESS_KEY_ID = '258fadb6983f5bbb316d248e9ecf767c'        # R2 API Token 的 Access Key ID
-R2_SECRET_ACCESS_KEY = '36728826ba79e351a73374accca82c1885ba1c58666e502bcbccab7a444f2c47'    # R2 API Token 的 Secret Access Key
-R2_BUCKET_NAME = 'avatar-bucket'          # 存储桶名称
-R2_PUBLIC_URL = 'https://avatar.youzilite.us.kg'           # 公开访问域名，例如 https://assets.example.com
+R2_ACCOUNT_ID = env('R2_ACCOUNT_ID')
+R2_ACCESS_KEY_ID = env('R2_ACCESS_KEY_ID')
+R2_SECRET_ACCESS_KEY = env('R2_SECRET_ACCESS_KEY')
+R2_BUCKET_NAME = env('R2_BUCKET_NAME')
+R2_PUBLIC_URL = env('R2_PUBLIC_URL')
 
 # 覆盖默认的 Media 文件存储以使用 Cloudflare R2 (通过 django-storages S3Boto3 接口)
 AWS_ACCESS_KEY_ID = R2_ACCESS_KEY_ID
@@ -220,3 +258,4 @@ SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 # 如需进一步锁定，将 * 换成你的 Cloudflare Tunnel 域名
 # ALLOWED_HOSTS = ['your-domain.com', '127.0.0.1', 'localhost']
+
