@@ -6,7 +6,7 @@
   <view class="sheep-list" wx:if="{{sheepList.length > 0}}">
     <view class="sheep-item" wx:for="{{pagedSheepList}}" wx:key="id" bindtap="viewSheepDetail" data-id="{{item.id}}">
       <view class="sheep-avatar">
-        <image wx:if="{{item.image_url}}" src="{{item.image_url}}" class="avatar-img" mode="aspectFill"></image>
+        <image wx:if="{{item.image_url}}" src="{{item.image_url}}" class="avatar-img" mode="aspectFill" binderror="onSheepImageError" data-id="{{item.id}}"></image>
         <text wx:else class="avatar-icon">🐑</text>
       </view>
       <view class="sheep-info">

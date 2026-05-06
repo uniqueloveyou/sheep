@@ -353,7 +353,7 @@ def api_get_breeders(request, breeder_id=None):
                         'length': float(sheep.current_length),
                         'vaccine_count': vaccine_count,
                         'is_healthy': has_recent_vaccine,
-                        'image_url': f'/images/sheep/{sheep.id}.jpg'
+                        'image_url': sheep.image.url if sheep.image else ''
                     })
 
                 # 统计健康状态

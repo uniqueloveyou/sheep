@@ -103,5 +103,25 @@ Page({
     wx.navigateTo({
       url: `/pages/adopt/customize/customize?id=${sheepId}`
     });
+  },
+
+  onSheepImageError(e) {
+    const sheepId = e.currentTarget.dataset.id;
+    if (!sheepId) return;
+
+    const clearBrokenImage = item => {
+      if (String(item.id) === String(sheepId)) {
+        return {
+          ...item,
+          image_url: ''
+        };
+      }
+      return item;
+    };
+
+    this.setData({
+      sheepList: (this.data.sheepList || []).map(clearBrokenImage),
+      pagedSheepList: (this.data.pagedSheepList || []).map(clearBrokenImage)
+    });
   }
 });

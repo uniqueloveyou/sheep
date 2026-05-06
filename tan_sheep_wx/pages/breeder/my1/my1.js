@@ -221,5 +221,23 @@ Page({
                 currentBreeder: currentBreeder
             });
         }
+    },
+
+    onSheepImageError: function(e) {
+        const index = e.currentTarget.dataset.index;
+        const previewList = this.data.sheepPreviewList || [];
+        const breeder = this.data.currentBreeder || {};
+
+        if (previewList[index]) {
+            previewList[index].image_url = '';
+        }
+        if (breeder.sheep_list && breeder.sheep_list[index]) {
+            breeder.sheep_list[index].image_url = '';
+        }
+
+        this.setData({
+            currentBreeder: breeder,
+            sheepPreviewList: previewList
+        });
     }
 });

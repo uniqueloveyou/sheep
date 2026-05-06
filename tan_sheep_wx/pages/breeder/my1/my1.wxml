@@ -74,7 +74,7 @@
 
         <view class="sheep-preview-list">
             <view class="sheep-item" wx:for="{{sheepPreviewList}}" wx:key="id" bindtap="viewSheepDetail" data-id="{{item.id}}">
-                <image class="sheep-image" src="{{item.image_url || '/images/icons/function/f1.png'}}" mode="aspectFill"></image>
+                <image class="sheep-image" src="{{item.image_url || '/images/icons/function/f1.png'}}" mode="aspectFill" binderror="onSheepImageError" data-index="{{index}}"></image>
                 <view class="sheep-info">
                     <view class="sheep-header">
                         <text class="sheep-id">羊只 #{{item.id}}</text>
