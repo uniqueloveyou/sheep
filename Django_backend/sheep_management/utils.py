@@ -5,8 +5,8 @@ import jwt
 import datetime
 from django.conf import settings
 
-# JWT密钥（应该从settings中读取，这里先用默认值）
-SECRET_KEY = getattr(settings, 'SECRET_KEY', 'django-insecure-g!(8vj_8qpxkp9q#_9573#h@b#jgiyiyrlh1+g@am933xm@hd6')
+# JWT密钥，来自 Django settings，settings 会从项目根目录 .env 读取。
+SECRET_KEY = settings.SECRET_KEY
 
 
 def generate_token(user_id, username=None, expires_in=7*24*3600):

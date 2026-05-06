@@ -6,6 +6,7 @@ from django.db.models import Q, Count
 import json
 import re
 from datetime import datetime, date
+from django.conf import settings
 from django.utils import timezone
 from ..models import User, Sheep, VaccinationHistory, GrowthRecord, FeedingRecord, CartItem, Coupon, BreederFollow
 from ..utils import generate_token, get_r2_public_url, verify_token
@@ -114,8 +115,8 @@ def api_login(request):
     """
     try:
         data = json.loads(request.body)
-        username = data.get('username', 'wx584a350ed4b974a0').strip()
-        password = data.get('password', '11f0f8f7eed7e4cdc39ca4333bfd2134').strip()
+        username = data.get('username', '').strip()
+        password = data.get('password', '').strip()
 
         if not username or not password:
             return JsonResponse({'code': 400, 'msg': '用户名和密码不能为空', 'data': None}, status=400)
@@ -760,9 +761,8 @@ def api_check_token(request):
 @csrf_exempt
 @require_http_methods(["POST"])
 def api_login_by_phone(request):
-    # 👇👇👇 这里的 AppID 和 Secret 必须填你自己的！👇👇👇
-    APP_ID = 'wx584a350ed4b974a0'
-    APP_SECRET = '11f0f8f7eed7e4cdc39ca4333bfd2134'
+    app_id = settings.WX_APP_ID
+    app_secret = settings.WX_APP_SECRET
 
     try:
         data = json.loads(request.body)
@@ -773,7 +773,7 @@ def api_login_by_phone(request):
             return JsonResponse({'code': 400, 'msg': '参数缺失'})
 
         # 1. 获取 Access Token
-        token_url = f"https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid={APP_ID}&secret={APP_SECRET}"
+        token_url = f"https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid={app_id}&secret={app_secret}"
         token_res = requests.get(token_url).json()
         access_token = token_res.get('access_token')
         if not access_token:
@@ -788,7 +788,7 @@ def api_login_by_phone(request):
         pure_phone = phone_res.get('phone_info', {}).get('purePhoneNumber')
 
         # 3. 换取 OpenID
-        login_url = f"https://api.weixin.qq.com/sns/jscode2session?appid={APP_ID}&secret={APP_SECRET}&js_code={code}&grant_type=authorization_code"
+        login_url = f"https://api.weixin.qq.com/sns/jscode2session?appid={app_id}&secret={app_secret}&js_code={code}&grant_type=authorization_code"
         login_res = requests.get(login_url).json()
         openid = login_res.get('openid')
 
@@ -860,9 +860,8 @@ def api_login_wx(request):
     用于降级方案：当无法获取手机号时使用
     POST /api/auth/login_wx 或 /login_wx
     """
-    # 👇👇👇 这里的 AppID 和 Secret 必须填你自己的！👇👇👇
-    APP_ID = 'wx584a350ed4b974a0'
-    APP_SECRET = '11f0f8f7eed7e4cdc39ca4333bfd2134'
+    app_id = settings.WX_APP_ID
+    app_secret = settings.WX_APP_SECRET
 
     try:
         data = json.loads(request.body)
@@ -872,7 +871,7 @@ def api_login_wx(request):
             return JsonResponse({'code': 400, 'msg': '参数缺失：缺少code', 'data': None}, status=400)
 
         # 1. 换取 OpenID
-        login_url = f"https://api.weixin.qq.com/sns/jscode2session?appid={APP_ID}&secret={APP_SECRET}&js_code={code}&grant_type=authorization_code"
+        login_url = f"https://api.weixin.qq.com/sns/jscode2session?appid={app_id}&secret={app_secret}&js_code={code}&grant_type=authorization_code"
         login_res = requests.get(login_url).json()
         
         # 检查微信接口返回的错误
