@@ -172,6 +172,10 @@ def sheep_detail(request, pk):
     if not is_admin and sheep.owner != request.user:
         messages.error(request, '无权查看该羊只信息')
         return redirect('sheep_list')
+
+    if not sheep.qr_code:
+        from ..utils import generate_qr_code
+        generate_qr_code(sheep)
     
     growth_records = sheep.growth_records.all().order_by('-record_date')
     feeding_records = sheep.feeding_records.all().order_by('-feed_date')
