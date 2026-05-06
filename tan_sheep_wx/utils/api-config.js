@@ -14,7 +14,7 @@ const API_CONFIG = {
   developmentCandidates: [
     'http://127.0.0.1:8000',
     'http://localhost:8000',
-    'http://172.26.127.202:8000'
+    'https://sheep.youzilite.app'
   ],
   // 生产环境：Cloudflare Tunnel 域名
   production: 'https://sheep.youzilite.app',
