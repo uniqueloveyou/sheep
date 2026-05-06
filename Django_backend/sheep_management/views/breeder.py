@@ -1,7 +1,11 @@
 """养殖户管理视图（养殖户 = role=1 的 User）"""
+import os
+
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
+from django.core.files.storage import default_storage
 from django.db.models import Q, Count
+from django.utils import timezone
 from ..models import User, Sheep
 from ..permissions import admin_required, ROLE_BREEDER
 
@@ -64,6 +68,10 @@ def breeder_create(request):
         breeder = User(username=username, nickname=nickname, mobile=mobile, role=ROLE_BREEDER, is_verified=is_verified)
         breeder.set_password(password)
         breeder.save()
+        avatar_file = request.FILES.get('avatar')
+        if avatar_file:
+            breeder.avatar_url = _save_breeder_avatar(breeder, avatar_file)
+            breeder.save(update_fields=['avatar_url'])
         messages.success(request, '养殖户创建成功！')
         return redirect('breeder_detail', pk=breeder.pk)
     return render(request, 'sheep_management/breeder/form.html', {'title': '创建养殖户', 'is_create': True})
@@ -89,6 +97,9 @@ def breeder_edit(request, pk):
         lng = request.POST.get('longitude', '').strip()
         breeder.latitude  = float(lat)  if lat  else None
         breeder.longitude = float(lng) if lng else None
+        avatar_file = request.FILES.get('avatar')
+        if avatar_file:
+            breeder.avatar_url = _save_breeder_avatar(breeder, avatar_file)
         if new_password:
             breeder.set_password(new_password)
         breeder.save()
@@ -103,3 +114,12 @@ def breeder_delete(request, pk):
     breeder = get_object_or_404(User, pk=pk, role=ROLE_BREEDER)
     messages.error(request, '养殖户已关联羊只、订单或养殖档案，不能直接删除；如需停止其资格，请在养殖户管理中撤销认证。')
     return redirect('breeder_detail', pk=breeder.pk)
+
+
+def _save_breeder_avatar(breeder, avatar_file):
+    """Save breeder avatar through the configured storage and return its URL."""
+    timestamp = timezone.now().strftime('%Y%m%d%H%M%S')
+    ext = os.path.splitext(avatar_file.name)[1] or '.jpg'
+    filename = f'avatars/breeder_{breeder.pk}_{timestamp}{ext}'
+    saved_name = default_storage.save(filename, avatar_file)
+    return default_storage.url(saved_name)
