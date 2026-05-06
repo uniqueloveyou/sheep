@@ -254,6 +254,79 @@ page {
 .row-even { background: #fafafa; }
 .row-odd  { background: #fff; }
 
+/* ===== 分页 ===== */
+.pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20rpx;
+    padding-top: 24rpx;
+}
+.page-btn {
+    width: 160rpx;
+    height: 56rpx;
+    line-height: 56rpx;
+    padding: 0;
+    margin: 0;
+    border-radius: 28rpx;
+    background: #f0f7f0;
+    color: #2e7d32;
+    font-size: 24rpx;
+    border: none;
+}
+.page-btn[disabled] {
+    background: #f5f5f5;
+    color: #bbb;
+}
+.page-info {
+    min-width: 120rpx;
+    text-align: center;
+    font-size: 24rpx;
+    color: #777;
+}
+
+/* ===== 喂养记录 ===== */
+.feeding-list {
+    display: flex;
+    flex-direction: column;
+    gap: 14rpx;
+}
+.feeding-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #fafafa;
+    border-radius: 14rpx;
+    padding: 22rpx 24rpx;
+}
+.feeding-main {
+    display: flex;
+    flex-direction: column;
+    gap: 8rpx;
+}
+.feeding-type {
+    font-size: 28rpx;
+    font-weight: bold;
+    color: #333;
+}
+.feeding-date {
+    font-size: 22rpx;
+    color: #999;
+}
+.feeding-amount {
+    display: flex;
+    align-items: baseline;
+    gap: 6rpx;
+    color: #2e7d32;
+}
+.feeding-num {
+    font-size: 34rpx;
+    font-weight: bold;
+}
+.feeding-unit {
+    font-size: 22rpx;
+}
+
 /* ===== 疫苗记录列表 ===== */
 .vaccine-item {
     background: #fafafa;
@@ -275,6 +348,19 @@ page {
 .vaccine-date {
     font-size: 22rpx;
     color: #4caf50;
+}
+.vaccine-status {
+    font-size: 22rpx;
+    padding: 6rpx 14rpx;
+    border-radius: 999rpx;
+}
+.vaccine-status.valid {
+    background: #e8f5e9;
+    color: #2e7d32;
+}
+.vaccine-status.expired {
+    background: #fef0f0;
+    color: #e53935;
 }
 .vaccine-attrs {
     display: grid;

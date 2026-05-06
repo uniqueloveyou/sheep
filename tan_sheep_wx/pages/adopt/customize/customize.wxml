@@ -107,12 +107,47 @@
                 <text>体高(cm)</text>
                 <text>体长(cm)</text>
             </view>
-            <view wx:for="{{growthRecords}}" wx:key="id"
+            <view wx:for="{{pagedGrowthRecords}}" wx:key="id"
                   class="table-row {{index % 2 === 0 ? 'row-even' : 'row-odd'}}">
                 <text>{{item.record_date}}</text>
                 <text>{{item.weight}}</text>
                 <text>{{item.height}}</text>
                 <text>{{item.length}}</text>
+            </view>
+            <view class="pagination" wx:if="{{growthTotalPages > 1}}">
+                <button class="page-btn" bindtap="prevGrowthPage" disabled="{{growthCurrentPage <= 1}}">‹ 上页</button>
+                <text class="page-info">{{growthCurrentPage}} / {{growthTotalPages}} 页</text>
+                <button class="page-btn" bindtap="nextGrowthPage" disabled="{{growthCurrentPage >= growthTotalPages}}">下页 ›</button>
+            </view>
+        </view>
+    </view>
+
+    <!-- 喂养记录 -->
+    <view class="card">
+        <view class="card-hd">
+            <text class="card-hd-title">🌾 喂养记录</text>
+            <text class="card-hd-count">{{feedingRecords.length}}条</text>
+        </view>
+        <view wx:if="{{feedingRecords.length === 0}}" class="empty-tip">
+            <text>🌾 暂无喂养记录</text>
+        </view>
+        <view wx:else>
+            <view class="feeding-list">
+                <view wx:for="{{pagedFeedingRecords}}" wx:key="id" class="feeding-item">
+                    <view class="feeding-main">
+                        <text class="feeding-type">{{item.feed_type || '未记录饲料'}}</text>
+                        <text class="feeding-date">{{item.feed_date}}</text>
+                    </view>
+                    <view class="feeding-amount">
+                        <text class="feeding-num">{{item.amount}}</text>
+                        <text class="feeding-unit">{{item.unit}}</text>
+                    </view>
+                </view>
+            </view>
+            <view class="pagination" wx:if="{{feedingTotalPages > 1}}">
+                <button class="page-btn" bindtap="prevFeedingPage" disabled="{{feedingCurrentPage <= 1}}">‹ 上页</button>
+                <text class="page-info">{{feedingCurrentPage}} / {{feedingTotalPages}} 页</text>
+                <button class="page-btn" bindtap="nextFeedingPage" disabled="{{feedingCurrentPage >= feedingTotalPages}}">下页 ›</button>
             </view>
         </view>
     </view>
@@ -127,29 +162,38 @@
             <text>💉 暂无疫苗接种记录</text>
         </view>
         <view wx:else>
-            <view wx:for="{{vaccineRecords}}" wx:key="VaccinationID" class="vaccine-item">
+            <view wx:for="{{pagedVaccineRecords}}" wx:key="id" class="vaccine-item">
                 <view class="vaccine-top">
-                    <text class="vaccine-name">{{item.VaccineType}}</text>
-                    <text class="vaccine-date">{{item.VaccinationDate}}</text>
+                    <text class="vaccine-name">{{item.vaccine_type}}</text>
+                    <text class="vaccine-status {{item.is_valid ? 'valid' : 'expired'}}">{{item.is_valid ? '有效' : '已过期'}}</text>
                 </view>
                 <view class="vaccine-attrs">
                     <view class="vattr">
+                        <text class="vattr-k">接种日期</text>
+                        <text class="vattr-v">{{item.vaccination_date}}</text>
+                    </view>
+                    <view class="vattr">
                         <text class="vattr-k">有效期至</text>
-                        <text class="vattr-v">{{item.ExpiryDate}}</text>
+                        <text class="vattr-v">{{item.expiry_date}}</text>
                     </view>
                     <view class="vattr">
                         <text class="vattr-k">剂量</text>
-                        <text class="vattr-v">{{item.Dosage}} 毫升</text>
+                        <text class="vattr-v">{{item.dosage}} 毫升</text>
                     </view>
                     <view class="vattr">
                         <text class="vattr-k">接种者</text>
-                        <text class="vattr-v">{{item.AdministeredBy}}</text>
+                        <text class="vattr-v">{{item.administered_by}}</text>
                     </view>
-                    <view wx:if="{{item.Notes}}" class="vattr">
+                    <view wx:if="{{item.notes}}" class="vattr">
                         <text class="vattr-k">备注</text>
-                        <text class="vattr-v">{{item.Notes}}</text>
+                        <text class="vattr-v">{{item.notes}}</text>
                     </view>
                 </view>
+            </view>
+            <view class="pagination" wx:if="{{vaccineTotalPages > 1}}">
+                <button class="page-btn" bindtap="prevVaccinePage" disabled="{{vaccineCurrentPage <= 1}}">‹ 上页</button>
+                <text class="page-info">{{vaccineCurrentPage}} / {{vaccineTotalPages}} 页</text>
+                <button class="page-btn" bindtap="nextVaccinePage" disabled="{{vaccineCurrentPage >= vaccineTotalPages}}">下页 ›</button>
             </view>
         </view>
     </view>
