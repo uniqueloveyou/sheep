@@ -1,5 +1,7 @@
 {% extends 'sheep_management/base.html' %}
 
+{% block page_title %}养殖户详情{% endblock %}
+
 {% block content %}
 <div class="card">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
@@ -9,60 +11,73 @@
             <a href="{% url 'breeder_list' %}" class="btn" style="background: #95a5a6;">返回列表</a>
         </div>
     </div>
-    
+
     <h3 style="margin-top: 20px; margin-bottom: 15px; color: #2c3e50;">基本信息</h3>
     <table>
+        <tr>
+            <th>头像</th>
+            <td>
+                {% if breeder.avatar_url %}
+                <img src="{{ breeder.avatar_url }}" alt="头像" style="width:64px;height:64px;border-radius:50%;object-fit:cover;">
+                {% else %}
+                <span style="color:#999;">未设置</span>
+                {% endif %}
+            </td>
+        </tr>
         <tr>
             <th>ID</th>
             <td>{{ breeder.id }}</td>
         </tr>
         <tr>
-            <th>姓名</th>
-            <td>{{ breeder.name }}</td>
+            <th>用户名</th>
+            <td>{{ breeder.username }}</td>
         </tr>
         <tr>
-            <th>性别</th>
-            <td>{{ breeder.gender }}</td>
+            <th>昵称</th>
+            <td>{{ breeder.nickname|default:"未设置" }}</td>
         </tr>
         <tr>
             <th>联系电话</th>
-            <td>{{ breeder.phone }}</td>
+            <td>{{ breeder.mobile|default:"未设置" }}</td>
         </tr>
         <tr>
-            <th>羊只编号</th>
-            <td>{{ breeder.sheep_id }}</td>
-        </tr>
-    </table>
-    
-    <h3 style="margin-top: 30px; margin-bottom: 15px; color: #2c3e50;">羊只统计</h3>
-    <table>
-        <tr>
-            <th>记录的总数</th>
-            <td>{{ breeder.sheep_count }}只</td>
+            <th>性别</th>
+            <td>{% if breeder.gender is not None %}{{ breeder.get_gender_display }}{% else %}未设置{% endif %}</td>
         </tr>
         <tr>
-            <th>实际关联数量</th>
+            <th>审核状态</th>
             <td>
-                <strong style="color: {% if actual_sheep_count == breeder.sheep_count %}#27ae60{% else %}#e74c3c{% endif %};">
-                    {{ actual_sheep_count }}只
-                </strong>
-                {% if actual_sheep_count != breeder.sheep_count %}
-                    <span style="color: #e74c3c; font-size: 12px;">(与记录不符)</span>
+                {% if breeder.is_verified %}
+                <span style="color:#27ae60;font-weight:600;">已认证</span>
+                {% else %}
+                <span style="color:#e67e22;font-weight:600;">待审核</span>
                 {% endif %}
             </td>
         </tr>
         <tr>
-            <th>记录：母羊/公羊</th>
-            <td>{{ breeder.female_count }}只 / {{ breeder.male_count }}只</td>
-        </tr>
-        <tr>
-            <th>实际：母羊/公羊</th>
+            <th>地图位置</th>
             <td>
-                <strong>{{ actual_female_count }}只 / {{ actual_male_count }}只</strong>
+                {% if breeder.latitude and breeder.longitude %}
+                {{ breeder.latitude }}, {{ breeder.longitude }}
+                {% else %}
+                <span style="color:#999;">未设置</span>
+                {% endif %}
             </td>
         </tr>
     </table>
-    
+
+    <h3 style="margin-top: 30px; margin-bottom: 15px; color: #2c3e50;">羊只统计</h3>
+    <table>
+        <tr>
+            <th>关联羊只总数</th>
+            <td><strong style="color:#27ae60;">{{ actual_sheep_count }}只</strong></td>
+        </tr>
+        <tr>
+            <th>母羊/公羊</th>
+            <td><strong>{{ actual_female_count }}只 / {{ actual_male_count }}只</strong></td>
+        </tr>
+    </table>
+
     <h3 style="margin-top: 30px; margin-bottom: 15px; color: #2c3e50;">关联的羊只列表</h3>
     {% if sheep_list %}
     <table>
@@ -81,11 +96,11 @@
             {% for sheep in sheep_list %}
             <tr>
                 <td>{{ sheep.id }}</td>
-                <td>{{ sheep.gender }}</td>
+                <td>{{ sheep.get_gender_display }}</td>
                 <td>{{ sheep.age_display }}</td>
-                <td>{{ sheep.weight }}</td>
-                <td>{{ sheep.height }}</td>
-                <td>{{ sheep.length }}</td>
+                <td>{{ sheep.current_weight }}</td>
+                <td>{{ sheep.current_height }}</td>
+                <td>{{ sheep.current_length }}</td>
                 <td>
                     <a href="{% url 'sheep_detail' sheep.pk %}" class="btn" style="padding: 5px 10px; font-size: 12px;">查看详情</a>
                 </td>
@@ -101,4 +116,3 @@
     {% endif %}
 </div>
 {% endblock %}
-
