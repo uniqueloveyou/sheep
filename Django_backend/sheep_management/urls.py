@@ -155,9 +155,6 @@ urlpatterns = [
     path('breeder/password/', views.breeder_change_password, name='breeder_change_password'),
     path('breeder/location/update/', views.breeder_update_location, name='breeder_update_location'),
     
-    # 环境预警路由
-    path('alerts/<int:pk>/resolve/', views.resolve_alert, name='resolve_alert'),
-    
     # 智慧牧场路由
     path('smart-farm/', views.smart_farm, name='smart_farm'),
 

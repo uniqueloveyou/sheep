@@ -1,4 +1,4 @@
-from .sheep import Sheep, GrowthRecord, FeedingRecord, VaccineType, VaccinationHistory, EnvironmentAlert
+from .sheep import Sheep, GrowthRecord, FeedingRecord, VaccineType, VaccinationHistory
 from .user import User
 from .monitor import MonitorDevice
 from .commerce import CartItem, Coupon, UserCoupon, BreederFollow, Order, OrderItem
@@ -14,7 +14,6 @@ __all__ = [
     'GrowthRecord',
     'FeedingRecord',
     'VaccinationHistory',
-    'EnvironmentAlert',
     'User',
     'MonitorDevice',
     'CartItem',

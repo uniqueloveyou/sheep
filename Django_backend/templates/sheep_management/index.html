@@ -146,10 +146,9 @@
         </div>
     </div>
 
-    <!-- ── 待审核 + 预警 ── -->
-    {% if pending_breeder_list or environment_alerts %}
+    <!-- ── 待审核 ── -->
+    {% if pending_breeder_list %}
     <div class="two-col" style="margin-bottom:24px;">
-        {% if pending_breeder_list %}
         <div class="section-card" style="margin-bottom:0;">
             <div class="sec-head">
                 <h3>⏳ 待审核养殖户</h3>
@@ -165,29 +164,6 @@
             </div>
             {% endfor %}
         </div>
-        {% endif %}
-
-        {% if environment_alerts %}
-        <div class="section-card" style="margin-bottom:0;">
-            <div class="sec-head"><h3>⚠️ 平台预警（{{ alert_count }} 条未处理）</h3></div>
-            {% for alert in environment_alerts %}
-            <div class="alert-card">
-                <div style="display:flex;justify-content:space-between;align-items:flex-start;">
-                    <div>
-                        <span style="font-size:13px;font-weight:600;color:#c0392b;">{{ alert.get_alert_type_display }}</span>
-                        <span class="status-tag {% if alert.severity == 'high' %}sev-high{% elif alert.severity == 'medium' %}sev-medium{% else %}sev-low{% endif %}" style="margin-left:8px;">{{ alert.get_severity_display }}</span>
-                        <div style="font-size:12px;color:#666;margin-top:4px;">{{ alert.message }}</div>
-                        <div style="font-size:11px;color:#bbb;margin-top:2px;">养殖户：{{ alert.owner.nickname|default:alert.owner.username }} · {{ alert.created_at|date:'m-d H:i' }}</div>
-                    </div>
-                    <form method="post" action="{% url 'resolve_alert' alert.pk %}" style="margin:0;flex-shrink:0;margin-left:10px;">
-                        {% csrf_token %}
-                        <button type="submit" style="background:#27ae60;color:#fff;border:none;padding:5px 12px;border-radius:6px;font-size:11px;cursor:pointer;">已处理</button>
-                    </form>
-                </div>
-            </div>
-            {% endfor %}
-        </div>
-        {% endif %}
     </div>
     {% endif %}
 
@@ -295,28 +271,6 @@
                     {% endfor %}
                 </tbody>
             </table>
-        </div>
-        {% endif %}
-
-        {% if environment_alerts %}
-        <div style="margin-top:20px;">
-            <h4 style="margin:0 0 10px;font-size:14px;color:#333;">⚠️ 异常环境预警</h4>
-            {% for alert in environment_alerts %}
-            <div class="alert-card" style="display:flex;justify-content:space-between;align-items:center;">
-                <div>
-                    <div style="font-weight:600;color:#c0392b;margin-bottom:4px;">
-                        {{ alert.get_alert_type_display }}
-                        <span class="status-tag {% if alert.severity == 'high' %}sev-high{% elif alert.severity == 'medium' %}sev-medium{% else %}sev-low{% endif %}" style="margin-left:6px;">{{ alert.get_severity_display }}</span>
-                    </div>
-                    <div style="color:#555;font-size:13px;">{{ alert.message }}</div>
-                    <div style="color:#aaa;font-size:12px;margin-top:3px;">{{ alert.created_at|date:'Y-m-d H:i' }}</div>
-                </div>
-                <form method="post" action="{% url 'resolve_alert' alert.pk %}" style="margin:0;">
-                    {% csrf_token %}
-                    <button type="submit" class="btn" style="background:#27ae60;padding:5px 14px;font-size:12px;">标记已处理</button>
-                </form>
-            </div>
-            {% endfor %}
         </div>
         {% endif %}
     </div>

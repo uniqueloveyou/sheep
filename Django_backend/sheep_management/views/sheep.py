@@ -5,7 +5,7 @@ from django.db.models import Q
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
 from django.core.paginator import Paginator
-from ..models import Sheep, GrowthRecord, FeedingRecord, VaccinationHistory, VaccineType, EnvironmentAlert, User, OrderItem
+from ..models import Sheep, GrowthRecord, FeedingRecord, VaccinationHistory, VaccineType, User, OrderItem
 from ..permissions import ROLE_ADMIN, ROLE_BREEDER
 from ..services.sheep_service import SheepService
 
@@ -393,15 +393,3 @@ def sheep_delete(request, pk):
         messages.success(request, '羊只删除成功！')
         return redirect('sheep_list')
     return render(request, 'sheep_management/sheep/confirm_delete.html', {'sheep': sheep})
-
-
-@login_required
-def resolve_alert(request, pk):
-    """标记环境预警为已处理"""
-    alert = get_object_or_404(EnvironmentAlert, pk=pk, owner=request.user)
-    if request.method == 'POST':
-        alert.is_resolved = True
-        alert.resolved_at = timezone.now()
-        alert.save()
-        messages.success(request, '预警已标记为已处理！')
-    return redirect('index')

@@ -5,7 +5,7 @@ RAG检索增强生成服务
 """
 import logging
 from django.db.models import Q
-from ..models import Sheep, GrowthRecord, FeedingRecord, VaccinationHistory, EnvironmentAlert, OrderItem
+from ..models import Sheep, GrowthRecord, FeedingRecord, VaccinationHistory, OrderItem
 
 logger = logging.getLogger(__name__)
 
@@ -69,11 +69,6 @@ class RAGService:
                 if vaccine_context:
                     context_parts.append(vaccine_context)
             
-            # 环境预警不分用户，通用检索
-            alert_context = RAGService._retrieve_alert_data(keywords)
-            if alert_context:
-                context_parts.append(alert_context)
-        
         logger.info(f'[RAG] 检索到 {len(context_parts)} 段上下文')
         
         # 合并上下文
@@ -210,10 +205,6 @@ class RAGService:
         if any(word in question for word in ['疫苗', '接种', '预防', '驱虫', '防疫']):
             keywords.append('vaccine')
         
-        # 环境相关关键词
-        if any(word in question for word in ['温度', '湿度', '环境', '监控', '预警']):
-            keywords.append('environment')
-        
         # 健康相关关键词
         if any(word in question for word in ['健康', '疾病', '生病', '治疗']):
             keywords.append('health')
@@ -329,32 +320,6 @@ class RAGService:
             return context
         except Exception as e:
             logger.error(f'检索疫苗记录失败: {str(e)}')
-            return None
-    
-    @staticmethod
-    def _retrieve_alert_data(keywords):
-        """
-        检索环境预警记录
-        """
-        if 'environment' not in keywords:
-            return None
-        
-        try:
-            # 获取最近的环境预警
-            alerts = EnvironmentAlert.objects.all().order_by('-created_at')[:5]
-            
-            if not alerts:
-                return None
-            
-            context = "【环境预警记录示例】\n"
-            for alert in alerts:
-                context += f"- 预警类型: {alert.get_alert_type_display()}, "
-                context += f"严重程度: {alert.get_severity_display()}, "
-                context += f"创建时间: {alert.created_at}\n"
-            
-            return context
-        except Exception as e:
-            logger.error(f'检索预警记录失败: {str(e)}')
             return None
     
     @staticmethod

@@ -9,7 +9,6 @@ from .sheep import (
     sheep_add_growth, sheep_delete_growth,
     sheep_add_feeding, sheep_delete_feeding,
     sheep_add_vaccination, sheep_delete_vaccination,
-    resolve_alert
 )
 from .breeder import breeder_list, breeder_detail, breeder_create, breeder_edit, breeder_delete
 from .growth import growth_record_list, growth_record_create
@@ -60,7 +59,6 @@ __all__ = [
     'sheep_add_growth', 'sheep_delete_growth',
     'sheep_add_feeding', 'sheep_delete_feeding',
     'sheep_add_vaccination', 'sheep_delete_vaccination',
-    'resolve_alert',
     'breeder_list', 'breeder_detail', 'breeder_create', 'breeder_edit', 'breeder_delete',
     'growth_record_list', 'growth_record_create',
     'feeding_record_list', 'feeding_record_create',

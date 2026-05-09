@@ -5,7 +5,7 @@ from django.contrib import messages
 from django.shortcuts import render, redirect
 from django.utils import timezone
 from django.db.models import Sum, Count
-from ..models import Sheep, GrowthRecord, FeedingRecord, VaccinationHistory, User, Order, OrderItem, EnvironmentAlert
+from ..models import Sheep, GrowthRecord, FeedingRecord, VaccinationHistory, User, Order, OrderItem
 from ..permissions import login_required, ROLE_ADMIN, ROLE_BREEDER
 
 
@@ -34,12 +34,6 @@ def _admin_dashboard(request, user):
     total_orders   = Order.objects.count()
     pending_orders = Order.objects.filter(status__in=['paid', 'adopting', 'ready_to_ship', 'settlement_pending', 'awaiting_delivery']).count()
 
-    # 全平台未处理环境预警
-    alert_count = EnvironmentAlert.objects.filter(is_resolved=False).count()
-    environment_alerts = EnvironmentAlert.objects.filter(
-        is_resolved=False
-    ).select_related('owner').order_by('-created_at')[:5]
-
     # 最近注册的普通微信用户（最多 6 个）
     recent_users = User.objects.filter(role=0).order_by('-date_joined')[:6]
 
@@ -60,9 +54,6 @@ def _admin_dashboard(request, user):
         'total_sheep': total_sheep,
         'total_orders': total_orders,
         'pending_orders': pending_orders,
-        'alert_count': alert_count,
-        # 列表
-        'environment_alerts': environment_alerts,
         'recent_users': recent_users,
         'pending_breeder_list': pending_breeder_list,
         'recent_orders': recent_orders,
@@ -112,11 +103,6 @@ def _breeder_dashboard(request, user):
                         'days_left': days_left,
                     })
 
-    # 3. 本人的环境预警
-    environment_alerts = EnvironmentAlert.objects.filter(
-        owner=user, is_resolved=False
-    ).order_by('-created_at')[:5]
-
     context = {
         'is_admin': False,
         'monthly_revenue': monthly_revenue,
@@ -127,8 +113,6 @@ def _breeder_dashboard(request, user):
         'pending_shipping_count': pending_shipping_count,
         'upcoming_vaccination_count': len(upcoming_vaccinations),
         'upcoming_vaccinations': upcoming_vaccinations[:3],
-        'alert_count': environment_alerts.count(),
-        'environment_alerts': environment_alerts,
         'default_daily_care_fee': user.default_daily_care_fee,
     }
     return render(request, 'sheep_management/index.html', context)
